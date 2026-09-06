@@ -1,4 +1,11 @@
 export type Product = {
+  images?: string[];
+  fullDescription?: string;
+  subcategory?: string;
+  stockQuantity?: number;
+  newArrival?: boolean;
+  addedAt?: string;
+  specifications?: Record<string, string>;
   id: number;
   slug: string;
   name: string;
@@ -30,13 +37,14 @@ export const products: Product[] = [
     originalPrice: 599,
     discountPercentage: 42,
     image: "/products/vegetable-chopper.webp",
-    shortDescription: "A versatile manual vegetable chopper that makes meal prep faster and easier. Chop, dice, and mince vegetables in seconds.",
+    shortDescription:
+      "A versatile manual vegetable chopper that makes meal prep faster and easier. Chop, dice, and mince vegetables in seconds.",
     features: [
       "Multi-blade stainless steel design",
       "Easy-grip handle for comfortable use",
       "Dishwasher-safe removable parts",
       "Compact and easy to store",
-      "Works with onions, tomatoes, herbs, and more"
+      "Works with onions, tomatoes, herbs, and more",
     ],
     rating: null,
     reviewCount: 0,
@@ -45,8 +53,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-HC-001",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["kitchen", "chopper", "vegetable", "cooking", "meal prep"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["kitchen", "chopper", "vegetable", "cooking", "meal prep"],
   },
   {
     id: 2,
@@ -57,13 +66,14 @@ export const products: Product[] = [
     originalPrice: 249,
     discountPercentage: 40,
     image: "/products/sink-strainer.webp",
-    shortDescription: "A durable stainless steel sink strainer that prevents food particles and debris from clogging your drain.",
+    shortDescription:
+      "A durable stainless steel sink strainer that prevents food particles and debris from clogging your drain.",
     features: [
       "Food-grade stainless steel construction",
       "Fine mesh design to catch small particles",
       "Fits most standard sink drains",
       "Easy to clean and maintain",
-      "Rust and corrosion resistant"
+      "Rust and corrosion resistant",
     ],
     rating: null,
     reviewCount: 0,
@@ -72,8 +82,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-HC-002",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["kitchen", "sink", "strainer", "drain", "cleaning"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["kitchen", "sink", "strainer", "drain", "cleaning"],
   },
   {
     id: 3,
@@ -84,13 +95,14 @@ export const products: Product[] = [
     originalPrice: 199,
     discountPercentage: 35,
     image: "/products/oil-brush.webp",
-    shortDescription: "A heat-resistant silicone basting brush ideal for applying oil, butter, and marinades while cooking or baking.",
+    shortDescription:
+      "A heat-resistant silicone basting brush ideal for applying oil, butter, and marinades while cooking or baking.",
     features: [
       "Food-grade silicone bristles",
       "Heat resistant up to high temperatures",
       "Easy to clean — dishwasher safe",
       "Ergonomic handle for comfortable grip",
-      "Ideal for grilling, baking, and cooking"
+      "Ideal for grilling, baking, and cooking",
     ],
     rating: null,
     reviewCount: 0,
@@ -99,8 +111,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-HC-003",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["kitchen", "brush", "oil", "baking", "cooking", "silicone"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["kitchen", "brush", "oil", "baking", "cooking", "silicone"],
   },
   {
     id: 4,
@@ -111,13 +124,14 @@ export const products: Product[] = [
     originalPrice: 799,
     discountPercentage: 38,
     image: "/products/fridge-organizer-set.webp",
-    shortDescription: "A set of stackable, transparent fridge organizer bins to keep your refrigerator tidy and easy to navigate.",
+    shortDescription:
+      "A set of stackable, transparent fridge organizer bins to keep your refrigerator tidy and easy to navigate.",
     features: [
       "Clear BPA-free plastic construction",
       "Stackable design to maximize fridge space",
       "Easy-pull handle for convenient access",
       "Set includes multiple size bins",
-      "Suitable for pantry and cabinet use too"
+      "Suitable for pantry and cabinet use too",
     ],
     rating: null,
     reviewCount: 0,
@@ -126,8 +140,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-SO-001",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["storage", "fridge", "organizer", "kitchen", "bins"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["storage", "fridge", "organizer", "kitchen", "bins"],
   },
   {
     id: 5,
@@ -138,13 +153,14 @@ export const products: Product[] = [
     originalPrice: 499,
     discountPercentage: 40,
     image: "/products/under-bed-storage-bag.webp",
-    shortDescription: "A spacious, zippered under-bed storage bag to store seasonal clothing, blankets, and other items neatly out of sight.",
+    shortDescription:
+      "A spacious, zippered under-bed storage bag to store seasonal clothing, blankets, and other items neatly out of sight.",
     features: [
       "Large capacity to store bulky items",
       "Durable non-woven fabric construction",
       "Transparent window to identify contents",
       "Zipper closure for dust protection",
-      "Handles for easy retrieval"
+      "Handles for easy retrieval",
     ],
     rating: null,
     reviewCount: 0,
@@ -153,8 +169,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-SO-002",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["storage", "under-bed", "organizer", "clothes", "bag"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["storage", "under-bed", "organizer", "clothes", "bag"],
   },
   {
     id: 6,
@@ -165,13 +182,14 @@ export const products: Product[] = [
     originalPrice: 899,
     discountPercentage: 39,
     image: "/products/shoe-rack-stackable.webp",
-    shortDescription: "A modular stackable shoe rack designed for neat and space-efficient shoe storage at home or in your wardrobe.",
+    shortDescription:
+      "A modular stackable shoe rack designed for neat and space-efficient shoe storage at home or in your wardrobe.",
     features: [
       "Modular stackable design — expand as needed",
       "Sturdy plastic frame",
       "Accommodates most shoe sizes",
       "Easy assembly — no tools required",
-      "Suitable for entryways, closets, and bedrooms"
+      "Suitable for entryways, closets, and bedrooms",
     ],
     rating: null,
     reviewCount: 0,
@@ -180,8 +198,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-SO-003",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["storage", "shoe rack", "organizer", "footwear", "home"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["storage", "shoe rack", "organizer", "footwear", "home"],
   },
   {
     id: 7,
@@ -192,13 +211,14 @@ export const products: Product[] = [
     originalPrice: 399,
     discountPercentage: 38,
     image: "/products/mobile-holder-desk.webp",
-    shortDescription: "An adjustable desktop mobile phone stand that holds your phone at a comfortable viewing angle for video calls, watching, and working.",
+    shortDescription:
+      "An adjustable desktop mobile phone stand that holds your phone at a comfortable viewing angle for video calls, watching, and working.",
     features: [
       "360-degree rotation for flexible viewing",
       "Adjustable height and angle",
       "Non-slip base for stability",
       "Foldable and portable",
-      "Compatible with all smartphones"
+      "Compatible with all smartphones",
     ],
     rating: null,
     reviewCount: 0,
@@ -207,8 +227,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-MD-001",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["mobile", "holder", "desk", "stand", "phone"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["mobile", "holder", "desk", "stand", "phone"],
   },
   {
     id: 8,
@@ -219,13 +240,14 @@ export const products: Product[] = [
     originalPrice: 149,
     discountPercentage: 34,
     image: "/products/cable-organizer-clips.webp",
-    shortDescription: "Self-adhesive cable management clips to keep your desk cables tidy, untangled, and safely routed.",
+    shortDescription:
+      "Self-adhesive cable management clips to keep your desk cables tidy, untangled, and safely routed.",
     features: [
       "Strong self-adhesive backing",
       "Works on wood, glass, and plastic surfaces",
       "Pack of multiple clips",
       "Cable slots to hold multiple wires",
-      "Reusable and easy to install"
+      "Reusable and easy to install",
     ],
     rating: null,
     reviewCount: 0,
@@ -234,8 +256,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-MD-002",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["cable", "organizer", "desk", "clips", "management"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["cable", "organizer", "desk", "clips", "management"],
   },
   {
     id: 9,
@@ -246,13 +269,14 @@ export const products: Product[] = [
     originalPrice: 1199,
     discountPercentage: 42,
     image: "/products/laptop-stand.webp",
-    shortDescription: "An ergonomic portable laptop stand that raises your screen to a comfortable eye level, reducing neck and back strain.",
+    shortDescription:
+      "An ergonomic portable laptop stand that raises your screen to a comfortable eye level, reducing neck and back strain.",
     features: [
       "Lightweight and portable aluminum build",
       "Adjustable height and tilt angle",
       "Non-slip feet for desk stability",
       "Compatible with 10–17 inch laptops",
-      "Foldable for easy travel"
+      "Foldable for easy travel",
     ],
     rating: null,
     reviewCount: 0,
@@ -261,8 +285,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-MD-003",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["laptop", "stand", "desk", "ergonomic", "portable"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["laptop", "stand", "desk", "ergonomic", "portable"],
   },
   {
     id: 10,
@@ -273,13 +298,14 @@ export const products: Product[] = [
     originalPrice: 499,
     discountPercentage: 40,
     image: "/products/car-phone-mount.webp",
-    shortDescription: "A secure, adjustable car phone mount that clamps to your dashboard or windshield for safe hands-free navigation.",
+    shortDescription:
+      "A secure, adjustable car phone mount that clamps to your dashboard or windshield for safe hands-free navigation.",
     features: [
       "Strong suction cup for windshield mounting",
       "360-degree rotation for optimal viewing",
       "Compatible with all smartphone sizes",
       "One-touch locking mechanism",
-      "Vibration-resistant secure grip"
+      "Vibration-resistant secure grip",
     ],
     rating: null,
     reviewCount: 0,
@@ -288,8 +314,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-CB-001",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["car", "phone", "mount", "holder", "navigation"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["car", "phone", "mount", "holder", "navigation"],
   },
   {
     id: 11,
@@ -300,13 +327,14 @@ export const products: Product[] = [
     originalPrice: 349,
     discountPercentage: 43,
     image: "/products/car-seat-gap-filler.webp",
-    shortDescription: "A practical car seat gap filler that prevents phones, keys, and small items from falling into the gap between seats.",
+    shortDescription:
+      "A practical car seat gap filler that prevents phones, keys, and small items from falling into the gap between seats.",
     features: [
       "Universal fit for most car models",
       "Easy to install — no tools needed",
       "Keeps items easily accessible",
       "Prevents loss of small items between seats",
-      "Durable and easy to clean"
+      "Durable and easy to clean",
     ],
     rating: null,
     reviewCount: 0,
@@ -315,8 +343,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-CB-002",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["car", "seat", "gap filler", "organizer", "accessories"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["car", "seat", "gap filler", "organizer", "accessories"],
   },
   {
     id: 12,
@@ -327,13 +356,14 @@ export const products: Product[] = [
     originalPrice: 399,
     discountPercentage: 38,
     image: "/products/bike-mobile-holder.webp",
-    shortDescription: "A sturdy handlebar-mounted mobile holder for bicycles and motorcycles — keep your phone accessible while riding.",
+    shortDescription:
+      "A sturdy handlebar-mounted mobile holder for bicycles and motorcycles — keep your phone accessible while riding.",
     features: [
       "Universal handlebar clamp fit",
       "360-degree rotation for preferred viewing",
       "Secure locking grip for all phone sizes",
       "Weather-resistant build",
-      "Easy one-hand operation"
+      "Easy one-hand operation",
     ],
     rating: null,
     reviewCount: 0,
@@ -342,8 +372,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-CB-003",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["bike", "mobile holder", "handlebar", "motorcycle", "navigation"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["bike", "mobile holder", "handlebar", "motorcycle", "navigation"],
   },
   {
     id: 13,
@@ -354,13 +385,14 @@ export const products: Product[] = [
     originalPrice: 299,
     discountPercentage: 40,
     image: "/products/hair-claw-clips-set.webp",
-    shortDescription: "A set of stylish and durable hair claw clips suitable for all hair types — perfect for quick everyday styling.",
+    shortDescription:
+      "A set of stylish and durable hair claw clips suitable for all hair types — perfect for quick everyday styling.",
     features: [
       "Set includes multiple sizes and styles",
       "Strong grip that holds hair securely",
       "Suitable for thick and thin hair",
       "Durable resin material",
-      "Versatile for casual and formal looks"
+      "Versatile for casual and formal looks",
     ],
     rating: null,
     reviewCount: 0,
@@ -369,8 +401,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-PC-001",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["hair", "clips", "accessories", "personal care", "styling"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["hair", "clips", "accessories", "personal care", "styling"],
   },
   {
     id: 14,
@@ -381,13 +414,14 @@ export const products: Product[] = [
     originalPrice: 399,
     discountPercentage: 38,
     image: "/products/nail-care-kit.webp",
-    shortDescription: "A comprehensive nail care kit with essential tools for trimming, filing, and maintaining healthy nails at home.",
+    shortDescription:
+      "A comprehensive nail care kit with essential tools for trimming, filing, and maintaining healthy nails at home.",
     features: [
       "Includes nail clipper, file, pusher, and more",
       "Stainless steel tools for durability",
       "Comes in a compact travel case",
       "Sharp and precise cutting edges",
-      "Suitable for fingernails and toenails"
+      "Suitable for fingernails and toenails",
     ],
     rating: null,
     reviewCount: 0,
@@ -396,8 +430,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-PC-002",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["nail", "care", "kit", "grooming", "personal care"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["nail", "care", "kit", "grooming", "personal care"],
   },
   {
     id: 15,
@@ -408,13 +443,14 @@ export const products: Product[] = [
     originalPrice: 599,
     discountPercentage: 42,
     image: "/products/travel-toiletry-bag.webp",
-    shortDescription: "A compact, well-organized travel toiletry bag with multiple compartments for storing all your personal care essentials.",
+    shortDescription:
+      "A compact, well-organized travel toiletry bag with multiple compartments for storing all your personal care essentials.",
     features: [
       "Multiple pockets and compartments",
       "Water-resistant lining",
       "Hanging hook for easy access",
       "Compact and lightweight for travel",
-      "Durable zipper closures"
+      "Durable zipper closures",
     ],
     rating: null,
     reviewCount: 0,
@@ -423,8 +459,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-PC-003",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["travel", "toiletry", "bag", "personal care", "organizer"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["travel", "toiletry", "bag", "personal care", "organizer"],
   },
   {
     id: 16,
@@ -435,13 +472,14 @@ export const products: Product[] = [
     originalPrice: 649,
     discountPercentage: 39,
     image: "/products/pet-food-dispenser.webp",
-    shortDescription: "A gravity-fed pet food dispenser that keeps your pet's bowl consistently filled — suitable for cats and small dogs.",
+    shortDescription:
+      "A gravity-fed pet food dispenser that keeps your pet's bowl consistently filled — suitable for cats and small dogs.",
     features: [
       "Gravity-fed automatic refill design",
       "Transparent storage container",
       "Suitable for cats and small dogs",
       "Easy to fill and clean",
-      "Non-slip base for stability"
+      "Non-slip base for stability",
     ],
     rating: null,
     reviewCount: 0,
@@ -450,8 +488,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-PE-001",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["pet", "food", "dispenser", "cat", "dog", "feeder"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["pet", "food", "dispenser", "cat", "dog", "feeder"],
   },
   {
     id: 17,
@@ -462,13 +501,14 @@ export const products: Product[] = [
     originalPrice: 299,
     discountPercentage: 33,
     image: "/products/reusable-shopping-bags.webp",
-    shortDescription: "A set of durable, foldable reusable shopping bags — an eco-friendly replacement for single-use plastic bags.",
+    shortDescription:
+      "A set of durable, foldable reusable shopping bags — an eco-friendly replacement for single-use plastic bags.",
     features: [
       "Pack of multiple bags in various colors",
       "Strong handles for heavy loads",
       "Foldable and compact for easy carrying",
       "Machine washable",
-      "Eco-friendly alternative to plastic bags"
+      "Eco-friendly alternative to plastic bags",
     ],
     rating: null,
     reviewCount: 0,
@@ -477,8 +517,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-PE-002",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["shopping", "bags", "reusable", "eco-friendly", "everyday"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["shopping", "bags", "reusable", "eco-friendly", "everyday"],
   },
   {
     id: 18,
@@ -489,13 +530,14 @@ export const products: Product[] = [
     originalPrice: 299,
     discountPercentage: 33,
     image: "/products/microfiber-cleaning-cloths.webp",
-    shortDescription: "A pack of premium microfiber cleaning cloths for streak-free cleaning of surfaces, screens, and kitchen counters.",
+    shortDescription:
+      "A pack of premium microfiber cleaning cloths for streak-free cleaning of surfaces, screens, and kitchen counters.",
     features: [
       "Ultra-soft microfiber fabric",
       "Streak-free cleaning on all surfaces",
       "Highly absorbent and quick-drying",
       "Machine washable and reusable",
-      "Pack of multiple cloths"
+      "Pack of multiple cloths",
     ],
     rating: null,
     reviewCount: 0,
@@ -504,8 +546,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-HC-004",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["cleaning", "microfiber", "cloth", "kitchen", "home"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["cleaning", "microfiber", "cloth", "kitchen", "home"],
   },
   {
     id: 19,
@@ -516,13 +559,14 @@ export const products: Product[] = [
     originalPrice: 449,
     discountPercentage: 38,
     image: "/products/drawer-dividers.webp",
-    shortDescription: "Adjustable drawer dividers to keep your drawers neatly organized — suitable for kitchen, bathroom, and office drawers.",
+    shortDescription:
+      "Adjustable drawer dividers to keep your drawers neatly organized — suitable for kitchen, bathroom, and office drawers.",
     features: [
       "Adjustable width to fit various drawer sizes",
       "Sturdy yet lightweight material",
       "No tools required for installation",
       "Set of multiple dividers",
-      "Keeps contents in place"
+      "Keeps contents in place",
     ],
     rating: null,
     reviewCount: 0,
@@ -531,8 +575,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-SO-004",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["drawer", "divider", "organizer", "storage", "home"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["drawer", "divider", "organizer", "storage", "home"],
   },
   {
     id: 20,
@@ -543,13 +588,14 @@ export const products: Product[] = [
     originalPrice: 249,
     discountPercentage: 40,
     image: "/products/wall-hooks-adhesive.webp",
-    shortDescription: "Strong adhesive wall hooks that hold bags, coats, keys, and more — no drilling required, removable without damage.",
+    shortDescription:
+      "Strong adhesive wall hooks that hold bags, coats, keys, and more — no drilling required, removable without damage.",
     features: [
       "Strong adhesive backing — no drilling",
       "Holds up to several kilograms per hook",
       "Removable without damaging walls",
       "Pack of multiple hooks",
-      "Suitable for bathrooms, kitchens, and entryways"
+      "Suitable for bathrooms, kitchens, and entryways",
     ],
     rating: null,
     reviewCount: 0,
@@ -558,8 +604,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-SO-005",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["hooks", "wall", "adhesive", "storage", "home"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["hooks", "wall", "adhesive", "storage", "home"],
   },
   {
     id: 21,
@@ -570,13 +617,14 @@ export const products: Product[] = [
     originalPrice: 349,
     discountPercentage: 43,
     image: "/products/desktop-pen-organizer.webp",
-    shortDescription: "A multi-compartment desktop pen and stationery organizer to keep your workspace neat and productive.",
+    shortDescription:
+      "A multi-compartment desktop pen and stationery organizer to keep your workspace neat and productive.",
     features: [
       "Multiple compartments for pens, scissors, and more",
       "Sturdy base that won't tip over",
       "Compact footprint for small desks",
       "Clean minimal design",
-      "Suitable for home and office"
+      "Suitable for home and office",
     ],
     rating: null,
     reviewCount: 0,
@@ -585,8 +633,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-MD-004",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["desk", "organizer", "pen", "stationery", "office"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["desk", "organizer", "pen", "stationery", "office"],
   },
   {
     id: 22,
@@ -597,13 +646,14 @@ export const products: Product[] = [
     originalPrice: 329,
     discountPercentage: 39,
     image: "/products/car-trash-bin.webp",
-    shortDescription: "A compact, leakproof car trash bin that attaches to your headrest or console — keeps your car clean and clutter-free.",
+    shortDescription:
+      "A compact, leakproof car trash bin that attaches to your headrest or console — keeps your car clean and clutter-free.",
     features: [
       "Compact size to fit in any car",
       "Leakproof liner for easy cleaning",
       "Headrest and console mounting options",
       "Durable waterproof material",
-      "Secure lid to contain trash and odors"
+      "Secure lid to contain trash and odors",
     ],
     rating: null,
     reviewCount: 0,
@@ -612,8 +662,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-CB-004",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["car", "trash", "bin", "organizer", "cleaning"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["car", "trash", "bin", "organizer", "cleaning"],
   },
   {
     id: 23,
@@ -624,13 +675,14 @@ export const products: Product[] = [
     originalPrice: 249,
     discountPercentage: 40,
     image: "/products/eyelash-curler.webp",
-    shortDescription: "A professional eyelash curler with a gentle curved pad that lifts and curls lashes safely and effectively.",
+    shortDescription:
+      "A professional eyelash curler with a gentle curved pad that lifts and curls lashes safely and effectively.",
     features: [
       "Ergonomic handle for easy use",
       "Gentle silicone pad for comfort",
       "Fits most eye shapes",
       "Durable stainless steel frame",
-      "Replacement pads included"
+      "Replacement pads included",
     ],
     rating: null,
     reviewCount: 0,
@@ -639,8 +691,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-PC-004",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["eyelash", "curler", "beauty", "personal care", "makeup"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["eyelash", "curler", "beauty", "personal care", "makeup"],
   },
   {
     id: 24,
@@ -651,13 +704,14 @@ export const products: Product[] = [
     originalPrice: 499,
     discountPercentage: 40,
     image: "/products/pet-grooming-brush.webp",
-    shortDescription: "A gentle self-cleaning pet grooming brush that removes loose fur and tangles from cats and dogs easily.",
+    shortDescription:
+      "A gentle self-cleaning pet grooming brush that removes loose fur and tangles from cats and dogs easily.",
     features: [
       "Self-cleaning button releases trapped fur",
       "Gentle stainless steel bristles",
       "Suitable for short and long-haired pets",
       "Ergonomic non-slip handle",
-      "Reduces shedding and matting"
+      "Reduces shedding and matting",
     ],
     rating: null,
     reviewCount: 0,
@@ -666,8 +720,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-PE-003",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["pet", "grooming", "brush", "cat", "dog", "fur"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["pet", "grooming", "brush", "cat", "dog", "fur"],
   },
   {
     id: 25,
@@ -678,13 +733,14 @@ export const products: Product[] = [
     originalPrice: 399,
     discountPercentage: 38,
     image: "/products/kitchen-timer.webp",
-    shortDescription: "A simple, reliable kitchen timer with a loud alarm and easy-turn dial — perfect for cooking, baking, and meal planning.",
+    shortDescription:
+      "A simple, reliable kitchen timer with a loud alarm and easy-turn dial — perfect for cooking, baking, and meal planning.",
     features: [
       "Easy-to-read large dial",
       "Loud alarm bell for audible alerts",
       "Up to 60-minute countdown",
       "Compact size fits any countertop",
-      "No batteries required — mechanical"
+      "No batteries required — mechanical",
     ],
     rating: null,
     reviewCount: 0,
@@ -693,8 +749,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-HC-005",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["kitchen", "timer", "cooking", "baking", "countdown"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["kitchen", "timer", "cooking", "baking", "countdown"],
   },
   {
     id: 26,
@@ -705,13 +762,14 @@ export const products: Product[] = [
     originalPrice: 499,
     discountPercentage: 40,
     image: "/products/collapsible-water-bottle.webp",
-    shortDescription: "A lightweight, foldable silicone water bottle that collapses when empty — ideal for travel, hiking, and everyday carry.",
+    shortDescription:
+      "A lightweight, foldable silicone water bottle that collapses when empty — ideal for travel, hiking, and everyday carry.",
     features: [
       "Food-grade silicone construction",
       "Folds flat when empty to save space",
       "BPA-free and safe for all beverages",
       "Leak-proof lid with carry loop",
-      "Suitable for hot and cold liquids"
+      "Suitable for hot and cold liquids",
     ],
     rating: null,
     reviewCount: 0,
@@ -720,8 +778,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-PE-004",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["water bottle", "collapsible", "travel", "everyday", "silicone"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["water bottle", "collapsible", "travel", "everyday", "silicone"],
   },
   {
     id: 27,
@@ -732,13 +791,14 @@ export const products: Product[] = [
     originalPrice: 599,
     discountPercentage: 42,
     image: "/products/bike-lock.webp",
-    shortDescription: "A durable 4-digit combination bike lock with a flexible steel cable — no key needed, easy to reset your own code.",
+    shortDescription:
+      "A durable 4-digit combination bike lock with a flexible steel cable — no key needed, easy to reset your own code.",
     features: [
       "4-digit resettable combination lock",
       "Flexible braided steel cable",
       "Weatherproof and rust-resistant",
       "Lightweight for easy carrying",
-      "Fits most bicycle frames and wheels"
+      "Fits most bicycle frames and wheels",
     ],
     rating: null,
     reviewCount: 0,
@@ -747,8 +807,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-CB-005",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["bike", "lock", "security", "cycle", "combination"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["bike", "lock", "security", "cycle", "combination"],
   },
   {
     id: 28,
@@ -759,13 +820,14 @@ export const products: Product[] = [
     originalPrice: 149,
     discountPercentage: 34,
     image: "/products/elastic-hair-bands-set.webp",
-    shortDescription: "A value pack of soft, strong elastic hair bands in multiple colors — suitable for all hair types and daily use.",
+    shortDescription:
+      "A value pack of soft, strong elastic hair bands in multiple colors — suitable for all hair types and daily use.",
     features: [
       "Pack of multiple bands in assorted colors",
       "Snag-free design to prevent hair breakage",
       "Suitable for all hair thicknesses",
       "Strong elasticity that lasts",
-      "Gentle hold without leaving marks"
+      "Gentle hold without leaving marks",
     ],
     rating: null,
     reviewCount: 0,
@@ -774,8 +836,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-PC-005",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["hair bands", "elastic", "accessories", "personal care", "everyday"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["hair bands", "elastic", "accessories", "personal care", "everyday"],
   },
   {
     id: 29,
@@ -786,13 +849,14 @@ export const products: Product[] = [
     originalPrice: 699,
     discountPercentage: 36,
     image: "/products/spice-jar-set.webp",
-    shortDescription: "A set of clear, airtight spice jars with labels — keep your spices fresh, organized, and easily visible in your kitchen.",
+    shortDescription:
+      "A set of clear, airtight spice jars with labels — keep your spices fresh, organized, and easily visible in your kitchen.",
     features: [
       "Set of multiple clear glass/acrylic jars",
       "Airtight lids to preserve freshness",
       "Includes labeling stickers",
       "Stackable design for compact storage",
-      "Suitable for spices, herbs, and condiments"
+      "Suitable for spices, herbs, and condiments",
     ],
     rating: null,
     reviewCount: 0,
@@ -801,8 +865,9 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-HC-006",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["spice", "jar", "kitchen", "organizer", "storage", "cooking"]
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["spice", "jar", "kitchen", "organizer", "storage", "cooking"],
   },
   {
     id: 30,
@@ -813,13 +878,14 @@ export const products: Product[] = [
     originalPrice: 199,
     discountPercentage: 35,
     image: "/products/cable-winder.webp",
-    shortDescription: "A compact cable winder and cord organizer that keeps your charging cables, earphones, and wires tangle-free.",
+    shortDescription:
+      "A compact cable winder and cord organizer that keeps your charging cables, earphones, and wires tangle-free.",
     features: [
       "Compact and portable design",
       "Works with USB cables, earphones, and power cords",
       "Prevents tangling and cable damage",
       "Pack of multiple winders",
-      "Easy to use — wrap and secure"
+      "Easy to use — wrap and secure",
     ],
     rating: null,
     reviewCount: 0,
@@ -828,9 +894,10 @@ export const products: Product[] = [
     stockStatus: "in_stock",
     sku: "JN-MD-005",
     shippingInfo: "Usually ships within 1–3 business days.",
-    returnInfo: "Eligible for return within the return window if unused and in original packaging.",
-    tags: ["cable", "winder", "organizer", "desk", "mobile", "cord"]
-  }
+    returnInfo:
+      "Eligible for return within the return window if unused and in original packaging.",
+    tags: ["cable", "winder", "organizer", "desk", "mobile", "cord"],
+  },
 ];
 
 export const categories = [
@@ -839,16 +906,22 @@ export const categories = [
   "Mobile & Desk",
   "Car & Bike",
   "Personal Care Accessories",
-  "Pet & Everyday"
+  "Pet & Everyday",
 ];
 
 export const categoryDescriptions: Record<string, string> = {
-  "Home & Kitchen": "Essential tools and accessories to make your kitchen and home life easier, cleaner, and more organized.",
-  "Storage & Organization": "Smart storage solutions that help you declutter your living spaces and keep everything in its place.",
-  "Mobile & Desk": "Practical accessories for your phone, laptop, and workspace — designed to improve your daily productivity.",
-  "Car & Bike": "Useful accessories for your car and bike that add convenience, organization, and safety on the go.",
-  "Personal Care Accessories": "Quality personal care tools and accessories for everyday grooming and self-care routines.",
-  "Pet & Everyday": "Everyday essentials for you and your pets — practical products built for daily use."
+  "Home & Kitchen":
+    "Essential tools and accessories to make your kitchen and home life easier, cleaner, and more organized.",
+  "Storage & Organization":
+    "Smart storage solutions that help you declutter your living spaces and keep everything in its place.",
+  "Mobile & Desk":
+    "Practical accessories for your phone, laptop, and workspace — designed to improve your daily productivity.",
+  "Car & Bike":
+    "Useful accessories for your car and bike that add convenience, organization, and safety on the go.",
+  "Personal Care Accessories":
+    "Quality personal care tools and accessories for everyday grooming and self-care routines.",
+  "Pet & Everyday":
+    "Everyday essentials for you and your pets — practical products built for daily use.",
 };
 
 export const categorySlugMap: Record<string, string> = {
@@ -857,7 +930,7 @@ export const categorySlugMap: Record<string, string> = {
   "mobile-desk": "Mobile & Desk",
   "car-bike": "Car & Bike",
   "personal-care-accessories": "Personal Care Accessories",
-  "pet-everyday": "Pet & Everyday"
+  "pet-everyday": "Pet & Everyday",
 };
 
 export const categoryToSlug: Record<string, string> = {
@@ -866,7 +939,7 @@ export const categoryToSlug: Record<string, string> = {
   "Mobile & Desk": "mobile-desk",
   "Car & Bike": "car-bike",
   "Personal Care Accessories": "personal-care-accessories",
-  "Pet & Everyday": "pet-everyday"
+  "Pet & Everyday": "pet-everyday",
 };
 
 export const categoryIcons: Record<string, string> = {
@@ -875,5 +948,5 @@ export const categoryIcons: Record<string, string> = {
   "Mobile & Desk": "💻",
   "Car & Bike": "🚗",
   "Personal Care Accessories": "✨",
-  "Pet & Everyday": "🐾"
+  "Pet & Everyday": "🐾",
 };

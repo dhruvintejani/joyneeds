@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /
+
+# Prelaunch: remove this restriction only after catalog and policy verification.

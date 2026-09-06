@@ -1,118 +1,71 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone } from "lucide-react";
-
+import { site } from "../../config/site";
+import { categories, categoryToSlug } from "../../data/products";
+const help = [
+  ["FAQ", "/faq"],
+  ["Contact us", "/contact"],
+  ["Shipping", "/shipping-policy"],
+  ["Returns", "/return-policy"],
+  ["Refunds & cancellation", "/refund-cancellation"],
+];
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-300 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-          {/* Brand */}
-          <div>
-            <Link to="/" className="inline-block mb-4">
-              <span className="text-xl font-bold tracking-tight">
-                <span className="text-yellow-400">Joy</span>
-                <span className="text-white">Needs</span>
-              </span>
-            </Link>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Carefully selected everyday products for home, kitchen, organization, personal care, and daily life.
-            </p>
-          </div>
-
-          {/* Shop */}
-          <div>
-            <h3 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Shop</h3>
-            <ul className="space-y-2.5">
-              <li>
-                <Link to="/shop" className="text-sm text-slate-400 hover:text-white transition-colors">
-                  All Products
-                </Link>
-              </li>
-              <li>
-                <Link to="/shop" className="text-sm text-slate-400 hover:text-white transition-colors">
-                  Categories
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Customer Support */}
-          <div>
-            <h3 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Customer Support</h3>
-            <ul className="space-y-2.5">
-              <li>
-                <Link to="/contact" className="text-sm text-slate-400 hover:text-white transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/faq" className="text-sm text-slate-400 hover:text-white transition-colors">
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link to="/shipping-policy" className="text-sm text-slate-400 hover:text-white transition-colors">
-                  Shipping Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/return-refund-policy" className="text-sm text-slate-400 hover:text-white transition-colors">
-                  Return & Refund Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/cancellation-policy" className="text-sm text-slate-400 hover:text-white transition-colors">
-                  Cancellation Policy
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal & Contact */}
-          <div>
-            <h3 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Legal</h3>
-            <ul className="space-y-2.5 mb-6">
-              <li>
-                <Link to="/privacy-policy" className="text-sm text-slate-400 hover:text-white transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms-and-conditions" className="text-sm text-slate-400 hover:text-white transition-colors">
-                  Terms & Conditions
-                </Link>
-              </li>
-            </ul>
-
-            <h3 className="text-white font-semibold text-sm mb-3 uppercase tracking-wider">Contact</h3>
-            <ul className="space-y-2.5">
-              <li>
-                <a
-                  href="mailto:dhruvintejani.work@gmail.com"
-                  className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors break-all"
-                >
-                  <Mail className="w-4 h-4 shrink-0 text-blue-400" />
-                  dhruvintejani.work@gmail.com
-                </a>
-              </li>
-              <li>
-                <a
-                  href="tel:9913871759"
-                  className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
-                >
-                  <Phone className="w-4 h-4 shrink-0 text-blue-400" />
-                  9913871759
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="border-t border-slate-800 mt-10 pt-6 text-center">
-          <p className="text-xs text-slate-500">
-            © {new Date().getFullYear()} JoyNeeds. All rights reserved.
+    <footer className="site-footer">
+      <div className="container footer-grid">
+        <div className="footer-brand">
+          <Link to="/" aria-label="JoyNeeds home">
+            <img
+              src="/brand/joyneeds-logo.png"
+              alt="JoyNeeds"
+              width={2048}
+              height={682}
+            />
+          </Link>
+          <p>
+            Everyday needs.
+            <br />A little more joy.
           </p>
+          <a href={"mailto:" + site.supportEmail}>{site.supportEmail}</a>
         </div>
+        <div>
+          <h2>Discover</h2>
+          <Link to="/shop">All products</Link>
+          {categories.map((cat) => (
+            <Link key={cat} to={"/category/" + categoryToSlug[cat]}>
+              {cat}
+            </Link>
+          ))}
+        </div>
+        <div>
+          <h2>Here to help</h2>
+          {help.map(([name, to]) => (
+            <Link to={to} key={to}>
+              {name}
+            </Link>
+          ))}
+        </div>
+        <div>
+          <h2>JoyNeeds</h2>
+          <Link to="/about">Our story</Link>
+          <Link to="/privacy-policy">Privacy policy</Link>
+          <Link to="/terms">Terms & conditions</Link>
+          {site.socialLinks
+            .filter((s) => /^https:\/\//.test(s.url))
+            .map((s) => (
+              <a
+                key={s.url}
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {s.label}
+              </a>
+            ))}
+        </div>
+      </div>
+      <div className="container footer-bottom">
+        <span>© {new Date().getFullYear()} JoyNeeds</span>
+        <span>Simple choices for daily life.</span>
       </div>
     </footer>
   );

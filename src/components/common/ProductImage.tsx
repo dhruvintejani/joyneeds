@@ -1,40 +1,43 @@
 import { useState } from "react";
-import { Package } from "lucide-react";
-
+import { ImageOff } from "lucide-react";
 type Props = {
   src: string;
   alt: string;
   className?: string;
   objectFit?: "contain" | "cover";
+  priority?: boolean;
 };
-
 export default function ProductImage({
   src,
   alt,
   className = "",
   objectFit = "contain",
+  priority = false,
 }: Props) {
-  const [error, setError] = useState(false);
-
-  if (error) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  if (!src || src === failedSrc)
     return (
       <div
-        className={`flex flex-col items-center justify-center bg-slate-100 text-slate-400 ${className}`}
-        aria-label={`Image not available for ${alt}`}
+        className={"image-fallback " + className}
+        role="img"
+        aria-label={alt + ": photo unavailable"}
       >
-        <Package className="w-10 h-10 mb-2 opacity-40" />
-        <span className="text-xs font-medium opacity-60">Image unavailable</span>
+        <ImageOff size={28} strokeWidth={1.3} aria-hidden="true" />
+        <span>Photo coming soon</span>
       </div>
     );
-  }
-
   return (
     <img
       src={src}
       alt={alt}
-      className={`${className} ${objectFit === "contain" ? "object-contain" : "object-cover"}`}
-      onError={() => setError(true)}
-      loading="lazy"
+      width={600}
+      height={600}
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : "auto"}
+      decoding="async"
+      className={className}
+      style={{ objectFit }}
+      onError={() => setFailedSrc(src)}
     />
   );
 }
