@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useParams, useSearchParams, useLocation } from "react-router-dom";
 import { SlidersHorizontal, X } from "lucide-react";
 import { categories, categorySlugMap, products } from "../data/products";
-import { selectProducts, sortOptions } from "../utils/catalog";
+import { discount, selectProducts, sortOptions } from "../utils/catalog";
+import { site } from "../config/site";
 import ProductCard from "../components/product/ProductCard";
 import {
   Breadcrumb,
@@ -12,6 +13,7 @@ import {
   Button,
 } from "../components/common/UI";
 import NotFound from "./NotFound";
+
 export default function Shop() {
   const [params, setParams] = useSearchParams(),
     { category: slug } = useParams();
@@ -19,6 +21,19 @@ export default function Shop() {
   const [drawer, setDrawer] = useState(false);
   const category = slug ? categorySlugMap[slug] : undefined;
   if (slug && !category) return <NotFound />;
+
+  const hasVerifiedRatings =
+    site.catalogVerified &&
+    products.some((p) => p.rating !== null && p.reviewCount > 0);
+  const hasVerifiedDiscounts =
+    site.catalogVerified && products.some((p) => discount(p) > 0);
+  const availableSortOptions = Object.entries(sortOptions).filter(([value]) => {
+    if (value === "rating") return hasVerifiedRatings;
+    if (value === "discount") return hasVerifiedDiscounts;
+    if (value === "popular") return site.catalogVerified;
+    return true;
+  });
+
   const update = (key: string, value: string) => {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
@@ -27,28 +42,31 @@ export default function Shop() {
     if (key === "q") next.delete("search");
     setParams(next, { replace: true });
   };
+
   const selected = selectProducts(params, category);
   const pages = Math.max(1, Math.ceil(selected.length / 12));
   const rawPage = Number(params.get("page"));
   const page = Number.isFinite(rawPage)
     ? Math.min(pages, Math.max(1, Math.floor(rawPage)))
     : 1;
-  const active = [...params.entries()].filter(
-    ([key, value]) =>
-      [
-        "q",
-        "search",
-        "category",
-        "subcategory",
-        "min",
-        "max",
-        "rating",
-        "discount",
-        "stock",
-        "featured",
-        "new",
-      ].includes(key) && value,
-  );
+  const active = [...params.entries()].filter(([key, value]) => {
+    if (!value) return false;
+    if (key === "rating" && !hasVerifiedRatings) return false;
+    if (key === "discount" && !hasVerifiedDiscounts) return false;
+    return [
+      "q",
+      "search",
+      "category",
+      "subcategory",
+      "min",
+      "max",
+      "rating",
+      "discount",
+      "stock",
+      "featured",
+      "new",
+    ].includes(key);
+  });
   const subcategories = [
     ...new Set(
       products
@@ -57,6 +75,7 @@ export default function Shop() {
         .filter((s): s is string => !!s),
     ),
   ];
+
   const filters = (
     <div className="filters">
       {!category && (
@@ -116,29 +135,33 @@ export default function Shop() {
           </label>
         </div>
       </fieldset>
-      <label className="field">
-        Minimum rating
-        <select
-          value={params.get("rating") || ""}
-          onChange={(e) => update("rating", e.target.value)}
-        >
-          <option value="">All ratings</option>
-          <option value="4">4 stars & up</option>
-          <option value="3">3 stars & up</option>
-        </select>
-      </label>
-      <label className="field">
-        Discount
-        <select
-          value={params.get("discount") || ""}
-          onChange={(e) => update("discount", e.target.value)}
-        >
-          <option value="">All products</option>
-          <option value="10">10% or more</option>
-          <option value="25">25% or more</option>
-          <option value="50">50% or more</option>
-        </select>
-      </label>
+      {hasVerifiedRatings && (
+        <label className="field">
+          Minimum rating
+          <select
+            value={params.get("rating") || ""}
+            onChange={(e) => update("rating", e.target.value)}
+          >
+            <option value="">All ratings</option>
+            <option value="4">4 stars & up</option>
+            <option value="3">3 stars & up</option>
+          </select>
+        </label>
+      )}
+      {hasVerifiedDiscounts && (
+        <label className="field">
+          Discount
+          <select
+            value={params.get("discount") || ""}
+            onChange={(e) => update("discount", e.target.value)}
+          >
+            <option value="">All products</option>
+            <option value="10">10% or more</option>
+            <option value="25">25% or more</option>
+            <option value="50">50% or more</option>
+          </select>
+        </label>
+      )}
       <fieldset>
         <legend>Show me</legend>
         {[
@@ -161,9 +184,16 @@ export default function Shop() {
       </Button>
     </div>
   );
+
   const title =
     category ||
     (location.pathname === "/search" ? "Search results" : "All products");
+  const selectedSort = availableSortOptions.some(
+    ([value]) => value === params.get("sort"),
+  )
+    ? params.get("sort")!
+    : "featured";
+
   return (
     <div className="container">
       <Breadcrumb items={[{ label: title }]} />
@@ -171,7 +201,7 @@ export default function Shop() {
         Find the little things that make a difference.
       </PageHeading>
       <div className="catalog-layout">
-        <aside className="desktop-filters">
+        <aside className="desktop-filters" aria-label="Product filters">
           <h2>Filter by</h2>
           {!drawer && filters}
         </aside>
@@ -196,17 +226,10 @@ export default function Shop() {
             <label className="sort-label">
               <span>Sort by</span>
               <select
-                value={
-                  Object.prototype.hasOwnProperty.call(
-                    sortOptions,
-                    params.get("sort") || "",
-                  )
-                    ? params.get("sort")!
-                    : "featured"
-                }
+                value={selectedSort}
                 onChange={(e) => update("sort", e.target.value)}
               >
-                {Object.entries(sortOptions).map(([v, l]) => (
+                {availableSortOptions.map(([v, l]) => (
                   <option key={v} value={v}>
                     {l}
                   </option>
@@ -225,7 +248,7 @@ export default function Shop() {
             )}
           </div>
           {active.length > 0 && (
-            <div className="filter-chips">
+            <div className="filter-chips" aria-label="Active filters">
               {active.map(([key, value]) => (
                 <button key={key} onClick={() => update(key, "")}>
                   {key === "stock"

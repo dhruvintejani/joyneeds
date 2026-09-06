@@ -4,6 +4,7 @@ import {
   type ReactNode,
   type ButtonHTMLAttributes,
 } from "react";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { X, Minus, Plus, PackageSearch, ArrowRight } from "lucide-react";
 
@@ -12,16 +13,39 @@ export function Button({
   className = "",
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
 }) {
   return (
     <button
       type="button"
-      className={`button ${variant} ${className}`}
+      className={`button ${variant} ${className}`.trim()}
       {...props}
     />
   );
 }
+
+export function Reveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{ duration: 0.38, ease: "easeOut", delay }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export function Breadcrumb({
   items,
 }: {
@@ -44,6 +68,7 @@ export function Breadcrumb({
     </nav>
   );
 }
+
 export function EmptyState({
   title,
   children,
@@ -62,6 +87,7 @@ export function EmptyState({
     </div>
   );
 }
+
 export function QuantitySelector({
   value,
   max,
@@ -93,6 +119,7 @@ export function QuantitySelector({
     </div>
   );
 }
+
 export function Drawer({
   open,
   onClose,
@@ -156,6 +183,7 @@ export function Drawer({
     </dialog>
   );
 }
+
 export function PageHeading({
   title,
   children,
@@ -170,6 +198,7 @@ export function PageHeading({
     </div>
   );
 }
+
 export function Skeleton() {
   return (
     <div className="container section" role="status" aria-label="Loading page">

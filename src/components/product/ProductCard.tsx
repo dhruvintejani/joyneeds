@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Heart, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCartStore } from "../../store/cartStore";
@@ -7,6 +8,7 @@ import type { Product } from "../../data/products";
 import { site } from "../../config/site";
 import { money, discount, maxQuantity } from "../../utils/catalog";
 import ProductImage from "../common/ProductImage";
+
 export default function ProductCard({
   product,
 }: {
@@ -17,8 +19,13 @@ export default function ProductCard({
   const saved = useDiscoveryStore((s) => s.wishlist.includes(product.id));
   const toggle = useDiscoveryStore((s) => s.toggleWishlist);
   const off = discount(product);
+  const available = maxQuantity(product) > 0;
   return (
-    <article className="product-card">
+    <motion.article
+      className="product-card"
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+    >
       <div className="product-image-wrap">
         <Link to={"/product/" + product.slug} tabIndex={-1} aria-hidden="true">
           <ProductImage
@@ -44,11 +51,19 @@ export default function ProductCard({
         >
           <Heart size={18} fill={saved ? "currentColor" : "none"} />
         </button>
-        {off > 0 && <span className="product-badge">{off}% off</span>}
-        {site.catalogVerified && product.bestseller && (
-          <span className="product-badge">Bestseller</span>
+        {(off > 0 ||
+          (site.catalogVerified && product.bestseller) ||
+          product.newArrival) && (
+          <div className="product-badge-stack" aria-label="Product highlights">
+            {off > 0 && (
+              <span className="product-badge product-badge-sale">{off}% off</span>
+            )}
+            {site.catalogVerified && product.bestseller && (
+              <span className="product-badge">Bestseller</span>
+            )}
+            {product.newArrival && <span className="product-badge">New</span>}
+          </div>
         )}
-        {product.newArrival && <span className="product-badge">New</span>}
       </div>
       <div className="product-content">
         <p className="eyebrow">{product.category}</p>
@@ -64,26 +79,25 @@ export default function ProductCard({
             </p>
           )}
         <div className="product-bottom">
-          <div>
+          <div className="product-price">
             <strong>{money(product.price)}</strong>
             {off > 0 && <del>{money(product.originalPrice!)}</del>}
           </div>
           <button
-            className="icon-button add-button"
-            disabled={!maxQuantity(product)}
+            className="add-card-button"
+            disabled={!available}
             aria-label={"Add " + product.name + " to cart"}
             onClick={() => {
               if (add(product)) toast.success("Added to cart");
               else toast.error("Quantity limit reached");
             }}
           >
-            <Plus size={20} />
+            <Plus size={16} />
+            <span>{available ? "Add" : "Unavailable"}</span>
           </button>
         </div>
-        {!maxQuantity(product) && (
-          <p className="muted small">Currently unavailable</p>
-        )}
+        {!available && <p className="muted small">Currently unavailable</p>}
       </div>
-    </article>
+    </motion.article>
   );
 }

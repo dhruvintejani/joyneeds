@@ -1,6 +1,7 @@
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { Link } from "react-router-dom";
+import { Check, CreditCard, MapPin, UserRound } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { money, maxQuantity } from "../utils/catalog";
 import { site } from "../config/site";
@@ -12,6 +13,7 @@ import {
   EmptyState,
   Button,
 } from "../components/common/UI";
+
 export const checkoutSchema = Yup.object({
   fullName: Yup.string()
     .trim()
@@ -45,6 +47,7 @@ export const checkoutSchema = Yup.object({
     .matches(/^[1-9]\d{5}$/, "Enter a valid 6-digit PIN code")
     .required("PIN code is required"),
 });
+
 export default function Checkout() {
   const items = useCartStore((s) => s.items),
     total = useCartStore((s) => s.getCartTotal());
@@ -73,12 +76,26 @@ export default function Checkout() {
       <PageHeading title="Review your checkout">
         Guest checkout · No account needed
       </PageHeading>
+      <ol className="checkout-steps" aria-label="Checkout progress">
+        <li className="complete">
+          <span className="step-icon"><Check size={15} /></span>
+          <div><strong>Bag</strong><small>Reviewed</small></div>
+        </li>
+        <li className="current" aria-current="step">
+          <span className="step-icon"><UserRound size={15} /></span>
+          <div><strong>Details</strong><small>Current step</small></div>
+        </li>
+        <li>
+          <span className="step-icon"><CreditCard size={15} /></span>
+          <div><strong>Payment</strong><small>Not enabled</small></div>
+        </li>
+      </ol>
       <p className="notice">
         Checkout preview only. Do not enter real personal details for testing.
         No order is created, no payment is collected, and these fields are not
         saved.
       </p>
-      <div className="cart-layout">
+      <div className="cart-layout checkout-layout">
         <Formik
           initialValues={{
             fullName: "",
@@ -99,7 +116,10 @@ export default function Checkout() {
         >
           {({ isSubmitting, status }) => (
             <Form className="checkout-form" noValidate>
-              <h2>Contact details</h2>
+              <div className="checkout-section-heading">
+                <span><UserRound size={18} /></span>
+                <div><h2>Contact details</h2><p>How we would identify and contact you.</p></div>
+              </div>
               <FormField
                 label="Full name"
                 name="fullName"
@@ -125,7 +145,10 @@ export default function Checkout() {
                   required
                 />
               </div>
-              <h2>Shipping address</h2>
+              <div className="checkout-section-heading">
+                <span><MapPin size={18} /></span>
+                <div><h2>Shipping address</h2><p>Used only when order processing is implemented.</p></div>
+              </div>
               <FormField
                 label="Street address"
                 name="address"
@@ -155,7 +178,10 @@ export default function Checkout() {
                 maxLength={6}
                 required
               />
-              <h2>Payment</h2>
+              <div className="checkout-section-heading">
+                <span><CreditCard size={18} /></span>
+                <div><h2>Payment</h2><p>Prepared for a future secure payment flow.</p></div>
+              </div>
               <div className="payment-placeholder">
                 <strong>Online payments are not enabled</strong>
                 <p>

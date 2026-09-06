@@ -1,19 +1,23 @@
 import { products, type Product } from "../data/products";
 import { site } from "../config/site";
+
 export const money = (value: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
   }).format(value);
+
 export const maxQuantity = (p: Product) =>
   p.stockStatus === "out_of_stock"
     ? 0
     : Math.min(99, Math.max(0, Math.floor(p.stockQuantity ?? 99)));
+
 export const discount = (p: Product) =>
   site.catalogVerified && p.originalPrice && p.originalPrice > p.price
     ? Math.round((1 - p.price / p.originalPrice) * 100)
     : 0;
+
 export const matchesSearch = (p: Product, query: string) =>
   query
     .toLowerCase()
@@ -25,6 +29,7 @@ export const matchesSearch = (p: Product, query: string) =>
         .toLowerCase()
         .includes(word),
     );
+
 export const sortOptions = {
   featured: "Featured",
   popular: "Popular",
@@ -34,7 +39,9 @@ export const sortOptions = {
   discount: "Discount",
   newest: "Newest",
 };
+
 export type SortOption = keyof typeof sortOptions;
+
 export function selectProducts(params: URLSearchParams, category?: string) {
   const numeric = (key: string, fallback: number) => {
     const raw = params.get(key);
@@ -54,8 +61,11 @@ export function selectProducts(params: URLSearchParams, category?: string) {
       p.price >= min &&
       p.price <= max &&
       (!params.has("rating") ||
-        (site.catalogVerified && (p.rating ?? 0) >= numeric("rating", 0))) &&
-      (!params.has("discount") || discount(p) >= numeric("discount", 0)) &&
+        !site.catalogVerified ||
+        (p.rating ?? 0) >= numeric("rating", 0)) &&
+      (!params.has("discount") ||
+        !site.catalogVerified ||
+        discount(p) >= numeric("discount", 0)) &&
       (params.get("stock") !== "1" || maxQuantity(p) > 0) &&
       (params.get("featured") !== "1" || p.featured) &&
       (params.get("new") !== "1" || p.newArrival),
@@ -68,13 +78,15 @@ export function selectProducts(params: URLSearchParams, category?: string) {
     case "rating":
       return site.catalogVerified
         ? result.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
-        : result;
+        : result.sort((a, b) => Number(b.featured) - Number(a.featured));
     case "popular":
       return site.catalogVerified
         ? result.sort((a, b) => Number(b.bestseller) - Number(a.bestseller))
-        : result;
+        : result.sort((a, b) => Number(b.featured) - Number(a.featured));
     case "discount":
-      return result.sort((a, b) => discount(b) - discount(a));
+      return site.catalogVerified
+        ? result.sort((a, b) => discount(b) - discount(a))
+        : result.sort((a, b) => Number(b.featured) - Number(a.featured));
     case "newest":
       return result.sort((a, b) =>
         (b.addedAt || "").localeCompare(a.addedAt || ""),
