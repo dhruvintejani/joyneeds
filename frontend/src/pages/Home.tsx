@@ -12,19 +12,25 @@ import {
   Sparkles,
   PawPrint,
 } from "lucide-react";
-import { products, categories, categoryToSlug } from "../data/products";
 import ProductCard from "../components/product/ProductCard";
-import { Reveal } from "../components/common/UI";
+import { Reveal, Skeleton } from "../components/common/UI";
 import { site } from "../config/site";
+import { useCatalogStore } from "../store/catalogStore";
 
 const icons = [CookingPot, Boxes, Laptop, Car, Sparkles, PawPrint];
 
 export default function Home() {
-  const featured = products.filter((p) => p.featured).slice(0, 8);
+  const products = useCatalogStore((state) => state.products);
+  const categories = useCatalogStore((state) => state.categories);
+  const status = useCatalogStore((state) => state.status);
+  const featured = products.filter((product) => product.featured).slice(0, 8);
   const best = site.catalogVerified
-    ? products.filter((p) => p.bestseller).slice(0, 4)
+    ? products.filter((product) => product.bestseller).slice(0, 4)
     : [];
-  const arrivals = products.filter((p) => p.newArrival).slice(0, 4);
+  const arrivals = products.filter((product) => product.newArrival).slice(0, 4);
+
+  if (status === "idle" || status === "loading") return <Skeleton />;
+
   return (
     <div className="container">
       <Reveal>
@@ -82,18 +88,18 @@ export default function Home() {
             </Link>
           </div>
           <div className="category-grid">
-            {categories.map((cat, i) => {
-              const Icon = icons[i] || Grid2X2;
+            {categories.map((category, index) => {
+              const Icon = icons[index] || Grid2X2;
               return (
                 <Link
                   className="category-tile"
-                  key={cat}
-                  to={"/category/" + categoryToSlug[cat]}
+                  key={category.id}
+                  to={"/category/" + category.slug}
                 >
                   <span className="category-icon">
                     <Icon size={25} strokeWidth={1.55} />
                   </span>
-                  <span>{cat}</span>
+                  <span>{category.name}</span>
                   <ArrowRight size={16} />
                 </Link>
               );
@@ -114,8 +120,8 @@ export default function Home() {
             </Link>
           </div>
           <div className="product-grid">
-            {featured.map((p) => (
-              <ProductCard product={p} key={p.id} />
+            {featured.map((product) => (
+              <ProductCard product={product} key={product.id} />
             ))}
           </div>
         </section>
@@ -152,8 +158,8 @@ export default function Home() {
                   </Link>
                 </div>
                 <div className="product-grid">
-                  {list.map((p) => (
-                    <ProductCard key={p.id} product={p} />
+                  {list.map((product) => (
+                    <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
               </section>

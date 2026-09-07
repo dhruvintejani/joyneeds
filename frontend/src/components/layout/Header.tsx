@@ -3,13 +3,16 @@ import { Link, NavLink } from "react-router-dom";
 import { Heart, ShoppingBag, Menu } from "lucide-react";
 import { useCartStore } from "../../store/cartStore";
 import { useDiscoveryStore } from "../../store/discoveryStore";
-import { categories, categoryToSlug } from "../../data/products";
+import { useCatalogStore } from "../../store/catalogStore";
 import SearchBox from "../common/SearchBox";
 import { Drawer } from "../common/UI";
+
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const count = useCartStore((s) => s.getCartCount());
-  const saved = useDiscoveryStore((s) => s.wishlist.length);
+  const count = useCartStore((state) => state.getCartCount());
+  const saved = useDiscoveryStore((state) => state.wishlist.length);
+  const categories = useCatalogStore((state) => state.categories);
+
   return (
     <header className="site-header">
       <div className="container header-row">
@@ -54,9 +57,9 @@ export default function Header() {
       <div className="nav-border">
         <nav className="container desktop-nav" aria-label="Main navigation">
           <NavLink to="/shop">All products</NavLink>
-          {categories.slice(0, 3).map((cat) => (
-            <NavLink key={cat} to={"/category/" + categoryToSlug[cat]}>
-              {cat}
+          {categories.slice(0, 3).map((category) => (
+            <NavLink key={category.id} to={"/category/" + category.slug}>
+              {category.name}
             </NavLink>
           ))}
           <NavLink to="/about">Our story</NavLink>
@@ -71,15 +74,15 @@ export default function Header() {
         <nav
           className="mobile-nav"
           aria-label="Mobile navigation"
-          onClick={(e) => {
-            if ((e.target as HTMLElement).closest("a")) setOpen(false);
+          onClick={(event) => {
+            if ((event.target as HTMLElement).closest("a")) setOpen(false);
           }}
         >
           <Link to="/">Home</Link>
           <Link to="/shop">All products</Link>
-          {categories.map((cat) => (
-            <Link key={cat} to={"/category/" + categoryToSlug[cat]}>
-              {cat}
+          {categories.map((category) => (
+            <Link key={category.id} to={"/category/" + category.slug}>
+              {category.name}
             </Link>
           ))}
           <Link to="/about">Our story</Link>

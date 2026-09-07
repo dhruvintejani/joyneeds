@@ -1,22 +1,27 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, X } from "lucide-react";
-import { products } from "../../data/products";
+import { useCatalogStore } from "../../store/catalogStore";
 import { matchesSearch, money } from "../../utils/catalog";
 import ProductImage from "./ProductImage";
+
 export default function SearchBox() {
-  const [query, setQuery] = useState(""),
-    [debounced, setDebounced] = useState(""),
-    [open, setOpen] = useState(false),
-    [active, setActive] = useState(-1);
-  const wrapper = useRef<HTMLDivElement>(null),
-    input = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate(),
-    location = useLocation(),
-    id = useId();
+  const [query, setQuery] = useState("");
+  const [debounced, setDebounced] = useState("");
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(-1);
+  const products = useCatalogStore((state) => state.products);
+  const catalogStatus = useCatalogStore((state) => state.status);
+  const wrapper = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const id = useId();
+
   const results = debounced.trim()
-    ? products.filter((p) => matchesSearch(p, debounced)).slice(0, 5)
+    ? products.filter((product) => matchesSearch(product, debounced)).slice(0, 5)
     : [];
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setDebounced(query);
@@ -24,9 +29,11 @@ export default function SearchBox() {
     }, 180);
     return () => clearTimeout(timer);
   }, [query]);
+
   useEffect(() => {
     setOpen(false);
   }, [location]);
+
   useEffect(() => {
     const close = (event: PointerEvent) => {
       if (!wrapper.current?.contains(event.target as Node)) setOpen(false);
@@ -34,18 +41,20 @@ export default function SearchBox() {
     document.addEventListener("pointerdown", close);
     return () => document.removeEventListener("pointerdown", close);
   }, []);
+
   const visible = open && !!query.trim();
+
   return (
     <div
       className="search-box"
       ref={wrapper}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false);
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
       }}
     >
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
+        onSubmit={(event) => {
+          event.preventDefault();
           navigate("/search?q=" + encodeURIComponent(query.trim()));
           setOpen(false);
         }}
@@ -68,33 +77,35 @@ export default function SearchBox() {
           placeholder="Search your everyday needs"
           value={query}
           onFocus={() => setOpen(true)}
-          onChange={(e) => {
-            setQuery(e.target.value);
+          onChange={(event) => {
+            setQuery(event.target.value);
             setActive(-1);
             setOpen(true);
           }}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
               setOpen(false);
               setActive(-1);
             }
-            if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-              e.preventDefault();
+            if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+              event.preventDefault();
               setOpen(true);
-              setActive((i) =>
+              setActive((index) =>
                 results.length
-                  ? (i + (e.key === "ArrowDown" ? 1 : -1) + results.length) %
+                  ? (index +
+                      (event.key === "ArrowDown" ? 1 : -1) +
+                      results.length) %
                     results.length
                   : -1,
               );
             }
             if (
-              e.key === "Enter" &&
+              event.key === "Enter" &&
               visible &&
               active >= 0 &&
               results[active]
             ) {
-              e.preventDefault();
+              event.preventDefault();
               navigate("/product/" + results[active].slug);
               setOpen(false);
             }
@@ -121,34 +132,36 @@ export default function SearchBox() {
             role="listbox"
             aria-label="Product suggestions"
           >
-            {results.map((p, i) => (
+            {results.map((product, index) => (
               <li
-                key={p.id}
-                id={id + "-option-" + i}
+                key={product.id}
+                id={id + "-option-" + index}
                 role="option"
-                aria-selected={active === i}
-                onMouseEnter={() => setActive(i)}
-                onPointerDown={(e) => e.preventDefault()}
+                aria-selected={active === index}
+                onMouseEnter={() => setActive(index)}
+                onPointerDown={(event) => event.preventDefault()}
                 onClick={() => {
-                  navigate("/product/" + p.slug);
+                  navigate("/product/" + product.slug);
                   setOpen(false);
                 }}
-                className={active === i ? "active" : ""}
+                className={active === index ? "active" : ""}
               >
-                <ProductImage src={p.image} alt="" />
+                <ProductImage src={product.image} alt="" />
                 <div>
-                  <strong>{p.name}</strong>
-                  <span>{p.category}</span>
+                  <strong>{product.name}</strong>
+                  <span>{product.category}</span>
                 </div>
-                <b>{money(p.price)}</b>
+                <b>{money(product.price)}</b>
               </li>
             ))}
           </ul>
           {!results.length && (
             <p className="search-message" role="status">
-              {debounced !== query
+              {catalogStatus === "loading" || debounced !== query
                 ? "Searching…"
-                : "No matching products. Try another word."}
+                : catalogStatus === "error"
+                  ? "Search is temporarily unavailable."
+                  : "No matching products. Try another word."}
             </p>
           )}
           <Link

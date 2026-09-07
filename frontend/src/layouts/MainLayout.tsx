@@ -4,10 +4,19 @@ import { Outlet, useLocation } from "react-router-dom";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import { site } from "../config/site";
+import { useCatalogStore } from "../store/catalogStore";
 
 export default function MainLayout() {
   const [offline, setOffline] = useState(!navigator.onLine);
   const location = useLocation();
+  const loadCatalog = useCatalogStore((state) => state.loadCatalog);
+  const catalogStatus = useCatalogStore((state) => state.status);
+  const catalogError = useCatalogStore((state) => state.error);
+
+  useEffect(() => {
+    void loadCatalog();
+  }, [loadCatalog]);
+
   useEffect(() => {
     const update = () => setOffline(!navigator.onLine);
     window.addEventListener("online", update);
@@ -17,6 +26,7 @@ export default function MainLayout() {
       window.removeEventListener("offline", update);
     };
   }, []);
+
   return (
     <>
       <a className="skip-link" href="#main-content">
@@ -32,6 +42,14 @@ export default function MainLayout() {
       {offline && (
         <div role="status" className="offline">
           You’re offline. Some pages and photos may not be available.
+        </div>
+      )}
+      {catalogStatus === "error" && (
+        <div role="alert" className="offline">
+          {catalogError || "The product catalog is temporarily unavailable."}{" "}
+          <button className="text-link" onClick={() => void loadCatalog(true)}>
+            Retry
+          </button>
         </div>
       )}
       <main id="main-content" tabIndex={-1}>

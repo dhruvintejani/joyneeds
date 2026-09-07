@@ -1,7 +1,8 @@
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
-import { products, categorySlugMap } from "../../data/products";
 import { site } from "../../config/site";
+import { useCatalogStore } from "../../store/catalogStore";
+
 const titles: Record<string, string> = {
   "/": "Useful finds for everyday life",
   "/shop": "All products",
@@ -18,20 +19,23 @@ const titles: Record<string, string> = {
   "/return-policy": "Return policy",
   "/refund-cancellation": "Refund & cancellation policy",
 };
+
 export default function SEO() {
   const { pathname } = useLocation();
+  const products = useCatalogStore((state) => state.products);
+  const categories = useCatalogStore((state) => state.categories);
   const product = pathname.startsWith("/product/")
-    ? products.find((p) => "/product/" + p.slug === pathname)
+    ? products.find((item) => "/product/" + item.slug === pathname)
     : undefined;
   const category = pathname.startsWith("/category/")
-    ? categorySlugMap[pathname.slice(10)]
+    ? categories.find((item) => item.slug === pathname.slice(10))
     : undefined;
   const title =
-    product?.name || category || titles[pathname] || "Page not found";
+    product?.name || category?.name || titles[pathname] || "Page not found";
   const description =
     product?.shortDescription ||
     (category
-      ? "Explore " + category + " in the JoyNeeds collection."
+      ? "Explore " + category.name + " in the JoyNeeds collection."
       : "Discover useful everyday products for your home, workspace, and daily life at JoyNeeds. " +
         title +
         ".");
@@ -60,6 +64,7 @@ export default function SEO() {
             url: site.domain,
           }
         : null;
+
   return (
     <Helmet>
       <title>{title} | JoyNeeds</title>
