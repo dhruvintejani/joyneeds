@@ -5,9 +5,11 @@ import {
   Navigate,
   NavLink,
   Link,
+  Outlet,
   useLocation,
   useNavigate,
   useParams,
+  useSearchParams,
 } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
@@ -33,7 +35,6 @@ import {
   Search,
   Settings,
   ShoppingBag,
-  Tags,
   TicketPercent,
   UserRound,
   UsersRound,
@@ -42,7 +43,6 @@ import {
 import toast from "react-hot-toast";
 import ProductImage from "../components/common/ProductImage";
 import { useCatalogStore } from "../store/catalogStore";
-import type { Product } from "../types/catalog";
 import { money } from "../utils/catalog";
 import { site } from "../config/site";
 import "./admin.css";
@@ -106,7 +106,7 @@ function AdminLayout() {
 
   return (
     <div className="admin-app">
-      <aside className={"admin-sidebar " + (sidebarOpen ? "open" : "")}>
+      <aside className={`admin-sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="admin-brand-row">
           <Link to="/admin" aria-label="JoyNeeds admin dashboard">
             <img src="/brand/joyneeds-logo.png" alt="JoyNeeds" />
@@ -115,19 +115,16 @@ function AdminLayout() {
             <X size={20} />
           </button>
         </div>
+
         <nav className="admin-nav" aria-label="Admin navigation">
           {nav.map(({ to, label, Icon, exact }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={exact}
-              className={({ isActive }) => (isActive ? "active" : "")}
-            >
+            <NavLink key={to} to={to} end={exact} className={({ isActive }) => (isActive ? "active" : "")}>
               <Icon size={20} />
               <span>{label}</span>
             </NavLink>
           ))}
         </nav>
+
         <div className="admin-sidebar-spacer" />
         <div className="admin-support-card">
           <HelpCircle size={24} />
@@ -135,22 +132,19 @@ function AdminLayout() {
           <p>Admin backend features will be connected in later phases.</p>
           <Link to="/contact" className="admin-outline-button">Get support</Link>
         </div>
-        <Link className="admin-view-store" to="/">
-          <ExternalLink size={18} /> View Store
-        </Link>
+        <Link className="admin-view-store" to="/"><ExternalLink size={18} /> View Store</Link>
         <div className="admin-sidebar-footer">
           <img src="/brand/joyneeds-logo.png" alt="JoyNeeds" />
           <span>Admin Panel</span>
           <small>UI preview</small>
         </div>
       </aside>
+
       {sidebarOpen && <button className="admin-overlay" aria-label="Close navigation" onClick={() => setSidebarOpen(false)} />}
 
       <div className="admin-shell">
         <header className="admin-topbar">
-          <button className="admin-menu-button" onClick={() => setSidebarOpen(true)} aria-label="Open admin navigation">
-            <Menu size={21} />
-          </button>
+          <button className="admin-menu-button" onClick={() => setSidebarOpen(true)} aria-label="Open admin navigation"><Menu size={21} /></button>
           <form
             className="admin-global-search"
             onSubmit={(event) => {
@@ -160,83 +154,34 @@ function AdminLayout() {
             }}
           >
             <Search size={18} />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search products, orders, customers..."
-              aria-label="Search admin"
-            />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products, orders, customers..." aria-label="Search admin" />
           </form>
           <div className="admin-top-actions">
-            <button className="admin-icon-button" aria-label="Notifications" onClick={() => toast("Notifications will connect with admin backend events.")}>
-              <Bell size={21} />
-            </button>
+            <button className="admin-icon-button" aria-label="Notifications" onClick={() => toast("Notifications will connect with admin backend events.")}><Bell size={21} /></button>
             <div className="admin-user-badge">A</div>
-            <div className="admin-user-copy">
-              <strong>Admin</strong>
-              <small>UI preview</small>
-            </div>
+            <div className="admin-user-copy"><strong>Admin</strong><small>UI preview</small></div>
             <ChevronDown size={17} />
           </div>
         </header>
+
         <main className="admin-content">
           <div className="admin-preview-banner">
             <strong>Admin UI preview</strong>
             <span>Authentication, order management, customer data and write actions are not connected yet.</span>
           </div>
-          <AdminOutlet />
+          <Outlet />
         </main>
+
         <footer className="admin-footer">
           <span>© {new Date().getFullYear()} JoyNeeds.</span>
-          <div>
-            <Link to="/privacy-policy">Privacy Policy</Link>
-            <Link to="/terms">Terms</Link>
-            <Link to="/contact">Help</Link>
-          </div>
+          <div><Link to="/privacy-policy">Privacy Policy</Link><Link to="/terms">Terms</Link><Link to="/contact">Help</Link></div>
         </footer>
       </div>
     </div>
   );
 }
 
-function AdminOutlet() {
-  // A small wrapper keeps all route rendering inside the admin shell while still
-  // using React Router's nested route tree.
-  const location = useLocation();
-  return <AdminPageSwitch pathname={location.pathname} />;
-}
-
-function AdminPageSwitch({ pathname }: { pathname: string }) {
-  const matchProductEdit = pathname.match(/^\/admin\/products\/([^/]+)\/edit$/);
-  const matchOrder = pathname.match(/^\/admin\/orders\/([^/]+)$/);
-  const matchCustomer = pathname.match(/^\/admin\/customers\/([^/]+)$/);
-  if (pathname === "/admin" || pathname === "/admin/") return <Dashboard />;
-  if (pathname === "/admin/orders") return <Orders />;
-  if (matchOrder) return <OrderDetails orderIdOverride={matchOrder[1]} />;
-  if (pathname === "/admin/products") return <Products />;
-  if (pathname === "/admin/products/new") return <ProductEditor />;
-  if (matchProductEdit) return <ProductEditor productIdOverride={matchProductEdit[1]} />;
-  if (pathname === "/admin/categories") return <Categories />;
-  if (pathname === "/admin/customers") return <Customers />;
-  if (matchCustomer) return <CustomerDetails customerIdOverride={matchCustomer[1]} />;
-  if (pathname === "/admin/analytics") return <Analytics />;
-  if (pathname === "/admin/coupons") return <Coupons />;
-  if (pathname === "/admin/content") return <Content />;
-  if (pathname === "/admin/settings") return <AdminSettings />;
-  return <Dashboard />;
-}
-
-function PageHeader({
-  eyebrow,
-  title,
-  subtitle,
-  action,
-}: {
-  eyebrow?: string;
-  title: string;
-  subtitle?: string;
-  action?: ReactNode;
-}) {
+function PageHeader({ eyebrow, title, subtitle, action }: { eyebrow?: string; title: string; subtitle?: string; action?: ReactNode }) {
   return (
     <div className="admin-page-header">
       <div>
@@ -249,27 +194,11 @@ function PageHeader({
   );
 }
 
-function StatCard({
-  label,
-  value,
-  detail,
-  Icon,
-  tone = "blue",
-}: {
-  label: string;
-  value: ReactNode;
-  detail?: string;
-  Icon: typeof Package;
-  tone?: StatTone;
-}) {
+function StatCard({ label, value, detail, Icon, tone = "blue" }: { label: string; value: ReactNode; detail?: string; Icon: typeof Package; tone?: StatTone }) {
   return (
     <article className="admin-stat-card">
       <span className={`admin-stat-icon ${tone}`}><Icon size={24} /></span>
-      <div>
-        <p>{label}</p>
-        <strong>{value}</strong>
-        {detail && <small>{detail}</small>}
-      </div>
+      <div><p>{label}</p><strong>{value}</strong>{detail && <small>{detail}</small>}</div>
     </article>
   );
 }
@@ -304,11 +233,7 @@ function Dashboard() {
       <div className="admin-dashboard-grid">
         <section className="admin-panel admin-chart-panel">
           <div className="admin-panel-heading"><h2>Sales Overview</h2><span>Awaiting order data</span></div>
-          <div className="admin-empty-chart">
-            <BarChart3 size={34} />
-            <strong>Revenue analytics will appear here</strong>
-            <p>Once real orders and payments are connected, this area will use server-authoritative totals.</p>
-          </div>
+          <div className="admin-empty-chart"><BarChart3 size={34} /><strong>Revenue analytics will appear here</strong><p>Once real orders and payments are connected, this area will use server-authoritative totals.</p></div>
         </section>
         <section className="admin-panel">
           <div className="admin-panel-heading"><h2>Orders by Status</h2><span>Not connected</span></div>
@@ -348,7 +273,7 @@ function Dashboard() {
 function Products() {
   const allProducts = useCatalogStore((state) => state.products);
   const categories = useCatalogStore((state) => state.categories);
-  const [params] = new URLSearchParams(window.location.search) ? [new URLSearchParams(window.location.search)] : [new URLSearchParams()];
+  const [params] = useSearchParams();
   const [query, setQuery] = useState(params.get("q") || "");
   const [category, setCategory] = useState("");
   const [stock, setStock] = useState("");
@@ -370,9 +295,9 @@ function Products() {
     });
   }, [allProducts, query, category, stock, sort]);
 
-  const active = allProducts.filter((p) => p.stockStatus === "in_stock").length;
-  const lowStock = allProducts.filter((p) => p.stockQuantity !== null && p.stockQuantity !== undefined && p.stockQuantity > 0 && p.stockQuantity <= 10).length;
-  const out = allProducts.filter((p) => p.stockStatus === "out_of_stock").length;
+  const active = allProducts.filter((product) => product.stockStatus === "in_stock").length;
+  const lowStock = allProducts.filter((product) => product.stockQuantity != null && product.stockQuantity > 0 && product.stockQuantity <= 10).length;
+  const out = allProducts.filter((product) => product.stockStatus === "out_of_stock").length;
 
   return (
     <div>
@@ -383,28 +308,32 @@ function Products() {
         <StatCard label="Low Stock" value={lowStock} detail="Only known inventory" Icon={Boxes} tone="amber" />
         <StatCard label="Out of Stock" value={out} detail="Unavailable" Icon={Package} tone="red" />
       </div>
+
       <section className="admin-panel admin-table-panel">
         <div className="admin-filter-row">
-          <label className="admin-search-field"><Search size={18} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products..." /></label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)}><option value="">All Categories</option>{categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}</select>
-          <select value={stock} onChange={(e) => setStock(e.target.value)}><option value="">All Status</option><option value="in_stock">In Stock</option><option value="out_of_stock">Out of Stock</option></select>
-          <select value={sort} onChange={(e) => setSort(e.target.value)}><option value="newest">Sort by: Newest</option><option value="name">Name</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option></select>
+          <label className="admin-search-field"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products..." /></label>
+          <select value={category} onChange={(event) => setCategory(event.target.value)}><option value="">All Categories</option>{categories.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select>
+          <select value={stock} onChange={(event) => setStock(event.target.value)}><option value="">All Status</option><option value="in_stock">In Stock</option><option value="out_of_stock">Out of Stock</option></select>
+          <select value={sort} onChange={(event) => setSort(event.target.value)}><option value="newest">Sort by: Newest</option><option value="name">Name</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option></select>
         </div>
         <div className="admin-table-scroll">
           <table className="admin-table">
             <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Added</th><th>Actions</th></tr></thead>
             <tbody>
-              {filtered.map((product) => (
-                <tr key={product.id}>
-                  <td><div className="admin-product-cell"><ProductImage src={product.image} alt={product.name} /><div><strong>{product.name}</strong><small>SKU: {product.sku}</small></div></div></td>
-                  <td>{product.category}</td>
-                  <td><strong>{money(product.price)}</strong></td>
-                  <td>{product.stockQuantity ?? "—"}</td>
-                  <td><StatusPill status={product.stockStatus === "out_of_stock" ? "Out of Stock" : product.stockQuantity !== null && product.stockQuantity !== undefined && product.stockQuantity <= 10 ? "Low Stock" : "Active"} /></td>
-                  <td>{product.addedAt ? new Date(product.addedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}</td>
-                  <td><div className="admin-row-actions"><Link to={`/admin/products/${product.id}/edit`} className="admin-icon-button" aria-label={`Edit ${product.name}`}><Pencil size={17} /></Link><button className="admin-icon-button" onClick={() => toast("More product actions will be connected with the admin write API.")}><MoreHorizontal size={18} /></button></div></td>
-                </tr>
-              ))}
+              {filtered.map((product) => {
+                const knownLow = product.stockQuantity != null && product.stockQuantity > 0 && product.stockQuantity <= 10;
+                return (
+                  <tr key={product.id}>
+                    <td><div className="admin-product-cell"><ProductImage src={product.image} alt={product.name} /><div><strong>{product.name}</strong><small>SKU: {product.sku}</small></div></div></td>
+                    <td>{product.category}</td>
+                    <td><strong>{money(product.price)}</strong></td>
+                    <td>{product.stockQuantity ?? "—"}</td>
+                    <td><StatusPill status={product.stockStatus === "out_of_stock" ? "Out of Stock" : knownLow ? "Low Stock" : "Active"} /></td>
+                    <td>{product.addedAt ? new Date(product.addedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}</td>
+                    <td><div className="admin-row-actions"><Link to={`/admin/products/${product.id}/edit`} className="admin-icon-button" aria-label={`Edit ${product.name}`}><Pencil size={17} /></Link><button className="admin-icon-button" onClick={() => toast("More product actions will be connected with the admin write API.")}><MoreHorizontal size={18} /></button></div></td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -414,21 +343,13 @@ function Products() {
   );
 }
 
-function ProductEditor({ productIdOverride }: { productIdOverride?: string }) {
-  const params = useParams();
-  const productId = productIdOverride || params.productId;
+function ProductEditor() {
+  const { productId } = useParams();
   const products = useCatalogStore((state) => state.products);
   const categories = useCatalogStore((state) => state.categories);
-  const product = productId ? products.find((p) => p.id === productId) : undefined;
+  const product = productId ? products.find((item) => item.id === productId) : undefined;
   const isEdit = !!productId;
-  const [form, setForm] = useState({
-    name: product?.name || "",
-    sku: product?.sku || "",
-    category: product?.category || "",
-    price: product ? String(product.price) : "",
-    stock: product?.stockQuantity == null ? "" : String(product.stockQuantity),
-    shortDescription: product?.shortDescription || "",
-  });
+  const [form, setForm] = useState({ name: "", sku: "", category: "", price: "", stock: "", shortDescription: "" });
 
   useEffect(() => {
     if (!product) return;
@@ -448,25 +369,22 @@ function ProductEditor({ productIdOverride }: { productIdOverride?: string }) {
       {isEdit && !product ? (
         <EmptyModule title="Product not found" text="This product is not available in the current catalog." />
       ) : (
-        <form className="admin-editor-grid" onSubmit={(e) => { e.preventDefault(); toast("No changes were saved. Admin product write APIs are not connected yet."); }}>
+        <form className="admin-editor-grid" onSubmit={(event) => { event.preventDefault(); toast("No changes were saved. Admin product write APIs are not connected yet."); }}>
           <section className="admin-panel admin-form-card">
             <h2>Product Information</h2>
             <div className="admin-form-grid">
-              <label className="wide">Product Name<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
-              <label>SKU<input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} /></label>
-              <label>Category<select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}><option value="">Choose category</option>{categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}</select></label>
-              <label>Price (₹)<input type="number" min="0" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></label>
-              <label>Stock Quantity<input type="number" min="0" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="Unknown" /></label>
-              <label className="wide">Short Description<textarea value={form.shortDescription} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} rows={5} /></label>
+              <label className="wide">Product Name<input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
+              <label>SKU<input value={form.sku} onChange={(event) => setForm({ ...form, sku: event.target.value })} /></label>
+              <label>Category<select value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })}><option value="">Choose category</option>{categories.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select></label>
+              <label>Price (₹)<input type="number" min="0" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} /></label>
+              <label>Stock Quantity<input type="number" min="0" value={form.stock} onChange={(event) => setForm({ ...form, stock: event.target.value })} placeholder="Unknown" /></label>
+              <label className="wide">Short Description<textarea value={form.shortDescription} onChange={(event) => setForm({ ...form, shortDescription: event.target.value })} rows={5} /></label>
             </div>
           </section>
           <aside className="admin-panel admin-form-card">
             <h2>Product Media</h2>
             {product ? <ProductImage src={product.image} alt={product.name} className="admin-editor-image" /> : <div className="admin-upload-placeholder"><Package size={36} /><span>Image upload comes with Cloudinary/admin write phase.</span></div>}
-            <div className="admin-form-actions">
-              <button type="submit" className="admin-primary-button">{isEdit ? "Save Changes" : "Create Product"}</button>
-              <Link to="/admin/products" className="admin-outline-button">Cancel</Link>
-            </div>
+            <div className="admin-form-actions"><button type="submit" className="admin-primary-button">{isEdit ? "Save Changes" : "Create Product"}</button><Link to="/admin/products" className="admin-outline-button">Cancel</Link></div>
             <p className="admin-muted">Submitting this preview does not change the database.</p>
           </aside>
         </form>
@@ -478,17 +396,11 @@ function ProductEditor({ productIdOverride }: { productIdOverride?: string }) {
 function Categories() {
   const categories = useCatalogStore((state) => state.categories);
   const products = useCatalogStore((state) => state.products);
-
   return (
     <div>
       <PageHeader title="Categories" subtitle="Organize the real JoyNeeds catalog into clear storefront groups." action={<button className="admin-primary-button" onClick={() => toast("Category creation will be enabled with admin write APIs.")}><Plus size={18} /> Add Category</button>} />
       <section className="admin-panel admin-table-panel">
-        <div className="admin-table-scroll">
-          <table className="admin-table">
-            <thead><tr><th>Category</th><th>Slug</th><th>Products</th><th>Description</th><th>Actions</th></tr></thead>
-            <tbody>{categories.map((category) => <tr key={category.id}><td><div className="admin-category-cell"><span><Boxes size={19} /></span><strong>{category.name}</strong></div></td><td>{category.slug}</td><td>{products.filter((product) => product.category === category.name).length}</td><td>{category.description || "—"}</td><td><button className="admin-icon-button" onClick={() => toast("Category editing will be enabled with admin write APIs.")}><Pencil size={17} /></button></td></tr>)}</tbody>
-          </table>
-        </div>
+        <div className="admin-table-scroll"><table className="admin-table"><thead><tr><th>Category</th><th>Slug</th><th>Products</th><th>Description</th><th>Actions</th></tr></thead><tbody>{categories.map((category) => <tr key={category.id}><td><div className="admin-category-cell"><span><Boxes size={19} /></span><strong>{category.name}</strong></div></td><td>{category.slug}</td><td>{products.filter((product) => product.category === category.name).length}</td><td>{category.description || "—"}</td><td><button className="admin-icon-button" onClick={() => toast("Category editing will be enabled with admin write APIs.")}><Pencil size={17} /></button></td></tr>)}</tbody></table></div>
       </section>
     </div>
   );
@@ -498,30 +410,18 @@ function Orders() {
   return (
     <div>
       <PageHeader eyebrow="Orders" title="Orders" subtitle="Track, review and manage real customer orders once order APIs are connected." />
-      <div className="admin-stats-grid">
-        <StatCard label="Total Orders" value="—" detail="Not connected" Icon={ClipboardList} />
-        <StatCard label="Processing" value="—" detail="Not connected" Icon={Activity} tone="amber" />
-        <StatCard label="Shipped" value="—" detail="Not connected" Icon={Package} tone="blue" />
-        <StatCard label="Delivered" value="—" detail="Not connected" Icon={ShoppingBag} tone="green" />
-      </div>
-      <section className="admin-panel admin-table-panel">
-        <div className="admin-filter-row"><label className="admin-search-field"><Search size={18} /><input placeholder="Search orders..." disabled /></label><select disabled><option>All Status</option></select><select disabled><option>Newest First</option></select></div>
-        <EmptyModule title="No order data connected" text="This panel will populate from server-side order APIs after checkout and payment phases are implemented." action={<Link to="/" className="admin-outline-button">View storefront</Link>} />
-      </section>
+      <div className="admin-stats-grid"><StatCard label="Total Orders" value="—" detail="Not connected" Icon={ClipboardList} /><StatCard label="Processing" value="—" detail="Not connected" Icon={Activity} tone="amber" /><StatCard label="Shipped" value="—" detail="Not connected" Icon={Package} tone="blue" /><StatCard label="Delivered" value="—" detail="Not connected" Icon={ShoppingBag} tone="green" /></div>
+      <section className="admin-panel admin-table-panel"><div className="admin-filter-row"><label className="admin-search-field"><Search size={18} /><input placeholder="Search orders..." disabled /></label><select disabled><option>All Status</option></select><select disabled><option>Newest First</option></select></div><EmptyModule title="No order data connected" text="This panel will populate from server-side order APIs after checkout and payment phases are implemented." action={<Link to="/" className="admin-outline-button">View storefront</Link>} /></section>
     </div>
   );
 }
 
-function OrderDetails({ orderIdOverride }: { orderIdOverride?: string }) {
-  const params = useParams();
-  const id = orderIdOverride || params.orderId || "";
+function OrderDetails() {
+  const { orderId } = useParams();
   return (
     <div>
-      <PageHeader eyebrow="Orders › Order Details" title={id ? `Order ${id}` : "Order Details"} subtitle="No real order record is connected for this route." action={<Link className="admin-outline-button" to="/admin/orders"><ArrowLeft size={17} /> All Orders</Link>} />
-      <div className="admin-order-layout">
-        <section className="admin-panel"><div className="admin-panel-heading"><h2>Order Items</h2><span>Awaiting data</span></div><EmptyModule title="Order details unavailable" text="Items, totals, addresses and payment status will load from the backend order service when implemented." /></section>
-        <aside className="admin-panel admin-actions-panel"><h2>Order Actions</h2><button disabled className="admin-primary-button">Update Status</button><button disabled className="admin-outline-button">Print Invoice</button><button disabled className="admin-outline-button">Contact Customer</button><button disabled className="admin-danger-button">Cancel Order</button></aside>
-      </div>
+      <PageHeader eyebrow="Orders › Order Details" title={orderId ? `Order ${orderId}` : "Order Details"} subtitle="No real order record is connected for this route." action={<Link className="admin-outline-button" to="/admin/orders"><ArrowLeft size={17} /> All Orders</Link>} />
+      <div className="admin-order-layout"><section className="admin-panel"><div className="admin-panel-heading"><h2>Order Items</h2><span>Awaiting data</span></div><EmptyModule title="Order details unavailable" text="Items, totals, addresses and payment status will load from the backend order service when implemented." /></section><aside className="admin-panel admin-actions-panel"><h2>Order Actions</h2><button disabled className="admin-primary-button">Update Status</button><button disabled className="admin-outline-button">Print Invoice</button><button disabled className="admin-outline-button">Contact Customer</button><button disabled className="admin-danger-button">Cancel Order</button></aside></div>
     </div>
   );
 }
@@ -530,24 +430,15 @@ function Customers() {
   return (
     <div>
       <PageHeader eyebrow="Customers › All Customers" title="Customers" subtitle="View and manage customers after authenticated accounts and order APIs are connected." action={<button className="admin-primary-button" disabled><Plus size={18} /> Add Customer</button>} />
-      <div className="admin-stats-grid">
-        <StatCard label="Total Customers" value="—" detail="Clerk/user sync not connected" Icon={UsersRound} />
-        <StatCard label="New Customers" value="—" detail="Not connected" Icon={UserRound} tone="green" />
-        <StatCard label="Repeat Customers" value="—" detail="Requires order history" Icon={ShoppingBag} tone="amber" />
-        <StatCard label="Inactive Customers" value="—" detail="Requires real activity" Icon={UserRound} tone="red" />
-      </div>
-      <section className="admin-panel admin-table-panel">
-        <div className="admin-filter-row"><label className="admin-search-field"><Search size={18} /><input placeholder="Search customers by name, email or phone..." disabled /></label><select disabled><option>All Status</option></select><select disabled><option>Newest First</option></select></div>
-        <EmptyModule title="No customer data connected" text="Customer records will come from Clerk + Neon user synchronization. No sample people are shown here." />
-      </section>
+      <div className="admin-stats-grid"><StatCard label="Total Customers" value="—" detail="Clerk/user sync not connected" Icon={UsersRound} /><StatCard label="New Customers" value="—" detail="Not connected" Icon={UserRound} tone="green" /><StatCard label="Repeat Customers" value="—" detail="Requires order history" Icon={ShoppingBag} tone="amber" /><StatCard label="Inactive Customers" value="—" detail="Requires real activity" Icon={UserRound} tone="red" /></div>
+      <section className="admin-panel admin-table-panel"><div className="admin-filter-row"><label className="admin-search-field"><Search size={18} /><input placeholder="Search customers by name, email or phone..." disabled /></label><select disabled><option>All Status</option></select><select disabled><option>Newest First</option></select></div><EmptyModule title="No customer data connected" text="Customer records will come from Clerk + Neon user synchronization. No sample people are shown here." /></section>
     </div>
   );
 }
 
-function CustomerDetails({ customerIdOverride }: { customerIdOverride?: string }) {
-  const params = useParams();
-  const id = customerIdOverride || params.customerId || "";
-  return <div><PageHeader eyebrow="Customers › Customer Details" title={id ? `Customer ${id}` : "Customer Details"} subtitle="Customer profiles will use real Clerk/Neon data when connected." action={<Link className="admin-outline-button" to="/admin/customers"><ArrowLeft size={17} /> All Customers</Link>} /><EmptyModule title="Customer profile not connected" text="Orders, addresses, contact information and account activity will appear here after authentication and user APIs are implemented." /></div>;
+function CustomerDetails() {
+  const { customerId } = useParams();
+  return <div><PageHeader eyebrow="Customers › Customer Details" title={customerId ? `Customer ${customerId}` : "Customer Details"} subtitle="Customer profiles will use real Clerk/Neon data when connected." action={<Link className="admin-outline-button" to="/admin/customers"><ArrowLeft size={17} /> All Customers</Link>} /><EmptyModule title="Customer profile not connected" text="Orders, addresses, contact information and account activity will appear here after authentication and user APIs are implemented." /></div>;
 }
 
 function Analytics() {
@@ -565,19 +456,13 @@ function Coupons() {
 }
 
 function Content() {
-  return (
-    <div>
-      <PageHeader title="Content" subtitle="Manage storefront messaging without changing the storefront design system." />
-      <div className="admin-content-cards">
-        {[
-          ["Homepage", "Hero copy, category highlights and merchandising sections."],
-          ["Policies", "Shipping, returns, privacy and terms content."],
-          ["FAQ", "Customer-help questions and answers."],
-          ["SEO", "Page titles, descriptions and social metadata."],
-        ].map(([title, text]) => <section className="admin-panel" key={title}><span className="admin-stat-icon blue"><FileText size={22} /></span><h2>{title}</h2><p>{text}</p><button className="admin-outline-button" onClick={() => toast("Content editing persistence is not connected yet.")}>Open editor <ArrowRight size={16} /></button></section>)}
-      </div>
-    </div>
-  );
+  const cards = [
+    ["Homepage", "Hero copy, category highlights and merchandising sections."],
+    ["Policies", "Shipping, returns, privacy and terms content."],
+    ["FAQ", "Customer-help questions and answers."],
+    ["SEO", "Page titles, descriptions and social metadata."],
+  ];
+  return <div><PageHeader title="Content" subtitle="Manage storefront messaging without changing the storefront design system." /><div className="admin-content-cards">{cards.map(([title, text]) => <section className="admin-panel" key={title}><span className="admin-stat-icon blue"><FileText size={22} /></span><h2>{title}</h2><p>{text}</p><button className="admin-outline-button" onClick={() => toast("Content editing persistence is not connected yet.")}>Open editor <ArrowRight size={16} /></button></section>)}</div></div>;
 }
 
 function AdminSettings() {
@@ -597,6 +482,6 @@ function Integration({ label, status }: { label: string; status: string }) {
 }
 
 function StatusPill({ status }: { status: string }) {
-  const key = status.toLowerCase().replaceAll(" ", "-");
+  const key = status.toLowerCase().replace(/ /g, "-");
   return <span className={`admin-status ${key}`}>{status}</span>;
 }
