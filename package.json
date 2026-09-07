@@ -1,38 +1,22 @@
 {
-  "name": "react-vite-tailwind",
+  "name": "joyneeds",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "0.1.0",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "typecheck": "tsc --noEmit",
-    "test": "node scripts/test.mjs",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "clsx": "2.1.1",
-    "formik": "^2.4.9",
-    "framer-motion": "^13.1.1",
-    "lucide-react": "^1.38.0",
-    "react": "19.2.6",
-    "react-dom": "19.2.6",
-    "react-helmet-async": "^3.0.0",
-    "react-hot-toast": "^2.6.0",
-    "react-router-dom": "^7.18.3",
-    "tailwind-merge": "3.4.0",
-    "yup": "^1.7.1",
-    "zustand": "^5.0.15"
+    "dev": "concurrently -n frontend,backend -c auto \"npm run dev --workspace frontend\" \"npm run dev --workspace backend\"",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "dev:backend": "npm run dev --workspace backend",
+    "build": "npm run build --workspace frontend && npm run build --workspace backend",
+    "build:frontend": "npm run build --workspace frontend",
+    "build:backend": "npm run build --workspace backend",
+    "typecheck": "npm run typecheck --workspace frontend && npm run typecheck --workspace backend",
+    "test": "npm run test --workspace frontend && npm run test --workspace backend"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "4.1.17",
-    "@types/node": "22.19.17",
-    "@types/react": "19.2.7",
-    "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "5.1.1",
-    "tailwindcss": "4.1.17",
-    "typescript": "5.9.3",
-    "vite": "7.3.2",
-    "vite-plugin-singlefile": "2.3.0"
+    "concurrently": "^10.0.5"
   }
 }
