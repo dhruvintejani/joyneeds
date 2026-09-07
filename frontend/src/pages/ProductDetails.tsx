@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Heart, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
-import { products, categoryToSlug, type Product } from "../data/products";
+import type { Product } from "../types/catalog";
+import { useCatalogStore } from "../store/catalogStore";
 import { useCartStore } from "../store/cartStore";
 import { useDiscoveryStore } from "../store/discoveryStore";
 import { money, discount, maxQuantity } from "../utils/catalog";
@@ -14,10 +15,17 @@ import {
   Button,
   EmptyState,
   QuantitySelector,
+  Skeleton,
 } from "../components/common/UI";
+
 export default function ProductDetails() {
   const { slug } = useParams();
-  const product = products.find((p) => p.slug === slug);
+  const products = useCatalogStore((state) => state.products);
+  const categories = useCatalogStore((state) => state.categories);
+  const status = useCatalogStore((state) => state.status);
+  const product = products.find((item) => item.slug === slug);
+
+  if (status === "idle" || status === "loading") return <Skeleton />;
   if (!product)
     return (
       <div className="container">
@@ -26,40 +34,64 @@ export default function ProductDetails() {
         </EmptyState>
       </div>
     );
-  return <ProductView key={product.id} product={product} />;
+
+  return (
+    <ProductView
+      key={product.id}
+      product={product}
+      products={products}
+      categorySlug={
+        categories.find((category) => category.name === product.category)?.slug ||
+        product.categorySlug
+      }
+    />
+  );
 }
-function ProductView({ product }: { product: Product }) {
-  const [quantity, setQuantity] = useState(1),
-    [photo, setPhoto] = useState(0);
-  const add = useCartStore((s) => s.addToCart);
-  const current = useCartStore((s) => s.getItemQuantity(product.id));
-  const saved = useDiscoveryStore((s) => s.wishlist.includes(product.id));
-  const recent = useDiscoveryStore((s) => s.recent),
-    view = useDiscoveryStore((s) => s.view),
-    toggle = useDiscoveryStore((s) => s.toggleWishlist);
+
+function ProductView({
+  product,
+  products,
+  categorySlug,
+}: {
+  product: Product;
+  products: Product[];
+  categorySlug: string;
+}) {
+  const [quantity, setQuantity] = useState(1);
+  const [photo, setPhoto] = useState(0);
+  const add = useCartStore((state) => state.addToCart);
+  const current = useCartStore((state) => state.getItemQuantity(product.id));
+  const saved = useDiscoveryStore((state) => state.wishlist.includes(product.id));
+  const recent = useDiscoveryStore((state) => state.recent);
+  const view = useDiscoveryStore((state) => state.view);
+  const toggle = useDiscoveryStore((state) => state.toggleWishlist);
   const navigate = useNavigate();
+
   useEffect(() => {
     view(product.id);
   }, [product.id, view]);
-  const gallery = product.images?.length ? product.images : [product.image];
-  const limit = maxQuantity(product),
-    remaining = Math.max(0, limit - current),
-    off = discount(product);
+
+  const gallery = product.images.length ? product.images : [product.image];
+  const limit = maxQuantity(product);
+  const remaining = Math.max(0, limit - current);
+  const off = discount(product);
   const addItem = (buy = false) => {
     if (add(product, quantity)) {
       toast.success("Added to cart");
       if (buy) navigate("/checkout");
-    } else
+    } else {
       toast.error("Please reduce the quantity; your cart is at the limit.");
+    }
   };
   const related = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
+    .filter((item) => item.category === product.category && item.id !== product.id)
     .slice(0, 4);
   const recently = recent
     .filter((id) => id !== product.id)
-    .map((id) => products.find((p) => p.id === id))
-    .filter((p): p is Product => !!p)
+    .map((id) => products.find((item) => item.id === id))
+    .filter((item): item is Product => !!item)
     .slice(0, 4);
+
   return (
     <div className="container">
       <Breadcrumb
@@ -67,7 +99,7 @@ function ProductView({ product }: { product: Product }) {
           { label: "Shop", to: "/shop" },
           {
             label: product.category,
-            to: "/category/" + categoryToSlug[product.category],
+            to: "/category/" + categorySlug,
           },
           { label: product.name },
         ]}
@@ -84,17 +116,17 @@ function ProductView({ product }: { product: Product }) {
           </div>
           {gallery.length > 1 && (
             <div className="thumbnails">
-              {gallery.map((src, i) => (
+              {gallery.map((src, index) => (
                 <button
-                  key={src + i}
-                  className={photo === i ? "selected" : ""}
-                  aria-label={"View photo " + (i + 1)}
-                  aria-pressed={photo === i}
-                  onClick={() => setPhoto(i)}
+                  key={src + index}
+                  className={photo === index ? "selected" : ""}
+                  aria-label={"View photo " + (index + 1)}
+                  aria-pressed={photo === index}
+                  onClick={() => setPhoto(index)}
                 >
                   <ProductImage
                     src={src}
-                    alt={product.name + " view " + (i + 1)}
+                    alt={product.name + " view " + (index + 1)}
                   />
                 </button>
               ))}
@@ -187,20 +219,19 @@ function ProductView({ product }: { product: Product }) {
           <summary>Product details</summary>
           <p>{product.fullDescription || product.shortDescription}</p>
           <ul>
-            {product.features.map((f) => (
-              <li key={f}>{f}</li>
+            {product.features.map((feature) => (
+              <li key={feature}>{feature}</li>
             ))}
           </ul>
         </details>
         <details>
           <summary>Specifications</summary>
-          {product.specifications &&
-          Object.keys(product.specifications).length ? (
+          {product.specifications && Object.keys(product.specifications).length ? (
             <dl className="product-meta">
-              {Object.entries(product.specifications).map(([k, v]) => (
-                <div key={k}>
-                  <dt>{k}</dt>
-                  <dd>{v}</dd>
+              {Object.entries(product.specifications).map(([key, value]) => (
+                <div key={key}>
+                  <dt>{key}</dt>
+                  <dd>{value}</dd>
                 </div>
               ))}
             </dl>
@@ -235,8 +266,8 @@ function ProductView({ product }: { product: Product }) {
                 <h2>{title}</h2>
               </div>
               <div className="product-grid">
-                {list.map((p) => (
-                  <ProductCard key={p.id} product={p} />
+                {list.map((item) => (
+                  <ProductCard key={item.id} product={item} />
                 ))}
               </div>
             </section>

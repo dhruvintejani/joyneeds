@@ -5,6 +5,7 @@ import type { ProductListQuery } from "../validators/productValidators.js";
 
 const publicProductSelect = {
   id: true,
+  legacyId: true,
   slug: true,
   name: true,
   shortDescription: true,
@@ -58,6 +59,7 @@ export async function listProducts(query: ProductListQuery) {
   if (query.subcategory) where.subcategory = query.subcategory;
   if (query.inStock === true) where.stockStatus = "IN_STOCK";
   if (query.featured !== undefined) where.featured = query.featured;
+  if (query.newArrival !== undefined) where.newArrival = query.newArrival;
   if (query.minPricePaise !== undefined || query.maxPricePaise !== undefined) {
     where.pricePaise = {
       ...(query.minPricePaise !== undefined ? { gte: query.minPricePaise } : {}),

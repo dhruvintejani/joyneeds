@@ -1,5 +1,5 @@
-import { products } from "../data/products";
 import { useDiscoveryStore } from "../store/discoveryStore";
+import { useCatalogStore } from "../store/catalogStore";
 import { useCartStore } from "../store/cartStore";
 import ProductCard from "../components/product/ProductCard";
 import {
@@ -7,13 +7,20 @@ import {
   PageHeading,
   EmptyState,
   Button,
+  Skeleton,
 } from "../components/common/UI";
 import toast from "react-hot-toast";
+
 export default function Wishlist() {
-  const ids = useDiscoveryStore((s) => s.wishlist),
-    toggle = useDiscoveryStore((s) => s.toggleWishlist),
-    add = useCartStore((s) => s.addToCart);
-  const items = products.filter((p) => ids.includes(p.id));
+  const ids = useDiscoveryStore((state) => state.wishlist);
+  const toggle = useDiscoveryStore((state) => state.toggleWishlist);
+  const add = useCartStore((state) => state.addToCart);
+  const products = useCatalogStore((state) => state.products);
+  const status = useCatalogStore((state) => state.status);
+  const items = products.filter((product) => ids.includes(product.id));
+
+  if (status === "idle" || status === "loading") return <Skeleton />;
+
   return (
     <div className="container section-bottom">
       <Breadcrumb items={[{ label: "Wishlist" }]} />
@@ -23,18 +30,20 @@ export default function Wishlist() {
       </PageHeading>
       {items.length ? (
         <div className="product-grid">
-          {items.map((p) => (
-            <div key={p.id} className="wishlist-item">
-              <ProductCard product={p} />
+          {items.map((product) => (
+            <div key={product.id} className="wishlist-item">
+              <ProductCard product={product} />
               <Button
                 className="full-width move-button"
                 variant="secondary"
-                disabled={p.stockStatus === "out_of_stock"}
+                disabled={product.stockStatus === "out_of_stock"}
                 onClick={() => {
-                  if (add(p)) {
-                    toggle(p.id);
+                  if (add(product)) {
+                    toggle(product.id);
                     toast.success("Moved to cart");
-                  } else toast.error("Unable to add more of this product");
+                  } else {
+                    toast.error("Unable to add more of this product");
+                  }
                 }}
               >
                 Move to cart

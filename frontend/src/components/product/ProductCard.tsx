@@ -4,22 +4,18 @@ import { Heart, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCartStore } from "../../store/cartStore";
 import { useDiscoveryStore } from "../../store/discoveryStore";
-import type { Product } from "../../data/products";
+import type { Product } from "../../types/catalog";
 import { site } from "../../config/site";
 import { money, discount, maxQuantity } from "../../utils/catalog";
 import ProductImage from "../common/ProductImage";
 
-export default function ProductCard({
-  product,
-}: {
-  product: Product;
-  index?: number;
-}) {
-  const add = useCartStore((s) => s.addToCart);
-  const saved = useDiscoveryStore((s) => s.wishlist.includes(product.id));
-  const toggle = useDiscoveryStore((s) => s.toggleWishlist);
+export default function ProductCard({ product }: { product: Product; index?: number }) {
+  const add = useCartStore((state) => state.addToCart);
+  const saved = useDiscoveryStore((state) => state.wishlist.includes(product.id));
+  const toggle = useDiscoveryStore((state) => state.toggleWishlist);
   const off = discount(product);
   const available = maxQuantity(product) > 0;
+
   return (
     <motion.article
       className="product-card"
@@ -44,9 +40,7 @@ export default function ProductCard({
           aria-pressed={saved}
           onClick={() => {
             toggle(product.id);
-            toast.success(
-              saved ? "Removed from wishlist" : "Saved to wishlist",
-            );
+            toast.success(saved ? "Removed from wishlist" : "Saved to wishlist");
           }}
         >
           <Heart size={18} fill={saved ? "currentColor" : "none"} />

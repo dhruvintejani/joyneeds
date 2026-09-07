@@ -16,7 +16,10 @@ export const productListQuerySchema = z
     maxPricePaise: z.coerce.number().int().min(0).optional(),
     inStock: optionalBoolean,
     featured: optionalBoolean,
-    sort: z.enum(["featured", "price-asc", "price-desc", "newest"]).default("featured"),
+    newArrival: optionalBoolean,
+    sort: z
+      .enum(["featured", "price-asc", "price-desc", "newest"])
+      .default("featured"),
   })
   .superRefine((value, ctx) => {
     if (
@@ -33,7 +36,12 @@ export const productListQuerySchema = z
   });
 
 export const productSlugParamsSchema = z.object({
-  slug: z.string().trim().min(1).max(180).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  slug: z
+    .string()
+    .trim()
+    .min(1)
+    .max(180)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
 });
 
 export type ProductListQuery = z.infer<typeof productListQuerySchema>;

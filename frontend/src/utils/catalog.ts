@@ -1,4 +1,4 @@
-import { products, type Product } from "../data/products";
+import type { Product } from "../types/catalog";
 import { site } from "../config/site";
 
 export const money = (value: number) =>
@@ -8,23 +8,34 @@ export const money = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-export const maxQuantity = (p: Product) =>
-  p.stockStatus === "out_of_stock"
+export const maxQuantity = (product: Product) =>
+  product.stockStatus === "out_of_stock"
     ? 0
-    : Math.min(99, Math.max(0, Math.floor(p.stockQuantity ?? 99)));
+    : Math.min(
+        99,
+        Math.max(0, Math.floor(product.stockQuantity ?? 99)),
+      );
 
-export const discount = (p: Product) =>
-  site.catalogVerified && p.originalPrice && p.originalPrice > p.price
-    ? Math.round((1 - p.price / p.originalPrice) * 100)
+export const discount = (product: Product) =>
+  site.catalogVerified &&
+  product.originalPrice &&
+  product.originalPrice > product.price
+    ? Math.round((1 - product.price / product.originalPrice) * 100)
     : 0;
 
-export const matchesSearch = (p: Product, query: string) =>
+export const matchesSearch = (product: Product, query: string) =>
   query
     .toLowerCase()
     .trim()
     .split(/\s+/)
     .every((word) =>
-      [p.name, p.category, p.subcategory, p.shortDescription, ...p.tags]
+      [
+        product.name,
+        product.category,
+        product.subcategory,
+        product.shortDescription,
+        ...product.tags,
+      ]
         .join(" ")
         .toLowerCase()
         .includes(word),
@@ -42,7 +53,11 @@ export const sortOptions = {
 
 export type SortOption = keyof typeof sortOptions;
 
-export function selectProducts(params: URLSearchParams, category?: string) {
+export function selectProducts(
+  products: Product[],
+  params: URLSearchParams,
+  category?: string,
+) {
   const numeric = (key: string, fallback: number) => {
     const raw = params.get(key);
     const value = raw === null || raw.trim() === "" ? fallback : Number(raw);
@@ -50,26 +65,27 @@ export function selectProducts(params: URLSearchParams, category?: string) {
   };
   const q = params.get("q") || params.get("search") || "";
   const cat = category || params.get("category");
-  const min = numeric("min", 0),
-    max = numeric("max", Infinity);
+  const min = numeric("min", 0);
+  const max = numeric("max", Infinity);
   const result = products.filter(
-    (p) =>
-      (!cat || p.category === cat) &&
-      matchesSearch(p, q) &&
+    (product) =>
+      (!cat || product.category === cat) &&
+      matchesSearch(product, q) &&
       (!params.get("subcategory") ||
-        p.subcategory === params.get("subcategory")) &&
-      p.price >= min &&
-      p.price <= max &&
+        product.subcategory === params.get("subcategory")) &&
+      product.price >= min &&
+      product.price <= max &&
       (!params.has("rating") ||
         !site.catalogVerified ||
-        (p.rating ?? 0) >= numeric("rating", 0)) &&
+        (product.rating ?? 0) >= numeric("rating", 0)) &&
       (!params.has("discount") ||
         !site.catalogVerified ||
-        discount(p) >= numeric("discount", 0)) &&
-      (params.get("stock") !== "1" || maxQuantity(p) > 0) &&
-      (params.get("featured") !== "1" || p.featured) &&
-      (params.get("new") !== "1" || p.newArrival),
+        discount(product) >= numeric("discount", 0)) &&
+      (params.get("stock") !== "1" || maxQuantity(product) > 0) &&
+      (params.get("featured") !== "1" || product.featured) &&
+      (params.get("new") !== "1" || product.newArrival),
   );
+
   switch (params.get("sort")) {
     case "price-asc":
       return result.sort((a, b) => a.price - b.price);
