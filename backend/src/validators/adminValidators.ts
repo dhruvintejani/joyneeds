@@ -11,6 +11,12 @@ const idSchema = z.string().trim().min(1).max(80);
 const paiseSchema = z.coerce.number().int().min(0).max(100_000_000);
 const optionalText = (max: number) => z.string().trim().max(max).nullable().optional();
 
+export const adminLoginSchema = z.object({
+  email: z.string().trim().toLowerCase().email().max(254),
+  password: z.string().min(8).max(200),
+});
+export type AdminLoginBody = z.infer<typeof adminLoginSchema>;
+
 export const adminIdParamsSchema = z.object({ id: idSchema });
 export type AdminIdParams = z.infer<typeof adminIdParamsSchema>;
 
