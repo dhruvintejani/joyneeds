@@ -23,6 +23,10 @@
     "db:seed": "npm run db:seed --workspace backend",
     "db:studio": "npm run db:studio --workspace backend"
   },
+  "overrides": {
+    "deepmerge-ts": "8.0.2",
+    "mysql2": "3.24.3"
+  },
   "devDependencies": {
     "concurrently": "^10.0.5"
   }
