@@ -2,8 +2,10 @@ import cors from "cors";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import { env } from "./config/env.js";
+import { clerkConfigured, env } from "./config/env.js";
+import { clerkRequestMiddleware } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
+import { adminRouter } from "./routes/adminRoutes.js";
 import { categoryRouter } from "./routes/categoryRoutes.js";
 import { healthRouter } from "./routes/healthRoutes.js";
 import { productRouter } from "./routes/productRoutes.js";
@@ -13,6 +15,10 @@ const app = express();
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
+
+// Clerk must run before route middleware so authenticated requests carry auth state.
+// When keys are absent, public storefront APIs still work and admin APIs fail closed.
+if (clerkConfigured && clerkRequestMiddleware) app.use(clerkRequestMiddleware);
 
 app.use(helmet());
 app.use(
@@ -41,6 +47,7 @@ app.use(express.urlencoded({ extended: false, limit: "1mb" }));
 app.use("/api/health", healthRouter);
 app.use("/api/products", productRouter);
 app.use("/api/categories", categoryRouter);
+app.use("/api/admin", adminRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
