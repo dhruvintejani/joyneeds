@@ -14,6 +14,7 @@ const envSchema = z
     ADMIN_EMAIL: z.string().trim().toLowerCase().email().optional(),
     ADMIN_PASSWORD_HASH: optionalSecret,
     ADMIN_SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(168).default(12),
+    ORDER_CREATION_ENABLED: z.enum(["true", "false"]).default("false"),
   })
   .superRefine((value, ctx) => {
     const hasPublishable = Boolean(value.CLERK_PUBLISHABLE_KEY);
@@ -47,3 +48,4 @@ if (!parsed.success) {
 export const env = parsed.data;
 export const clerkConfigured = Boolean(env.CLERK_PUBLISHABLE_KEY && env.CLERK_SECRET_KEY);
 export const adminAuthConfigured = Boolean(env.ADMIN_EMAIL && env.ADMIN_PASSWORD_HASH);
+export const orderCreationEnabled = env.ORDER_CREATION_ENABLED === "true";
