@@ -11,6 +11,20 @@ import { AppError } from "../utils/AppError.js";
 
 export const clerkRequestMiddleware = clerkConfigured ? clerkMiddleware() : null;
 
+export const optionalCustomer: RequestHandler = (req, res, next) => {
+  try {
+    if (!clerkConfigured) {
+      next();
+      return;
+    }
+    const { isAuthenticated, userId } = getAuth(req);
+    if (isAuthenticated && userId) res.locals.clerkUserId = userId;
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const requireCustomer: RequestHandler = (req, res, next) => {
   try {
     if (!clerkConfigured) {
