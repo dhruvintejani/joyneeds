@@ -1,16 +1,24 @@
 # JoyNeeds
 
-JoyNeeds is being migrated from a frontend-only storefront into a production-oriented monorepo in controlled phases.
+JoyNeeds is a production-oriented e-commerce monorepo with a React storefront, a separate admin experience, and a Node/Express/PostgreSQL backend.
 
-## Current status
+## Stack
 
-Phase 1 and Phase 2 foundations are implemented on migration branches.
+- Frontend: React, TypeScript, Vite, Tailwind, React Router, Zustand, Formik/Yup
+- Backend: Node.js, Express, TypeScript, Zod
+- Database: PostgreSQL with Prisma 7 and `@prisma/adapter-pg`
+- Production database target: Neon
+- Optional customer auth: Clerk
+- Admin auth: separate email/password + PostgreSQL-backed opaque HttpOnly sessions
+- Product images: Cloudinary
+- Payments: Razorpay
+- Transactional email: Brevo
+- Frontend deployment target: Vercel
+- Backend deployment target: Render
 
-- `frontend/` preserves the existing premium React/Vite storefront and its current local cart, wishlist, checkout preview, SEO, policies and UI.
-- `backend/` contains the Express/TypeScript API, Prisma 7, PostgreSQL models, migrations, catalog seeding, and read-only product/category APIs.
-- Customer auth, admin auth, order creation, Razorpay, Cloudinary and Brevo are intentionally not implemented yet.
+The customer storefront and admin UI share the same frontend project but use separate route trees. `/admin/*` never renders the storefront shell.
 
-## Monorepo
+## Repository layout
 
 ```text
 joyneeds/
@@ -21,51 +29,74 @@ joyneeds/
       schema.prisma
       seed.ts
     src/
+    test/
+  .github/workflows/verify.yml
+  render.yaml
+  vercel.json
   package.json
 ```
 
-The root uses npm workspaces only; no extra monorepo framework is required.
+## Important safety rules
+
+- Money is stored as integer paise.
+- Product prices and order totals are calculated by the backend, not trusted from the browser.
+- Razorpay payment success is verified server-side before an order is treated as paid.
+- Razorpay webhooks use the exact raw request body and persisted event IDs for duplicate handling.
+- Admin authentication is separate from Clerk.
+- Provider secrets belong only in backend environment variables.
+- Guest checkout remains supported when customer login is not used.
+- Unknown inventory stays unknown; the application does not invent stock quantities.
+- The repository contains no real API keys, passwords or production database credentials.
 
 ## Requirements
 
 - Node.js 22 recommended
-- npm
-- PostgreSQL (the production database will be the existing Neon project)
-
-Prisma 7 is used because it is fully supported on Node 22. The backend uses the PostgreSQL `pg` driver through `@prisma/adapter-pg`.
+- npm with the committed lockfile
+- PostgreSQL/Neon connection
 
 ## Install
 
 ```bash
-npm install
+npm ci
 ```
+
+For normal local development after pulling a changed lockfile, `npm install` is also acceptable, but CI and production builds use `npm ci` for reproducibility.
 
 ## Environment
 
-Copy the examples instead of committing real `.env` files.
+Create local env files from the examples:
 
 ```bash
 cp frontend/.env.example frontend/.env
 cp backend/.env.example backend/.env
 ```
 
-Phase 2 backend values:
+Minimum backend development values:
 
 ```env
 NODE_ENV=development
 PORT=4000
 FRONTEND_URL=http://localhost:5173
-DATABASE_URL=<your Neon runtime/pooled PostgreSQL URL>
-DIRECT_URL=<your Neon direct PostgreSQL URL>
+DATABASE_URL=<Neon pooled/runtime PostgreSQL URL>
+DIRECT_URL=<Neon direct PostgreSQL URL>
 ```
 
-`DIRECT_URL` is recommended for Prisma migrations on Neon. If it is omitted, Prisma CLI falls back to `DATABASE_URL`.
+`DATABASE_URL` is used by the running API. `DIRECT_URL` is used by Prisma CLI/migrations when present.
 
-Never commit either database URL.
+Optional integrations are documented in `backend/.env.example`. Do not paste secrets into source files or commit `.env` files.
 
-## Prisma / Neon setup
+Frontend production requires:
 
-After setting the URLs in `backend/.env`:
+```env
+VITE_API_URL=https://<your-render-backend>
+VITE_CLERK_PUBLISHABLE_KEY=<optional Clerk public key>
+```
+
+The Razorpay public checkout key is returned by the backend for a prepared payment; no Razorpay secret belongs in the frontend env.
+
+## Database setup
+
+After configuring `backend/.env`:
 
 ```bash
 npm run db:generate
@@ -80,49 +111,17 @@ For local schema development only:
 npm run db:migrate:dev
 ```
 
-To inspect the database:
+Prisma Studio:
 
 ```bash
 npm run db:studio
 ```
 
-The initial migration creates the relational architecture for users, addresses, categories, products, product images, wishlists, carts, orders, order items, payments and idempotent payment events.
-
-Money is stored as integer paise. Existing numeric frontend product IDs are preserved only as nullable unique `legacyId` migration references; primary database IDs use CUIDs.
-
-The seed is repeatable and migrates the exact existing JoyNeeds catalog source. It does not invent ratings, reviews, discounts or stock quantities. Unknown stock quantities remain `NULL`.
-
-## API
-
-Current public read endpoints:
-
-```text
-GET /api/health
-GET /api/products
-GET /api/products/:slug
-GET /api/categories
-```
-
-`GET /api/products` supports bounded pagination and optional query parameters:
-
-```text
-page
-limit
-q
-category
-subcategory
-minPricePaise
-maxPricePaise
-inStock
-featured
-sort=featured|price-asc|price-desc|newest
-```
-
-The API returns integer `pricePaise` / `originalPricePaise` values. The backend database is the future pricing authority; Phase 3 will connect the existing frontend product UX to these APIs.
+The committed seed is repeatable and currently migrates the existing 30-product / 6-category JoyNeeds catalog source. It does not create fake customers, orders, payments, reviews or analytics.
 
 ## Development
 
-Run both apps:
+Run frontend and backend together:
 
 ```bash
 npm run dev
@@ -135,53 +134,116 @@ npm run dev:frontend
 npm run dev:backend
 ```
 
+Local URLs:
+
+```text
+Storefront: http://localhost:5173/
+Admin:      http://localhost:5173/admin
+API:        http://localhost:4000
+Health:     http://localhost:4000/api/health
+Readiness:  http://localhost:4000/api/health/ready
+```
+
+The storefront catalog is API-backed. If the backend/database is not running and seeded, product data will not load.
+
+## Authentication
+
+### Customers
+
+Clerk is optional. Configure both backend Clerk variables plus the frontend publishable key to enable customer sign-in. Without Clerk configuration, JoyNeeds continues in guest mode.
+
+### Admin
+
+Admin auth is intentionally separate from Clerk.
+
+```env
+ADMIN_EMAIL=
+ADMIN_PASSWORD_HASH=
+ADMIN_SESSION_TTL_HOURS=12
+```
+
+`ADMIN_PASSWORD_HASH` must be a bcrypt hash, not a plaintext password. Admin sessions use random opaque tokens; only their hashes are persisted in PostgreSQL and the browser receives an HttpOnly cookie.
+
+## Catalog and images
+
+Public catalog APIs read from PostgreSQL. Admin product/category writes require a valid admin session.
+
+Cloudinary image writes require:
+
+```env
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+CLOUDINARY_FOLDER=joyneeds/products
+```
+
+Image uploads are admin-only, size/count bounded and content-signature checked. Existing seeded/local image URLs remain readable until products are replaced with Cloudinary-managed images.
+
+## Orders and Razorpay
+
+Live order creation is fail-closed by default:
+
+```env
+ORDER_CREATION_ENABLED=false
+```
+
+Razorpay requires all three backend values:
+
+```env
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
+```
+
+Webhook endpoint:
+
+```text
+POST /api/payments/razorpay/webhook
+```
+
+Keep `ORDER_CREATION_ENABLED=false` until test-mode checkout and the public webhook endpoint have been verified. Only then enable it in the deployment environment.
+
+Pending orders do not consume stock. Known inventory is committed after captured payment verification. Full refunds restore committed known inventory only when the order has not shipped.
+
+## Brevo transactional email
+
+Configure a verified Brevo sender:
+
+```env
+BREVO_API_KEY=
+BREVO_SENDER_EMAIL=
+BREVO_SENDER_NAME=JoyNeeds
+BREVO_REPLY_TO_EMAIL=
+```
+
+Transactional email delivery is persisted with dedupe state. Email failures are recorded/logged separately and cannot roll back a successful order or payment transaction.
+
 ## Verification
 
-With the database configured and migrated/seeded:
+Run the complete local verification sequence with a configured database:
 
 ```bash
+npm run audit:prod
+npm run db:validate
+npm run db:migrate:deploy
+npm run db:seed
 npm run typecheck
 npm test
 npm run build
 ```
 
-GitHub Actions runs PostgreSQL 16 in an isolated CI service, applies the committed migration, seeds all 30 existing products and 6 categories, then runs typecheck, API/frontend tests and builds.
+GitHub Actions runs PostgreSQL 16, installs from the lockfile with `npm ci`, audits production dependencies for high-severity findings, applies all migrations, seeds the catalog, runs TypeScript/tests and builds both workspaces.
 
-## Deployment direction
+## Deployment
 
-- Frontend: Vercel
-- Backend: Render
-- Database: existing Neon PostgreSQL project
-- Customer authentication later: Clerk
-- Product images later: Cloudinary
-- Payments later: Razorpay
-- Transactional email later: Brevo
+Deployment details and the safe migration order are in [`DEPLOYMENT.md`](./DEPLOYMENT.md).
 
-No secrets belong in the frontend or Git repository.
+- `vercel.json` builds only the frontend and adds baseline security/cache headers.
+- `render.yaml` defines the backend service and uses `/api/health/ready` for health checks.
+- Render auto-deploy is intentionally disabled in the Blueprint so production database migrations can be applied before each manual deployment.
 
-## Phase boundaries
+## Security
 
-### Completed in Phase 1
+See [`SECURITY.md`](./SECURITY.md) for the production checklist and secret-handling rules.
 
-- monorepo conversion
-- frontend moved intact to `frontend/`
-- Express + TypeScript backend
-- security middleware and error handling
-- environment validation
-- health endpoint
-- CI verification
-
-### Implemented in Phase 2
-
-- Prisma 7 + PostgreSQL adapter
-- relational schema for the planned commerce system
-- versioned initial SQL migration
-- exact legacy catalog seed path
-- categories/products database access
-- product/category REST APIs
-- query validation and pagination
-- database-backed integration tests
-
-### Next: Phase 3
-
-Replace direct reads from the frontend static catalog with the backend API while preserving the existing premium search, filters, product pages, cart and wishlist UX. Static data should not be removed until API-backed behavior is verified.
+Before enabling live payments, verify every business/policy value shown to customers and replace the current seed catalog with final product data where required.
