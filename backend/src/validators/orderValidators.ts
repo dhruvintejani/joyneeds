@@ -73,8 +73,10 @@ export type AdminOrderListQuery = z.infer<typeof adminOrderListQuerySchema>;
 export const adminOrderParamsSchema = z.object({ id: idSchema });
 export type AdminOrderParams = z.infer<typeof adminOrderParamsSchema>;
 
+// REFUNDED remains a readable order status but cannot be set manually until the
+// Razorpay/refund phase can verify the actual payment state.
 export const adminOrderUpdateSchema = z.object({
-  status: z.enum(["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"]),
+  status: z.enum(["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"]),
   courier: z.string().trim().max(120).nullable().optional(),
   trackingNumber: z.string().trim().max(160).nullable().optional(),
   trackingUrl: z.string().url().max(1000).nullable().optional(),
