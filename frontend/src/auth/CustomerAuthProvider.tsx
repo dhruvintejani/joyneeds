@@ -13,6 +13,9 @@ import {
   type ReactNode,
 } from "react";
 import { apiBaseUrl } from "../api/catalog";
+import { getCustomerCart, syncCustomerCart } from "../api/orders";
+import { useCartStore } from "../store/cartStore";
+import { useCatalogStore } from "../store/catalogStore";
 
 type CustomerUser = {
   id: string;
@@ -78,20 +81,31 @@ function ClerkBridge({ children }: { children: ReactNode }) {
 
     let cancelled = false;
     void getToken()
-      .then((token) => {
-        if (!token || cancelled) return null;
-        return fetch(`${apiBaseUrl}/api/account`, {
+      .then(async (token) => {
+        if (!token || cancelled) return;
+        const accountResponse = await fetch(`${apiBaseUrl}/api/account`, {
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
-      })
-      .then((response) => {
-        if (response?.ok && !cancelled) syncedUserId.current = user.id;
+        if (!accountResponse.ok || cancelled) return;
+
+        await useCatalogStore.getState().loadCatalog();
+        if (cancelled) return;
+
+        const serverCart = await getCustomerCart(token);
+        if (cancelled) return;
+        const products = useCatalogStore.getState().products;
+        const merged = useCartStore.getState().mergeServerCart(serverCart.items, products);
+        await syncCustomerCart(
+          merged.map((item) => ({ productId: item.product.id, quantity: item.quantity })),
+          token,
+        );
+        if (!cancelled) syncedUserId.current = user.id;
       })
       .catch(() => {
-        // Account sync can retry on a later mount; storefront access remains available.
+        // Account/cart sync can retry on a later mount; storefront access remains available.
       });
 
     return () => {
