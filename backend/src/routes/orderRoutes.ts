@@ -1,7 +1,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { createOrderController } from "../controllers/orderController.js";
-import { orderCreationEnabled } from "../config/env.js";
+import { orderCreationEnabled, razorpayConfigured } from "../config/env.js";
 import { optionalCustomer } from "../middleware/auth.js";
 import { validateBody } from "../middleware/validateRequest.js";
 import { createOrderSchema } from "../validators/orderValidators.js";
@@ -26,7 +26,17 @@ orderRouter.post(
         new AppError(
           503,
           "ORDER_CREATION_DISABLED",
-          "Order creation is disabled until checkout and payment configuration is approved.",
+          "Order creation is disabled until checkout is explicitly enabled.",
+        ),
+      );
+      return;
+    }
+    if (!razorpayConfigured) {
+      next(
+        new AppError(
+          503,
+          "RAZORPAY_NOT_CONFIGURED",
+          "Razorpay must be configured before live orders can be created.",
         ),
       );
       return;
