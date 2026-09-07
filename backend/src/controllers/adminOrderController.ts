@@ -1,0 +1,23 @@
+import type { RequestHandler } from "express";
+import { getAdminOrder, listAdminOrders, updateAdminOrder } from "../services/orderService.js";
+import type {
+  AdminOrderListQuery,
+  AdminOrderParams,
+  AdminOrderUpdateBody,
+} from "../validators/orderValidators.js";
+
+export const adminListOrdersController: RequestHandler = async (_req, res) => {
+  res.json({ data: await listAdminOrders(res.locals.validatedQuery as AdminOrderListQuery) });
+};
+
+export const adminGetOrderController: RequestHandler = async (_req, res) => {
+  const { id } = res.locals.validatedParams as AdminOrderParams;
+  res.json({ data: await getAdminOrder(id) });
+};
+
+export const adminUpdateOrderController: RequestHandler = async (_req, res) => {
+  const { id } = res.locals.validatedParams as AdminOrderParams;
+  res.json({
+    data: await updateAdminOrder(id, res.locals.validatedBody as AdminOrderUpdateBody),
+  });
+};
