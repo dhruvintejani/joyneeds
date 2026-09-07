@@ -74,6 +74,9 @@ export async function createRazorpayOrder(body: CreateRazorpayOrderBody, clerkUs
     if (existing.amountPaise !== order.totalPaise || existing.currency !== order.currency) {
       throw new AppError(409, "PAYMENT_AMOUNT_CHANGED", "Order totals changed after payment was prepared.");
     }
+    if (["PAID", "PARTIALLY_REFUNDED", "REFUNDED"].includes(existing.status)) {
+      throw new AppError(409, "PAYMENT_ALREADY_CAPTURED", "This order already has a captured Razorpay payment.");
+    }
     if (existing.status === "FAILED") {
       await prisma.payment.update({ where: { id: existing.id }, data: { status: "PENDING" } });
     }
@@ -215,7 +218,15 @@ async function markCaptured(input: {
   const updated = await prisma.$transaction(async (tx) => {
     const payment = await tx.payment.findUnique({
       where: { id: input.paymentId },
-      select: { id: true, orderId: true, amountPaise: true, currency: true, providerOrderId: true },
+      select: {
+        id: true,
+        orderId: true,
+        amountPaise: true,
+        refundedAmountPaise: true,
+        currency: true,
+        providerOrderId: true,
+        status: true,
+      },
     });
     if (!payment || payment.providerOrderId !== input.providerOrderId) {
       throw new AppError(404, "PAYMENT_NOT_FOUND", "Payment could not be matched to the order.");
@@ -223,11 +234,16 @@ async function markCaptured(input: {
     if (payment.amountPaise !== input.amountPaise || payment.currency !== input.currency) {
       throw new AppError(409, "PAYMENT_AMOUNT_MISMATCH", "Captured payment amount does not match the server order.");
     }
+    const reconciledStatus = payment.refundedAmountPaise >= payment.amountPaise
+      ? "REFUNDED"
+      : payment.refundedAmountPaise > 0
+        ? "PARTIALLY_REFUNDED"
+        : "PAID";
     await tx.payment.update({
       where: { id: payment.id },
       data: {
         providerPaymentId: input.providerPaymentId,
-        status: "PAID",
+        status: reconciledStatus,
         verifiedAt: input.verifiedAt,
       },
     });
@@ -241,19 +257,21 @@ async function markCaptured(input: {
         },
       });
     }
-    return { paymentId: payment.id, orderId: payment.orderId };
+    return { paymentId: payment.id, orderId: payment.orderId, paymentStatus: reconciledStatus };
   });
 
   let fulfillmentReady = true;
-  try {
-    fulfillmentReady = await commitInventoryAndConfirm(updated.orderId);
-  } catch (error) {
-    fulfillmentReady = false;
-    logger.error("Captured Razorpay payment requires stock review", {
-      paymentId: updated.paymentId,
-      orderId: updated.orderId,
-      error: error instanceof Error ? error.message : "unknown",
-    });
+  if (updated.paymentStatus === "PAID") {
+    try {
+      fulfillmentReady = await commitInventoryAndConfirm(updated.orderId);
+    } catch (error) {
+      fulfillmentReady = false;
+      logger.error("Captured Razorpay payment requires stock review", {
+        paymentId: updated.paymentId,
+        orderId: updated.orderId,
+        error: error instanceof Error ? error.message : "unknown",
+      });
+    }
   }
   return { ...updated, fulfillmentReady };
 }
@@ -304,15 +322,21 @@ export async function verifyRazorpayPayment(body: VerifyRazorpayPaymentBody) {
   }
 
   if (providerPayment.status === "authorized") {
-    await prisma.payment.update({
-      where: { id: payment.id },
+    await prisma.payment.updateMany({
+      where: {
+        id: payment.id,
+        status: { notIn: ["PAID", "PARTIALLY_REFUNDED", "REFUNDED"] },
+      },
       data: { providerPaymentId: providerPayment.id, status: "PENDING", verifiedAt: new Date() },
     });
     return { verified: true, paid: false, orderId: payment.orderId, fulfillmentReady: false };
   }
 
-  await prisma.payment.update({
-    where: { id: payment.id },
+  await prisma.payment.updateMany({
+    where: {
+      id: payment.id,
+      status: { notIn: ["PAID", "PARTIALLY_REFUNDED", "REFUNDED"] },
+    },
     data: { providerPaymentId: providerPayment.id, status: "FAILED", verifiedAt: new Date() },
   });
   throw new AppError(409, "PAYMENT_NOT_CAPTURED", "Razorpay has not captured this payment.");
@@ -393,6 +417,20 @@ async function syncRefundTotals(tx: Prisma.TransactionClient, paymentId: string)
   }
 }
 
+const refundStatusRank = {
+  CREATED: 0,
+  PROCESSING: 1,
+  FAILED: 2,
+  PROCESSED: 3,
+} as const;
+
+type RefundState = keyof typeof refundStatusRank;
+
+function laterRefundStatus(current: RefundState | null, incoming: RefundState): RefundState {
+  if (!current) return incoming;
+  return refundStatusRank[current] >= refundStatusRank[incoming] ? current : incoming;
+}
+
 async function processRefundWebhook(
   tx: Prisma.TransactionClient,
   eventType: string,
@@ -408,7 +446,18 @@ async function processRefundWebhook(
     select: { id: true },
   });
   if (!payment) return null;
-  const status = eventType === "refund.processed" ? "PROCESSED" : eventType === "refund.failed" ? "FAILED" : "PROCESSING";
+
+  const incomingStatus: RefundState = eventType === "refund.processed"
+    ? "PROCESSED"
+    : eventType === "refund.failed"
+      ? "FAILED"
+      : "PROCESSING";
+  const existing = await tx.refund.findUnique({
+    where: { providerRefundId },
+    select: { status: true },
+  });
+  const status = laterRefundStatus(existing?.status ?? null, incomingStatus);
+
   await tx.refund.upsert({
     where: { providerRefundId },
     create: { paymentId: payment.id, providerRefundId, amountPaise, status, reason: reason ?? null },
@@ -464,10 +513,11 @@ export async function handleRazorpayWebhook(rawBody: Buffer, signature: string |
         });
         if (payment) {
           paymentId = payment.id;
-          if (eventType === "payment.authorized" && payment.status !== "PAID") {
+          const terminalPaid = ["PAID", "PARTIALLY_REFUNDED", "REFUNDED"].includes(payment.status);
+          if (eventType === "payment.authorized" && !terminalPaid) {
             await tx.payment.update({ where: { id: payment.id }, data: { providerPaymentId, status: "PENDING" } });
           }
-          if (eventType === "payment.failed" && !["PAID", "REFUNDED", "PARTIALLY_REFUNDED"].includes(payment.status)) {
+          if (eventType === "payment.failed" && !terminalPaid) {
             await tx.payment.update({ where: { id: payment.id }, data: { providerPaymentId, status: "FAILED" } });
           }
         }
@@ -509,6 +559,15 @@ export async function refundAdminOrder(orderId: string, body: AdminRefundBody) {
   if (!order || !payment?.providerPaymentId) {
     throw new AppError(409, "REFUND_NOT_AVAILABLE", "This order does not have a captured Razorpay payment to refund.");
   }
+
+  const pendingRefund = await prisma.refund.findFirst({
+    where: { paymentId: payment.id, status: { in: ["CREATED", "PROCESSING"] } },
+    select: { providerRefundId: true },
+  });
+  if (pendingRefund) {
+    throw new AppError(409, "REFUND_PENDING", "A Razorpay refund is already processing for this payment.");
+  }
+
   const remaining = payment.amountPaise - payment.refundedAmountPaise;
   const amountPaise = body.amountPaise ?? remaining;
   if (amountPaise <= 0 || amountPaise > remaining) {
@@ -524,11 +583,20 @@ export async function refundAdminOrder(orderId: string, body: AdminRefundBody) {
     amountPaise,
     idempotencyKey,
     orderNumber: order.orderNumber,
-    reason: body.reason,
+    ...(body.reason ? { reason: body.reason } : {}),
   });
 
   await prisma.$transaction(async (tx) => {
-    const status = providerRefund.status === "processed" ? "PROCESSED" : providerRefund.status === "failed" ? "FAILED" : "PROCESSING";
+    const incomingStatus: RefundState = providerRefund.status === "processed"
+      ? "PROCESSED"
+      : providerRefund.status === "failed"
+        ? "FAILED"
+        : "PROCESSING";
+    const existing = await tx.refund.findUnique({
+      where: { providerRefundId: providerRefund.id },
+      select: { status: true },
+    });
+    const status = laterRefundStatus(existing?.status ?? null, incomingStatus);
     await tx.refund.upsert({
       where: { providerRefundId: providerRefund.id },
       create: {
