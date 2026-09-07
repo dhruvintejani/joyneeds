@@ -51,16 +51,16 @@ joyneeds/
 ## Requirements
 
 - Node.js 22 recommended
-- npm with the committed lockfile
+- npm
 - PostgreSQL/Neon connection
 
 ## Install
 
 ```bash
-npm ci
+npm install
 ```
 
-For normal local development after pulling a changed lockfile, `npm install` is also acceptable, but CI and production builds use `npm ci` for reproducibility.
+A root `package-lock.json` is not currently committed, so CI and deployment use `npm install` and then run a production dependency audit. If a lockfile is added later, switch CI/deployment to `npm ci` in the same change.
 
 ## Environment
 
@@ -232,7 +232,7 @@ npm test
 npm run build
 ```
 
-GitHub Actions runs PostgreSQL 16, installs from the lockfile with `npm ci`, audits production dependencies for high-severity findings, applies all migrations, seeds the catalog, runs TypeScript/tests and builds both workspaces.
+GitHub Actions runs PostgreSQL 16, installs dependencies, audits production dependencies for high-severity findings, applies all migrations, seeds the catalog, runs TypeScript/tests and builds both workspaces.
 
 ## Deployment
 
