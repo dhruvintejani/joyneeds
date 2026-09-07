@@ -38,6 +38,13 @@ enum RefundStatus {
   FAILED
 }
 
+enum EmailDeliveryStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+}
+
 model User {
   id          String   @id @default(cuid())
   clerkUserId String   @unique @map("clerk_user_id")
@@ -247,9 +254,10 @@ model Order {
   createdAt            DateTime    @default(now()) @map("created_at")
   updatedAt            DateTime    @updatedAt @map("updated_at")
 
-  user     User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  items    OrderItem[]
-  payments Payment[]
+  user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items          OrderItem[]
+  payments       Payment[]
+  emailDeliveries EmailDelivery[]
 
   @@index([userId, createdAt])
   @@index([customerEmail, createdAt])
@@ -328,4 +336,28 @@ model PaymentEvent {
   @@index([paymentId])
   @@index([eventType, createdAt])
   @@map("payment_events")
+}
+
+model EmailDelivery {
+  id                String              @id @default(cuid())
+  orderId           String              @map("order_id")
+  dedupeKey         String              @unique @map("dedupe_key")
+  messageType       String              @map("message_type")
+  recipientEmail    String              @map("recipient_email")
+  recipientName     String?             @map("recipient_name")
+  subject           String
+  status            EmailDeliveryStatus @default(PENDING)
+  providerMessageId String?             @unique @map("provider_message_id")
+  attemptCount      Int                 @default(0) @map("attempt_count")
+  lastAttemptAt     DateTime?           @map("last_attempt_at")
+  lastError         String?             @map("last_error")
+  sentAt            DateTime?           @map("sent_at")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@index([status, updatedAt])
+  @@map("email_deliveries")
 }
