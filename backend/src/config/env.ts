@@ -11,6 +11,9 @@ const envSchema = z
     DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
     CLERK_PUBLISHABLE_KEY: optionalSecret,
     CLERK_SECRET_KEY: optionalSecret,
+    ADMIN_EMAIL: z.string().trim().toLowerCase().email().optional(),
+    ADMIN_PASSWORD_HASH: optionalSecret,
+    ADMIN_SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(168).default(12),
   })
   .superRefine((value, ctx) => {
     const hasPublishable = Boolean(value.CLERK_PUBLISHABLE_KEY);
@@ -20,6 +23,16 @@ const envSchema = z
         code: "custom",
         path: [hasPublishable ? "CLERK_SECRET_KEY" : "CLERK_PUBLISHABLE_KEY"],
         message: "Clerk publishable and secret keys must be configured together.",
+      });
+    }
+
+    const hasAdminEmail = Boolean(value.ADMIN_EMAIL);
+    const hasAdminHash = Boolean(value.ADMIN_PASSWORD_HASH);
+    if (hasAdminEmail !== hasAdminHash) {
+      ctx.addIssue({
+        code: "custom",
+        path: [hasAdminEmail ? "ADMIN_PASSWORD_HASH" : "ADMIN_EMAIL"],
+        message: "Admin email and password hash must be configured together.",
       });
     }
   });
@@ -33,3 +46,4 @@ if (!parsed.success) {
 
 export const env = parsed.data;
 export const clerkConfigured = Boolean(env.CLERK_PUBLISHABLE_KEY && env.CLERK_SECRET_KEY);
+export const adminAuthConfigured = Boolean(env.ADMIN_EMAIL && env.ADMIN_PASSWORD_HASH);
