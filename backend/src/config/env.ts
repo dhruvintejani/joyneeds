@@ -22,6 +22,10 @@ const envSchema = z
     RAZORPAY_KEY_ID: optionalSecret,
     RAZORPAY_KEY_SECRET: optionalSecret,
     RAZORPAY_WEBHOOK_SECRET: optionalSecret,
+    BREVO_API_KEY: optionalSecret,
+    BREVO_SENDER_EMAIL: z.string().trim().toLowerCase().email().optional(),
+    BREVO_SENDER_NAME: z.string().trim().min(1).max(100).default("JoyNeeds"),
+    BREVO_REPLY_TO_EMAIL: z.string().trim().toLowerCase().email().optional(),
   })
   .superRefine((value, ctx) => {
     const hasPublishable = Boolean(value.CLERK_PUBLISHABLE_KEY);
@@ -71,6 +75,16 @@ const envSchema = z
         message: "Razorpay key id, key secret and webhook secret must be configured together.",
       });
     }
+
+    const hasBrevoKey = Boolean(value.BREVO_API_KEY);
+    const hasBrevoSender = Boolean(value.BREVO_SENDER_EMAIL);
+    if (hasBrevoKey !== hasBrevoSender) {
+      ctx.addIssue({
+        code: "custom",
+        path: [hasBrevoKey ? "BREVO_SENDER_EMAIL" : "BREVO_API_KEY"],
+        message: "Brevo API key and verified sender email must be configured together.",
+      });
+    }
   });
 
 const parsed = envSchema.safeParse(process.env);
@@ -90,3 +104,4 @@ export const cloudinaryConfigured = Boolean(
 export const razorpayConfigured = Boolean(
   env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET && env.RAZORPAY_WEBHOOK_SECRET,
 );
+export const brevoConfigured = Boolean(env.BREVO_API_KEY && env.BREVO_SENDER_EMAIL);
