@@ -27,6 +27,18 @@ export type AdminCategory = {
   _count?: { products: number };
 };
 
+export type AdminProductImage = {
+  id: string;
+  productId?: string;
+  publicId: string | null;
+  sourceUrl: string | null;
+  secureUrl: string | null;
+  altText: string | null;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type AdminProduct = {
   id: string;
   slug: string;
@@ -43,13 +55,7 @@ export type AdminProduct = {
   active: boolean;
   categoryId: string;
   category: { id: string; name: string; slug: string; active: boolean };
-  images: Array<{
-    id: string;
-    sourceUrl: string | null;
-    secureUrl: string | null;
-    altText: string | null;
-    sortOrder: number;
-  }>;
+  images: AdminProductImage[];
   addedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -148,12 +154,13 @@ async function adminRequest<T>(path: string, init?: RequestInit): Promise<T> {
     throw new CatalogApiError("The admin API is not configured for this deployment.");
   }
 
+  const isFormData = typeof FormData !== "undefined" && init?.body instanceof FormData;
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
     credentials: "include",
     headers: {
       Accept: "application/json",
-      ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      ...(init?.body && !isFormData ? { "Content-Type": "application/json" } : {}),
       ...(init?.headers ?? {}),
     },
   });
@@ -182,8 +189,7 @@ export const loginAdmin = (email: string, password: string) =>
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
-export const logoutAdmin = () =>
-  adminRequest<void>("/api/admin/auth/logout", { method: "POST" });
+export const logoutAdmin = () => adminRequest<void>("/api/admin/auth/logout", { method: "POST" });
 export const getAdminDashboard = () => adminRequest<AdminDashboard>("/api/admin/dashboard");
 
 export async function listAdminProducts() {
@@ -210,8 +216,34 @@ export const archiveAdminProduct = (id: string) =>
     { method: "DELETE" },
   );
 
-export const listAdminCategories = () =>
-  adminRequest<AdminCategory[]>("/api/admin/categories");
+export const listAdminProductImages = (productId: string) =>
+  adminRequest<AdminProductImage[]>(`/api/admin/products/${encodeURIComponent(productId)}/images`);
+
+export const uploadAdminProductImages = (productId: string, files: File[]) => {
+  const form = new FormData();
+  files.forEach((file) => form.append("images", file));
+  return adminRequest<AdminProductImage[]>(
+    `/api/admin/products/${encodeURIComponent(productId)}/images`,
+    { method: "POST", body: form },
+  );
+};
+
+export const replaceAdminProductImage = (productId: string, imageId: string, file: File) => {
+  const form = new FormData();
+  form.append("image", file);
+  return adminRequest<AdminProductImage[]>(
+    `/api/admin/products/${encodeURIComponent(productId)}/images/${encodeURIComponent(imageId)}/replace`,
+    { method: "POST", body: form },
+  );
+};
+
+export const deleteAdminProductImage = (productId: string, imageId: string) =>
+  adminRequest<AdminProductImage[]>(
+    `/api/admin/products/${encodeURIComponent(productId)}/images/${encodeURIComponent(imageId)}`,
+    { method: "DELETE" },
+  );
+
+export const listAdminCategories = () => adminRequest<AdminCategory[]>("/api/admin/categories");
 export const createAdminCategory = (input: AdminCategoryInput) =>
   adminRequest<AdminCategory>("/api/admin/categories", {
     method: "POST",
