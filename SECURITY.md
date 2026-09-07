@@ -92,7 +92,9 @@ A root `package-lock.json` is not currently committed, so CI uses `npm install` 
 npm run audit:prod
 ```
 
-High-severity production dependency findings fail verification. If a real root lockfile is generated and committed later, switch CI, Render and Vercel to `npm ci` in the same change. Do not use `npm audit fix --force` blindly; review breaking dependency updates before applying them.
+High-severity production dependency findings fail verification. Prisma 7.10 currently pulls vulnerable transitive `deepmerge-ts` and `mysql2` releases through its CLI/config dependency tree, so the root package uses explicit npm overrides to patched `deepmerge-ts@8.0.2` and `mysql2@3.24.3`. Prisma schema validation, generation, migrations, seed, TypeScript, tests and builds must all stay green with those overrides; remove them when a stable Prisma release no longer requires them.
+
+If a real root lockfile is generated and committed later, switch CI, Render and Vercel to `npm ci` in the same change. Do not use `npm audit fix --force` blindly; review breaking dependency updates before applying them.
 
 ## Production checklist
 
