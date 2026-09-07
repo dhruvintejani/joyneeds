@@ -21,7 +21,17 @@ import {
   adminListOrdersController,
   adminUpdateOrderController,
 } from "../controllers/adminOrderController.js";
+import {
+  adminAddProductImagesController,
+  adminDeleteProductImageController,
+  adminListProductImagesController,
+  adminReplaceProductImageController,
+} from "../controllers/adminProductImageController.js";
 import { requireAdmin, requireAdminWriteOrigin } from "../middleware/auth.js";
+import {
+  uploadProductImages,
+  uploadReplacementImage,
+} from "../middleware/productImageUpload.js";
 import { validateBody, validateParams, validateQuery } from "../middleware/validateRequest.js";
 import {
   adminCategoryCreateSchema,
@@ -29,6 +39,7 @@ import {
   adminIdParamsSchema,
   adminLoginSchema,
   adminProductCreateSchema,
+  adminProductImageParamsSchema,
   adminProductListQuerySchema,
   adminProductUpdateSchema,
 } from "../validators/adminValidators.js";
@@ -102,6 +113,32 @@ adminRouter.delete(
   requireAdminWriteOrigin,
   validateParams(adminIdParamsSchema),
   adminArchiveProductController,
+);
+
+adminRouter.get(
+  "/products/:id/images",
+  validateParams(adminIdParamsSchema),
+  adminListProductImagesController,
+);
+adminRouter.post(
+  "/products/:id/images",
+  requireAdminWriteOrigin,
+  validateParams(adminIdParamsSchema),
+  uploadProductImages,
+  adminAddProductImagesController,
+);
+adminRouter.post(
+  "/products/:productId/images/:imageId/replace",
+  requireAdminWriteOrigin,
+  validateParams(adminProductImageParamsSchema),
+  uploadReplacementImage,
+  adminReplaceProductImageController,
+);
+adminRouter.delete(
+  "/products/:productId/images/:imageId",
+  requireAdminWriteOrigin,
+  validateParams(adminProductImageParamsSchema),
+  adminDeleteProductImageController,
 );
 
 adminRouter.get("/categories", adminListCategoriesController);
