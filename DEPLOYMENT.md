@@ -26,7 +26,7 @@ Do not commit either URL.
 Before the first production backend deploy, apply the committed migrations against Neon:
 
 ```bash
-npm ci
+npm install
 npm run db:validate
 npm run db:migrate:deploy
 ```
@@ -57,7 +57,7 @@ The root `render.yaml` defines the `joyneeds-api` web service.
 
 Important defaults:
 
-- Build: `npm ci && npm run build:backend`
+- Build: `npm install && npm run build:backend`
 - Start: `npm run start --workspace backend`
 - Health check: `/api/health/ready`
 - Automatic deploys: **off**
@@ -115,7 +115,7 @@ Both should return HTTP 200. The readiness endpoint also checks PostgreSQL conne
 
 ## 4. Deploy the frontend on Vercel
 
-The root `vercel.json` installs from the lockfile and builds only the frontend workspace.
+The root `vercel.json` installs dependencies and builds only the frontend workspace.
 
 Set:
 
@@ -226,7 +226,7 @@ Verify confirmation/status messages arrive as expected. Email failures do not ro
 For every release containing a Prisma migration:
 
 1. keep Render auto-deploy disabled
-2. run `npm ci`
+2. run `npm install`
 3. run `npm run audit:prod`
 4. run `npm run db:validate`
 5. run `npm run db:migrate:deploy` against production Neon
@@ -238,6 +238,10 @@ For every release containing a Prisma migration:
 
 On a paid Render plan, a `preDeployCommand` can be used for migrations instead of the manual migration step. Keep the migration step separate from the normal build command.
 
-## 10. Rollback note
+## 10. Dependency reproducibility note
+
+A root `package-lock.json` is not currently committed. CI and deployment therefore use `npm install` plus `npm run audit:prod`. If a real lockfile is generated and committed later, update CI, Render and Vercel to use `npm ci` in that same commit.
+
+## 11. Rollback note
 
 Application code can be rolled back, but database migrations are forward changes. Do not assume rolling back a Render commit automatically rolls back Neon schema changes. Prefer backward-compatible migrations and take a Neon restore point/branch before risky schema changes.
