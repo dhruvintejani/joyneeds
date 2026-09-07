@@ -19,6 +19,9 @@ const envSchema = z
     CLOUDINARY_API_KEY: optionalSecret,
     CLOUDINARY_API_SECRET: optionalSecret,
     CLOUDINARY_FOLDER: z.string().trim().min(1).max(120).default("joyneeds/products"),
+    RAZORPAY_KEY_ID: optionalSecret,
+    RAZORPAY_KEY_SECRET: optionalSecret,
+    RAZORPAY_WEBHOOK_SECRET: optionalSecret,
   })
   .superRefine((value, ctx) => {
     const hasPublishable = Boolean(value.CLERK_PUBLISHABLE_KEY);
@@ -54,6 +57,20 @@ const envSchema = z
         message: "Cloudinary cloud name, API key and API secret must be configured together.",
       });
     }
+
+    const razorpayValues = [
+      value.RAZORPAY_KEY_ID,
+      value.RAZORPAY_KEY_SECRET,
+      value.RAZORPAY_WEBHOOK_SECRET,
+    ];
+    const razorpayConfiguredCount = razorpayValues.filter(Boolean).length;
+    if (razorpayConfiguredCount > 0 && razorpayConfiguredCount < razorpayValues.length) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["RAZORPAY_KEY_ID"],
+        message: "Razorpay key id, key secret and webhook secret must be configured together.",
+      });
+    }
   });
 
 const parsed = envSchema.safeParse(process.env);
@@ -69,4 +86,7 @@ export const adminAuthConfigured = Boolean(env.ADMIN_EMAIL && env.ADMIN_PASSWORD
 export const orderCreationEnabled = env.ORDER_CREATION_ENABLED === "true";
 export const cloudinaryConfigured = Boolean(
   env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET,
+);
+export const razorpayConfigured = Boolean(
+  env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET && env.RAZORPAY_WEBHOOK_SECRET,
 );
