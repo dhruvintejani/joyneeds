@@ -1,47 +1,133 @@
-# JoyNeeds frontend
+# JoyNeeds
 
-React 19, TypeScript, Vite, Tailwind CSS, React Router, Zustand Persist, Formik/Yup, Framer Motion, Lucide and React Helmet Async. No backend, database or payment API is connected.
+JoyNeeds is being migrated from a frontend-only storefront into a production-oriented full-stack e-commerce monorepo. The premium frontend is preserved and backend capabilities are being added progressively in reviewable phases.
 
-## Run
+## Current phase
 
-```sh
-npm install
-npm run dev
-npm test
-npm run build
-npm run preview
+Phase 1 establishes the monorepo and backend foundation only. It does **not** add a database, authentication, payments, Cloudinary, Brevo, or live order creation yet.
+
+## Repository structure
+
+```text
+joyneeds/
+├─ frontend/        React + TypeScript + Vite storefront
+├─ backend/         Express + TypeScript REST API
+├─ package.json     npm workspaces and root commands
+├─ .gitignore
+├─ vercel.json      current monorepo-aware frontend deployment config
+└─ README.md
 ```
 
-The build includes strict TypeScript checking. Pages are lazy-loaded. `vercel.json` provides SPA rewrites for direct links and refreshes.
+The existing frontend implementation, public routes, product catalog, cart, wishlist, checkout preview, policies, SEO and premium styling are retained under `frontend/`.
 
-## Current status: prelaunch frontend
+## Requirements
 
-- The 30 original product records are retained in `src/data/products.ts`. No replacement products or product photos were invented. Confirm the final catalog, prices, specifications, stock, and any marketing claims before launch.
-- The repository did not contain the 30 referenced `/products/*.webp` photos. Supply the exact files under `public/products/` or update their paths. The UI displays an image-unavailable fallback until they are supplied.
-- Supplied logo and icon are copied unchanged into `public/brand/`. Keep their aspect ratios and do not recreate the brand.
-- `src/config/site.ts` centralizes contact information and policy settings. Email and phone are retained from the original repository; verify they should remain public. Supply the legal business identity, address, shipping coverage/timelines/charges, return window, refund timing and cancellation conditions.
-- Policies in `src/data/policies.ts` are visibly provisional, not legal approval. Arrange business/legal review before selling. Official reference: [Department of Consumer Affairs rules](https://consumeraffairs.gov.in/pages/consumer-protection-acts).
-- Unverified discounts, ratings and bestseller claims are hidden. Confirm the data before setting `catalogVerified`. New-arrival and gallery/specification fields are optional; do not populate them with invented facts.
-- `policiesVerified` does not bypass the missing backend. Checkout only validates fields, does not send or save personal data, and never creates a fake order confirmation. The old order-success route redirects to checkout.
-- The contact form opens an email draft and never claims to have sent a message.
-- `robots.txt` and page metadata prevent indexing during preparation. Review both before launch. Generate a sitemap from the final verified catalog and domain at that time; no provisional sitemap is published.
+- Node.js 20+
+- npm
 
-## Architecture
+## Install
 
-- `src/components/common`: shared controls, dialog drawer, search, fallback UI, form fields and metadata.
-- `src/components/layout`: header/footer, using the supplied brand.
-- `src/pages`: lazy-loaded page components. Existing policy URLs remain supported through redirects.
-- `src/store`: resilient browser-only cart, wishlist and recent product IDs. Old saved cart products are reconciled against the current catalog instead of trusting saved prices.
-- `src/utils/catalog.ts`: pure search/filter/sort helpers and quantity limits.
-- `src/utils/storage.ts`: optional storage with malformed JSON and unavailable-storage handling.
-- `src/data/policies.ts` and `src/config/site.ts`: centralized provisional content/settings.
+From the repository root:
 
-## Future payments
+```bash
+npm install
+```
 
-Add a separate backend that calculates prices from authoritative product data, creates gateway orders, verifies payment signatures and webhooks, and stores orders securely. Never add a Razorpay secret to this frontend or a `VITE_` environment variable. Do not treat a redirect or browser state as proof of payment.
+The root package uses npm workspaces for `frontend` and `backend`.
 
-## Validation and limitations
+## Development
 
-`npm test` exercises real source modules for catalog integrity, filtering/sorting, quantity bounds, invalid persisted data, wishlist/recent-state behavior, unavailable storage, and checkout validation.
+Run frontend and backend together:
 
-Browser QA could not run because this environment blocked the browser preview. Responsive CSS covers mobile, tablet, desktop and wide screens, but screenshots, browser interactions, real reload persistence, keyboard/focus behavior, browser compatibility, and Lighthouse/Core Web Vitals remain unverified. Before merging/releasing, test all routes at 320, 375, 390, 430, 768, 1024, 1280, 1440 and 1920 px, plus 200% text zoom and reduced motion. Check menu/filter dialogs, search arrows/Enter/Escape, cart/wishlist persistence, invalid URLs, missing photos and form validation. Do not submit this unverified preview as a completed merchant-review site.
+```bash
+npm run dev
+```
+
+Or separately:
+
+```bash
+npm run dev:frontend
+npm run dev:backend
+```
+
+Default local URLs:
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:4000`
+- Health API: `http://localhost:4000/api/health`
+
+## Checks
+
+```bash
+npm run typecheck
+npm run test
+npm run build
+```
+
+These commands run the relevant checks for both workspaces.
+
+## Environment variables
+
+Copy the example file before starting the backend locally:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Phase 1 requires only:
+
+```text
+NODE_ENV=development
+PORT=4000
+FRONTEND_URL=http://localhost:5173
+```
+
+Do not commit real `.env` files. Future service credentials will be introduced only in the phase that actually uses them.
+
+## Backend foundation
+
+Phase 1 includes:
+
+- Express + strict TypeScript
+- Zod environment validation
+- Helmet security headers
+- explicit CORS origin configuration
+- request size limits
+- rate limiting
+- centralized safe error responses
+- structured server logging
+- `GET /api/health`
+- a health endpoint test
+
+The backend intentionally has no database or commerce business logic yet.
+
+## Frontend safety
+
+The frontend remains the same prelaunch storefront after moving to `frontend/`. Product data is still static in this phase and guest cart/wishlist data remains browser-local. Checkout still validates fields only and does not create orders or accept payments.
+
+## Planned phases
+
+1. Monorepo + backend foundation — current
+2. Prisma + existing Neon PostgreSQL + product/category schema and seed
+3. Frontend product API integration
+4. Optional Clerk customer authentication while preserving guest checkout
+5. Separate admin authentication and admin dashboard
+6. Orders, inventory validation and customer/guest order architecture
+7. Cloudinary product image management
+8. Razorpay order/payment verification and webhooks
+9. Brevo transactional emails
+10. Security hardening, testing, performance and deployment documentation
+
+Each phase should pass relevant checks before the next phase begins.
+
+## Deployment direction
+
+- Frontend: Vercel
+- Backend: Render
+- Database: existing Neon PostgreSQL project
+- Product images: Cloudinary
+- Customer authentication: Clerk
+- Payments: Razorpay
+- Transactional email: Brevo
+
+No credentials for those future services are stored in this repository.

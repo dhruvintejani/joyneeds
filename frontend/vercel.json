@@ -1,7 +1,4 @@
 {
-  "installCommand": "npm install",
-  "buildCommand": "npm run build:frontend",
-  "outputDirectory": "frontend/dist",
   "rewrites": [
     {
       "source": "/((?!assets/|brand/|products/|robots.txt|sitemap.xml).*)",
