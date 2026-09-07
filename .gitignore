@@ -5,6 +5,11 @@ node_modules/
 dist/
 build/
 out/
+frontend/dist/
+backend/dist/
+
+# Generated Prisma client
+backend/src/generated/prisma/
 
 # Vite
 .vite/
@@ -15,9 +20,13 @@ out/
 .env.development.local
 .env.test.local
 .env.production.local
+frontend/.env
+backend/.env
 
 # Keep example env files
 !.env.example
+!frontend/.env.example
+!backend/.env.example
 
 # Logs
 logs/
