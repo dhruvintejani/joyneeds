@@ -19,6 +19,7 @@ import {
   type AdminOrderListItem,
   type AdminOrderStatus,
 } from "../api/admin";
+import { refundAdminOrder } from "../api/adminPayments";
 import ProductImage from "../components/common/ProductImage";
 import "./admin.css";
 
@@ -30,7 +31,7 @@ const money = (paise: number) =>
   }).format(paise / 100);
 
 const nextStatuses: Record<AdminOrderStatus, AdminOrderStatus[]> = {
-  PENDING: ["CONFIRMED", "CANCELLED"],
+  PENDING: ["CANCELLED"],
   CONFIRMED: ["PROCESSING", "CANCELLED"],
   PROCESSING: ["SHIPPED", "CANCELLED"],
   SHIPPED: ["DELIVERED"],
@@ -103,7 +104,7 @@ function OrdersList() {
   return (
     <div>
       <div className="admin-page-header">
-        <div><p className="admin-eyebrow">Orders</p><h1>Orders</h1><p>Real orders from the JoyNeeds order service. No sample orders are shown.</p></div>
+        <div><p className="admin-eyebrow">Orders</p><h1>Orders</h1><p>Real orders and Razorpay payment state. No sample orders are shown.</p></div>
       </div>
       <div className="admin-stats-grid">
         <Stat label="Loaded Orders" value={counts.total} />
@@ -146,8 +147,11 @@ function OrderDetails({ orderId }: { orderId: string }) {
   const [courier, setCourier] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
   const [trackingUrl, setTrackingUrl] = useState("");
+  const [refundAmount, setRefundAmount] = useState("");
+  const [refundReason, setRefundReason] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [refunding, setRefunding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = () => {
@@ -170,6 +174,10 @@ function OrderDetails({ orderId }: { orderId: string }) {
   if (error || !order) return <div className="admin-empty-module"><p role="alert">{error || "Order not found."}</p><Link to="/admin/orders">Back to orders</Link></div>;
 
   const allowed = nextStatuses[order.status];
+  const payment = order.payments[0];
+  const refundablePaise = payment && ["PAID", "PARTIALLY_REFUNDED"].includes(payment.status)
+    ? Math.max(0, payment.amountPaise - payment.refundedAmountPaise)
+    : 0;
 
   return (
     <div>
@@ -195,6 +203,7 @@ function OrderDetails({ orderId }: { orderId: string }) {
           <h2>Order Status</h2>
           <p><span className="status-pill">{order.status}</span></p>
           <p className="admin-muted">Inventory: {order.inventoryCommittedAt ? "Committed" : "Not committed"}</p>
+          {order.status === "PENDING" && <p className="admin-muted">Confirmation is automatic only after Razorpay verifies a captured payment. Admin cannot manually mark a pending order paid.</p>}
           <label>Next status<select value={targetStatus} onChange={(event) => setTargetStatus(event.target.value as AdminOrderStatus | "")}><option value="">Choose action</option>{allowed.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
           <label>Courier<input value={courier} onChange={(event) => setCourier(event.target.value)} placeholder="Optional" /></label>
           <label>Tracking number<input value={trackingNumber} onChange={(event) => setTrackingNumber(event.target.value)} placeholder="Optional" /></label>
@@ -219,8 +228,43 @@ function OrderDetails({ orderId }: { orderId: string }) {
             }
           }}>{saving ? "Updating…" : "Update Order"}</button>
           <hr />
+          <h2>Payment</h2>
+          {payment ? <>
+            <dl>
+              <div><dt>Status</dt><dd><strong>{payment.status}</strong></dd></div>
+              <div><dt>Captured</dt><dd>{money(payment.amountPaise)}</dd></div>
+              <div><dt>Refunded</dt><dd>{money(payment.refundedAmountPaise)}</dd></div>
+              <div><dt>Provider payment</dt><dd>{payment.providerPaymentId ?? "Not captured"}</dd></div>
+            </dl>
+            {refundablePaise > 0 && <div className="admin-form-card">
+              <p className="admin-muted">Refundable balance: {money(refundablePaise)}. Razorpay processes refunds back to the original payment source.</p>
+              <label>Refund amount (₹)<input type="number" min="0.01" max={refundablePaise / 100} step="0.01" value={refundAmount} onChange={(event) => setRefundAmount(event.target.value)} placeholder={String(refundablePaise / 100)} /></label>
+              <label>Reason<input value={refundReason} onChange={(event) => setRefundReason(event.target.value)} maxLength={250} placeholder="Optional internal reason" /></label>
+              <button className="admin-danger-button" disabled={refunding} onClick={async () => {
+                const requestedPaise = refundAmount.trim() ? Math.round(Number(refundAmount) * 100) : refundablePaise;
+                if (!Number.isFinite(requestedPaise) || requestedPaise < 1 || requestedPaise > refundablePaise) {
+                  toast.error("Enter a valid refund amount.");
+                  return;
+                }
+                if (!window.confirm(`Request a ${money(requestedPaise)} Razorpay refund?`)) return;
+                setRefunding(true);
+                try {
+                  const result = await refundAdminOrder(order.id, { amountPaise: requestedPaise, reason: refundReason.trim() || undefined });
+                  toast.success(`Refund ${result.status.toLowerCase()}.`);
+                  setRefundAmount("");
+                  setRefundReason("");
+                  load();
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Unable to request refund.");
+                } finally {
+                  setRefunding(false);
+                }
+              }}>{refunding ? "Requesting refund…" : "Refund through Razorpay"}</button>
+            </div>}
+          </> : <p className="admin-muted">No Razorpay payment has started for this order.</p>}
+          <hr />
           <dl><div><dt>Subtotal</dt><dd>{money(order.subtotalPaise)}</dd></div><div><dt>Shipping</dt><dd>{money(order.shippingPaise)}</dd></div><div><dt>Discount</dt><dd>{money(order.discountPaise)}</dd></div><div><dt>Total</dt><dd><strong>{money(order.totalPaise)}</strong></dd></div></dl>
-          <p className="admin-muted">Payment integration is added in Phase 8. A pending order is not proof of payment.</p>
+          <p className="admin-muted">Paid/refunded state comes from verified Razorpay responses and signed webhooks, not manual status selection.</p>
         </aside>
       </div>
     </div>
