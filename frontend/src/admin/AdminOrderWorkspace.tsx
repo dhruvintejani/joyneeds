@@ -34,7 +34,7 @@ const nextStatuses: Record<AdminOrderStatus, AdminOrderStatus[]> = {
   CONFIRMED: ["PROCESSING", "CANCELLED"],
   PROCESSING: ["SHIPPED", "CANCELLED"],
   SHIPPED: ["DELIVERED"],
-  DELIVERED: ["REFUNDED"],
+  DELIVERED: [],
   CANCELLED: [],
   REFUNDED: [],
 };
