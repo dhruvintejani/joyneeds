@@ -170,7 +170,7 @@ export async function createAdminProduct(body: AdminProductCreateBody) {
         categoryId: body.categoryId,
         subcategory: body.subcategory ?? null,
         features: body.features ?? [],
-        specifications: body.specifications,
+        ...(body.specifications !== undefined ? { specifications: body.specifications } : {}),
         shippingInfo: body.shippingInfo ?? null,
         returnInfo: body.returnInfo ?? null,
         tags: body.tags ?? [],
