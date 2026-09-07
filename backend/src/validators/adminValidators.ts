@@ -20,6 +20,12 @@ export type AdminLoginBody = z.infer<typeof adminLoginSchema>;
 export const adminIdParamsSchema = z.object({ id: idSchema });
 export type AdminIdParams = z.infer<typeof adminIdParamsSchema>;
 
+export const adminProductImageParamsSchema = z.object({
+  productId: idSchema,
+  imageId: idSchema,
+});
+export type AdminProductImageParams = z.infer<typeof adminProductImageParamsSchema>;
+
 export const adminProductListQuerySchema = z.object({
   q: z.string().trim().max(100).optional(),
   categoryId: idSchema.optional(),
@@ -49,15 +55,6 @@ const adminProductInputSchema = z.object({
   shippingInfo: optionalText(1000),
   returnInfo: optionalText(1000),
   tags: z.array(z.string().trim().min(1).max(80)).max(30).optional(),
-  images: z
-    .array(
-      z.object({
-        url: z.string().url(),
-        altText: z.string().trim().max(200).optional(),
-      }),
-    )
-    .max(8)
-    .optional(),
 });
 
 export const adminProductCreateSchema = adminProductInputSchema;
