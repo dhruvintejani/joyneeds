@@ -2,7 +2,7 @@ services:
   - type: web
     name: joyneeds-api
     runtime: node
-    buildCommand: npm ci && npm run build:backend
+    buildCommand: npm install && npm run build:backend
     startCommand: npm run start --workspace backend
     healthCheckPath: /api/health/ready
     maxShutdownDelaySeconds: 30
