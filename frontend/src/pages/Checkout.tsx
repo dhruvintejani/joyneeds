@@ -77,7 +77,7 @@ export default function Checkout() {
       <PageBanner
         eyebrow="CHECKOUT PREVIEW"
         title="Complete your details"
-        subtitle="A polished checkout experience is prepared, but orders and payments are not enabled yet."
+        subtitle="Order infrastructure is ready, but live order creation stays disabled until secure Razorpay payment is connected."
         compact
       />
 
@@ -92,13 +92,12 @@ export default function Checkout() {
         </li>
         <li>
           <span>3</span>
-          <div><strong>Payment</strong><small>Not enabled</small></div>
+          <div><strong>Payment</strong><small>Phase 8</small></div>
         </li>
       </ol>
 
       <p className="notice reference-checkout-notice">
-        Preview only. Do not enter real personal information while testing. No order is created,
-        no payment is collected, and these fields are not saved.
+        Preview only while payments are disabled. The backend can validate server prices, stock and order data, but this page does not create a live order until Razorpay checkout is enabled.
       </p>
 
       <div className="reference-checkout-layout">
@@ -115,7 +114,7 @@ export default function Checkout() {
           validationSchema={checkoutSchema}
           onSubmit={(_values, { setStatus, setSubmitting }) => {
             setStatus(
-              "The form is valid. Orders and payments are not enabled; no order was placed and no details were sent.",
+              "The form is valid. Live order creation remains disabled until secure payment is connected.",
             );
             setSubmitting(false);
           }}
@@ -150,7 +149,7 @@ export default function Checkout() {
                   <span><MapPin size={20} /></span>
                   <div>
                     <h2>Shipping Address</h2>
-                    <p>Prepared for future order processing.</p>
+                    <p>Prepared for secure order processing.</p>
                   </div>
                 </div>
                 <FormField
@@ -179,7 +178,7 @@ export default function Checkout() {
                   <span><CreditCard size={20} /></span>
                   <div>
                     <h2>Payment Method</h2>
-                    <p>A secure payment section will be connected later.</p>
+                    <p>Razorpay will be connected in the payment phase.</p>
                   </div>
                 </div>
                 <div className="reference-payment-preview">
@@ -187,8 +186,7 @@ export default function Checkout() {
                   <div>
                     <strong>Online payments are not enabled</strong>
                     <p>
-                      Razorpay can be connected later through the backend. JoyNeeds does not ask
-                      for card, UPI or banking details in this preview.
+                      The Phase 6 backend already validates catalog prices and inventory. Payment and final order activation will be handled securely through Razorpay in Phase 8.
                     </p>
                   </div>
                 </div>
@@ -240,7 +238,7 @@ export default function Checkout() {
             <ShieldCheck size={25} />
             <div>
               <h3>Designed for a safer checkout</h3>
-              <p>Payment details will never be stored in this frontend.</p>
+              <p>Client-side prices are never authoritative for orders.</p>
             </div>
           </section>
         </aside>
