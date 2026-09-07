@@ -9,6 +9,7 @@ import { accountRouter } from "./routes/accountRoutes.js";
 import { adminRouter } from "./routes/adminRoutes.js";
 import { categoryRouter } from "./routes/categoryRoutes.js";
 import { healthRouter } from "./routes/healthRoutes.js";
+import { orderRouter } from "./routes/orderRoutes.js";
 import { productRouter } from "./routes/productRoutes.js";
 import { AppError } from "./utils/AppError.js";
 
@@ -48,6 +49,7 @@ app.use(express.urlencoded({ extended: false, limit: "1mb" }));
 app.use("/api/health", healthRouter);
 app.use("/api/products", productRouter);
 app.use("/api/categories", categoryRouter);
+app.use("/api/orders", orderRouter);
 app.use("/api/account", accountRouter);
 app.use("/api/admin", adminRouter);
 
