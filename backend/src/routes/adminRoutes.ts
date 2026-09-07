@@ -16,6 +16,11 @@ import {
   adminLoginController,
   adminLogoutController,
 } from "../controllers/adminAuthController.js";
+import {
+  adminGetOrderController,
+  adminListOrdersController,
+  adminUpdateOrderController,
+} from "../controllers/adminOrderController.js";
 import { requireAdmin, requireAdminWriteOrigin } from "../middleware/auth.js";
 import { validateBody, validateParams, validateQuery } from "../middleware/validateRequest.js";
 import {
@@ -27,6 +32,11 @@ import {
   adminProductListQuerySchema,
   adminProductUpdateSchema,
 } from "../validators/adminValidators.js";
+import {
+  adminOrderListQuerySchema,
+  adminOrderParamsSchema,
+  adminOrderUpdateSchema,
+} from "../validators/orderValidators.js";
 
 export const adminRouter = Router();
 
@@ -58,6 +68,21 @@ adminRouter.use(
 adminRouter.use(requireAdmin);
 
 adminRouter.get("/dashboard", adminDashboardController);
+
+adminRouter.get("/orders", validateQuery(adminOrderListQuerySchema), adminListOrdersController);
+adminRouter.get(
+  "/orders/:id",
+  validateParams(adminOrderParamsSchema),
+  adminGetOrderController,
+);
+adminRouter.patch(
+  "/orders/:id",
+  requireAdminWriteOrigin,
+  validateParams(adminOrderParamsSchema),
+  validateBody(adminOrderUpdateSchema),
+  adminUpdateOrderController,
+);
+
 adminRouter.get("/products", validateQuery(adminProductListQuerySchema), adminListProductsController);
 adminRouter.post(
   "/products",
