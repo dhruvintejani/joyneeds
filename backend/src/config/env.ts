@@ -11,7 +11,6 @@ const envSchema = z
     DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
     CLERK_PUBLISHABLE_KEY: optionalSecret,
     CLERK_SECRET_KEY: optionalSecret,
-    ADMIN_CLERK_USER_IDS: z.string().trim().optional(),
   })
   .superRefine((value, ctx) => {
     const hasPublishable = Boolean(value.CLERK_PUBLISHABLE_KEY);
@@ -34,9 +33,3 @@ if (!parsed.success) {
 
 export const env = parsed.data;
 export const clerkConfigured = Boolean(env.CLERK_PUBLISHABLE_KEY && env.CLERK_SECRET_KEY);
-export const adminClerkUserIds = new Set(
-  (env.ADMIN_CLERK_USER_IDS ?? "")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean),
-);
