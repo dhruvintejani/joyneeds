@@ -79,6 +79,70 @@ export type AdminCategoryInput = {
   sortOrder?: number;
 };
 
+export type AdminOrderStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "PROCESSING"
+  | "SHIPPED"
+  | "DELIVERED"
+  | "CANCELLED"
+  | "REFUNDED";
+
+export type AdminOrderListItem = {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  totalPaise: number;
+  currency: string;
+  status: AdminOrderStatus;
+  inventoryCommittedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: { items: number };
+  payments: Array<{ status: string }>;
+};
+
+export type AdminOrder = AdminOrderListItem & {
+  userId: string | null;
+  customerPhone: string;
+  addressLine1: string;
+  addressLine2: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  subtotalPaise: number;
+  shippingPaise: number;
+  discountPaise: number;
+  courier: string | null;
+  trackingNumber: string | null;
+  trackingUrl: string | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  cancelledAt: string | null;
+  items: Array<{
+    id: string;
+    productId: string | null;
+    productName: string;
+    sku: string;
+    pricePaise: number;
+    quantity: number;
+    productImage: string | null;
+  }>;
+  payments: Array<{
+    id: string;
+    provider: string;
+    status: string;
+    amountPaise: number;
+    refundedAmountPaise: number;
+    providerOrderId: string | null;
+    providerPaymentId: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+};
+
 async function adminRequest<T>(path: string, init?: RequestInit): Promise<T> {
   if (!apiBaseUrl) {
     throw new CatalogApiError("The admin API is not configured for this deployment.");
@@ -161,4 +225,31 @@ export const updateAdminCategory = (id: string, input: Partial<AdminCategoryInpu
 export const archiveAdminCategory = (id: string) =>
   adminRequest<AdminCategory>(`/api/admin/categories/${encodeURIComponent(id)}`, {
     method: "DELETE",
+  });
+
+export async function listAdminOrders(status: AdminOrderStatus | "ALL" = "ALL", q = "") {
+  const params = new URLSearchParams({ status, limit: "100" });
+  if (q.trim()) params.set("q", q.trim());
+  const data = await adminRequest<{
+    items: AdminOrderListItem[];
+    pagination: { page: number; limit: number; total: number; pages: number };
+  }>(`/api/admin/orders?${params.toString()}`);
+  return data.items;
+}
+
+export const getAdminOrder = (id: string) =>
+  adminRequest<AdminOrder>(`/api/admin/orders/${encodeURIComponent(id)}`);
+
+export const updateAdminOrder = (
+  id: string,
+  input: {
+    status: AdminOrderStatus;
+    courier?: string | null;
+    trackingNumber?: string | null;
+    trackingUrl?: string | null;
+  },
+) =>
+  adminRequest<AdminOrder>(`/api/admin/orders/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
   });
