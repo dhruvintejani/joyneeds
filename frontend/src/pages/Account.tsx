@@ -143,7 +143,7 @@ export default function Account() {
                       <strong>{moneyPaise(order.totalPaise)}</strong>
                       <small>{order.items.length} item{order.items.length === 1 ? "" : "s"}</small>
                     </div>
-                    <span className="status-pill">{order.status.replaceAll("_", " ")}</span>
+                    <span className="status-pill">{order.status.replace(/_/g, " ")}</span>
                   </article>
                 ))}
               </div>
