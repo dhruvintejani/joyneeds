@@ -6,7 +6,7 @@ services:
     startCommand: npm run start --workspace backend
     healthCheckPath: /api/health/ready
     maxShutdownDelaySeconds: 30
-    autoDeployTrigger: commit
+    autoDeployTrigger: off
     envVars:
       - key: NODE_ENV
         value: production
