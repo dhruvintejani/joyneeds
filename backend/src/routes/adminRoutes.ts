@@ -8,16 +8,21 @@ import {
   adminDashboardController,
   adminListCategoriesController,
   adminListProductsController,
-  adminSessionController,
   adminUpdateCategoryController,
   adminUpdateProductController,
 } from "../controllers/adminCatalogController.js";
-import { requireAdmin } from "../middleware/auth.js";
+import {
+  adminAuthSessionController,
+  adminLoginController,
+  adminLogoutController,
+} from "../controllers/adminAuthController.js";
+import { requireAdmin, requireAdminWriteOrigin } from "../middleware/auth.js";
 import { validateBody, validateParams, validateQuery } from "../middleware/validateRequest.js";
 import {
   adminCategoryCreateSchema,
   adminCategoryUpdateSchema,
   adminIdParamsSchema,
+  adminLoginSchema,
   adminProductCreateSchema,
   adminProductListQuerySchema,
   adminProductUpdateSchema,
@@ -25,43 +30,72 @@ import {
 
 export const adminRouter = Router();
 
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+adminRouter.post(
+  "/auth/login",
+  adminLoginLimiter,
+  requireAdminWriteOrigin,
+  validateBody(adminLoginSchema),
+  adminLoginController,
+);
+adminRouter.get("/auth/session", requireAdmin, adminAuthSessionController);
+adminRouter.post("/auth/logout", requireAdmin, requireAdminWriteOrigin, adminLogoutController);
+
 adminRouter.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
-    limit: 120,
+    limit: 180,
     standardHeaders: true,
     legacyHeaders: false,
   }),
 );
 adminRouter.use(requireAdmin);
 
-adminRouter.get("/session", adminSessionController);
 adminRouter.get("/dashboard", adminDashboardController);
-
 adminRouter.get("/products", validateQuery(adminProductListQuerySchema), adminListProductsController);
-adminRouter.post("/products", validateBody(adminProductCreateSchema), adminCreateProductController);
+adminRouter.post(
+  "/products",
+  requireAdminWriteOrigin,
+  validateBody(adminProductCreateSchema),
+  adminCreateProductController,
+);
 adminRouter.patch(
   "/products/:id",
+  requireAdminWriteOrigin,
   validateParams(adminIdParamsSchema),
   validateBody(adminProductUpdateSchema),
   adminUpdateProductController,
 );
 adminRouter.delete(
   "/products/:id",
+  requireAdminWriteOrigin,
   validateParams(adminIdParamsSchema),
   adminArchiveProductController,
 );
 
 adminRouter.get("/categories", adminListCategoriesController);
-adminRouter.post("/categories", validateBody(adminCategoryCreateSchema), adminCreateCategoryController);
+adminRouter.post(
+  "/categories",
+  requireAdminWriteOrigin,
+  validateBody(adminCategoryCreateSchema),
+  adminCreateCategoryController,
+);
 adminRouter.patch(
   "/categories/:id",
+  requireAdminWriteOrigin,
   validateParams(adminIdParamsSchema),
   validateBody(adminCategoryUpdateSchema),
   adminUpdateCategoryController,
 );
 adminRouter.delete(
   "/categories/:id",
+  requireAdminWriteOrigin,
   validateParams(adminIdParamsSchema),
   adminArchiveCategoryController,
 );
