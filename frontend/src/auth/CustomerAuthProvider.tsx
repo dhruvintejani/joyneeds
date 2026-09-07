@@ -113,6 +113,37 @@ function ClerkBridge({ children }: { children: ReactNode }) {
     };
   }, [getToken, isLoaded, isSignedIn, user?.id]);
 
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !user?.id) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false;
+    const unsubscribe = useCartStore.subscribe((state, previous) => {
+      if (state.items === previous.items || syncedUserId.current !== user.id) return;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        void getToken()
+          .then((token) => {
+            if (!token || cancelled || syncedUserId.current !== user.id) return;
+            return syncCustomerCart(
+              useCartStore.getState().items.map((item) => ({
+                productId: item.product.id,
+                quantity: item.quantity,
+              })),
+              token,
+            );
+          })
+          .catch(() => {
+            // The local cart remains usable; the next change/sign-in can retry persistence.
+          });
+      }, 350);
+    });
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+      unsubscribe();
+    };
+  }, [getToken, isLoaded, isSignedIn, user?.id]);
+
   const value = useMemo<CustomerAuthValue>(
     () => ({
       enabled: true,
