@@ -31,6 +31,13 @@ enum PaymentStatus {
   PARTIALLY_REFUNDED
 }
 
+enum RefundStatus {
+  CREATED
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
 model User {
   id          String   @id @default(cuid())
   clerkUserId String   @unique @map("clerk_user_id")
@@ -282,12 +289,29 @@ model Payment {
   createdAt           DateTime      @default(now()) @map("created_at")
   updatedAt           DateTime      @updatedAt @map("updated_at")
 
-  order  Order          @relation(fields: [orderId], references: [id], onDelete: Restrict)
-  events PaymentEvent[]
+  order   Order          @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  events  PaymentEvent[]
+  refunds Refund[]
 
   @@index([orderId, createdAt])
   @@index([status, createdAt])
   @@map("payments")
+}
+
+model Refund {
+  id               String       @id @default(cuid())
+  paymentId        String       @map("payment_id")
+  providerRefundId String       @unique @map("provider_refund_id")
+  amountPaise      Int          @map("amount_paise")
+  status           RefundStatus @default(CREATED)
+  reason           String?
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([paymentId, status])
+  @@map("refunds")
 }
 
 model PaymentEvent {
