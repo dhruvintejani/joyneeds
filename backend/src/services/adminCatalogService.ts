@@ -66,10 +66,18 @@ function knownPrismaCode(error: unknown) {
 function translateWriteError(error: unknown, entity: "product" | "category"): never {
   const code = knownPrismaCode(error);
   if (code === "P2002") {
-    throw new AppError(409, `${entity.toUpperCase()}_CONFLICT`, `${entity === "product" ? "Product" : "Category"} slug, name, or SKU already exists.`);
+    throw new AppError(
+      409,
+      `${entity.toUpperCase()}_CONFLICT`,
+      `${entity === "product" ? "Product" : "Category"} slug, name, or SKU already exists.`,
+    );
   }
   if (code === "P2025") {
-    throw new AppError(404, `${entity.toUpperCase()}_NOT_FOUND`, `${entity === "product" ? "Product" : "Category"} not found.`);
+    throw new AppError(
+      404,
+      `${entity.toUpperCase()}_NOT_FOUND`,
+      `${entity === "product" ? "Product" : "Category"} not found.`,
+    );
   }
   throw error;
 }
@@ -81,7 +89,10 @@ function validatePrices(pricePaise: number, originalPricePaise?: number | null) 
 }
 
 async function ensureActiveCategory(categoryId: string) {
-  const category = await prisma.category.findFirst({ where: { id: categoryId, active: true }, select: { id: true } });
+  const category = await prisma.category.findFirst({
+    where: { id: categoryId, active: true },
+    select: { id: true },
+  });
   if (!category) throw new AppError(400, "INVALID_CATEGORY", "Select an active category.");
 }
 
@@ -175,17 +186,6 @@ export async function createAdminProduct(body: AdminProductCreateBody) {
         returnInfo: body.returnInfo ?? null,
         tags: body.tags ?? [],
         addedAt: body.newArrival ? new Date() : null,
-        ...(body.images?.length
-          ? {
-              images: {
-                create: body.images.map((image, sortOrder) => ({
-                  sourceUrl: image.url,
-                  altText: image.altText || body.name,
-                  sortOrder,
-                })),
-              },
-            }
-          : {}),
       },
       select: adminProductSelect,
     });
@@ -195,7 +195,17 @@ export async function createAdminProduct(body: AdminProductCreateBody) {
 }
 
 export async function updateAdminProduct(id: string, body: AdminProductUpdateBody) {
-  const existing = await prisma.product.findUnique({ where: { id }, select: { id: true, name: true, pricePaise: true, originalPricePaise: true, stockStatus: true, addedAt: true } });
+  const existing = await prisma.product.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      pricePaise: true,
+      originalPricePaise: true,
+      stockStatus: true,
+      addedAt: true,
+    },
+  });
   if (!existing) throw new AppError(404, "PRODUCT_NOT_FOUND", "Product not found.");
   if (body.categoryId) await ensureActiveCategory(body.categoryId);
 
@@ -232,23 +242,7 @@ export async function updateAdminProduct(id: string, body: AdminProductUpdateBod
   };
 
   try {
-    await prisma.$transaction(async (tx) => {
-      await tx.product.update({ where: { id }, data });
-      if (body.images !== undefined) {
-        await tx.productImage.deleteMany({ where: { productId: id } });
-        if (body.images.length) {
-          await tx.productImage.createMany({
-            data: body.images.map((image, sortOrder) => ({
-              productId: id,
-              sourceUrl: image.url,
-              altText: image.altText || body.name || existing.name,
-              sortOrder,
-            })),
-          });
-        }
-      }
-    });
-
+    await prisma.product.update({ where: { id }, data });
     return await prisma.product.findUniqueOrThrow({ where: { id }, select: adminProductSelect });
   } catch (error) {
     translateWriteError(error, "product");
