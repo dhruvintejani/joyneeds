@@ -15,6 +15,7 @@ const ProductDetails = lazy(() => import("./pages/ProductDetails"));
 const Cart = lazy(() => import("./pages/Cart"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
 const Checkout = lazy(() => import("./pages/Checkout"));
+const Account = lazy(() => import("./pages/Account"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const FAQ = lazy(() => import("./pages/FAQ"));
@@ -43,6 +44,7 @@ export default function App() {
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/account" element={<Account />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/faq" element={<FAQ />} />
@@ -55,22 +57,10 @@ export default function App() {
                   ].map((path) => (
                     <Route path={"/" + path} key={path} element={<Policy />} />
                   ))}
-                  <Route
-                    path="/terms-and-conditions"
-                    element={<Navigate to="/terms" replace />}
-                  />
-                  <Route
-                    path="/return-refund-policy"
-                    element={<Navigate to="/return-policy" replace />}
-                  />
-                  <Route
-                    path="/cancellation-policy"
-                    element={<Navigate to="/refund-cancellation" replace />}
-                  />
-                  <Route
-                    path="/order-success"
-                    element={<Navigate to="/checkout" replace />}
-                  />
+                  <Route path="/terms-and-conditions" element={<Navigate to="/terms" replace />} />
+                  <Route path="/return-refund-policy" element={<Navigate to="/return-policy" replace />} />
+                  <Route path="/cancellation-policy" element={<Navigate to="/refund-cancellation" replace />} />
+                  <Route path="/order-success" element={<Navigate to="/checkout" replace />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>
