@@ -24,6 +24,7 @@ const Policy = lazy(() => import("./pages/Policy"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminRouter = lazy(() => import("./admin/AdminPhase5Router"));
 const AdminOrderWorkspace = lazy(() => import("./admin/AdminOrderWorkspace"));
+const AdminProductEditorWorkspace = lazy(() => import("./admin/AdminProductEditorWorkspace"));
 
 export default function App() {
   return (
@@ -38,6 +39,8 @@ export default function App() {
               <Routes>
                 <Route path="/admin/orders" element={<AdminAuthGate><AdminOrderWorkspace /></AdminAuthGate>} />
                 <Route path="/admin/orders/:orderId" element={<AdminAuthGate><AdminOrderWorkspace /></AdminAuthGate>} />
+                <Route path="/admin/products/new" element={<AdminAuthGate><AdminProductEditorWorkspace /></AdminAuthGate>} />
+                <Route path="/admin/products/:productId/edit" element={<AdminAuthGate><AdminProductEditorWorkspace /></AdminAuthGate>} />
                 <Route path="/admin/*" element={<AdminAuthGate><AdminRouter /></AdminAuthGate>} />
                 <Route element={<MainLayout />}>
                   <Route path="/" element={<Home />} />
