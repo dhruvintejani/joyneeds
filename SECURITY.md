@@ -86,13 +86,13 @@ The Vercel frontend configuration adds baseline browser headers and immutable ca
 
 ## Dependency policy
 
-CI installs the committed lockfile with `npm ci` and runs:
+A root `package-lock.json` is not currently committed, so CI uses `npm install` and then runs:
 
 ```bash
 npm run audit:prod
 ```
 
-High-severity production dependency findings fail verification. Do not use `npm audit fix --force` blindly; review breaking dependency updates before applying them.
+High-severity production dependency findings fail verification. If a real root lockfile is generated and committed later, switch CI, Render and Vercel to `npm ci` in the same change. Do not use `npm audit fix --force` blindly; review breaking dependency updates before applying them.
 
 ## Production checklist
 
