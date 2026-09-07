@@ -19,10 +19,6 @@ import type {
   AdminProductUpdateBody,
 } from "../validators/adminValidators.js";
 
-export const adminSessionController: RequestHandler = (_req, res) => {
-  res.json({ data: { authenticated: true, admin: true, userId: res.locals.clerkUserId as string } });
-};
-
 export const adminDashboardController: RequestHandler = async (_req, res) => {
   res.json({ data: await getAdminDashboard() });
 };
