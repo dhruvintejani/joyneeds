@@ -8,6 +8,7 @@ import Toast from "./components/common/Toast";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import SEO from "./components/common/SEO";
 import { Skeleton } from "./components/common/UI";
+
 const Home = lazy(() => import("./pages/Home"));
 const Shop = lazy(() => import("./pages/Shop"));
 const ProductDetails = lazy(() => import("./pages/ProductDetails"));
@@ -19,6 +20,8 @@ const Contact = lazy(() => import("./pages/Contact"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Policy = lazy(() => import("./pages/Policy"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const AdminRouter = lazy(() => import("./admin/AdminRouter"));
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -30,6 +33,7 @@ export default function App() {
             <Toast />
             <Suspense fallback={<Skeleton />}>
               <Routes>
+                <Route path="/admin/*" element={<AdminRouter />} />
                 <Route element={<MainLayout />}>
                   <Route path="/" element={<Home />} />
                   <Route path="/shop" element={<Shop />} />
