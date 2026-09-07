@@ -73,12 +73,17 @@ export type AdminOrderListQuery = z.infer<typeof adminOrderListQuerySchema>;
 export const adminOrderParamsSchema = z.object({ id: idSchema });
 export type AdminOrderParams = z.infer<typeof adminOrderParamsSchema>;
 
-// CONFIRMED is payment-driven in Phase 8 and REFUNDED is driven by Razorpay
-// refund reconciliation. Admins can only advance fulfillment after payment.
-export const adminOrderUpdateSchema = z.object({
-  status: z.enum(["PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"]),
-  courier: z.string().trim().max(120).nullable().optional(),
-  trackingNumber: z.string().trim().max(160).nullable().optional(),
-  trackingUrl: z.string().url().max(1000).nullable().optional(),
-});
+// Keep the full status type for the order service, but reject manual CONFIRMED
+// and REFUNDED writes. Those two states are driven by verified Razorpay data.
+export const adminOrderUpdateSchema = z
+  .object({
+    status: z.enum(["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"]),
+    courier: z.string().trim().max(120).nullable().optional(),
+    trackingNumber: z.string().trim().max(160).nullable().optional(),
+    trackingUrl: z.string().url().max(1000).nullable().optional(),
+  })
+  .refine((value) => value.status !== "CONFIRMED" && value.status !== "REFUNDED", {
+    path: ["status"],
+    message: "Paid confirmation and refund status are managed by Razorpay reconciliation.",
+  });
 export type AdminOrderUpdateBody = z.infer<typeof adminOrderUpdateSchema>;
