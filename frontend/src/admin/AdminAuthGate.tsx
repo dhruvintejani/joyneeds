@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { LoaderCircle, LockKeyhole } from "lucide-react";
 import { getAdminSession, loginAdmin, type AdminSession } from "../api/admin";
 import "./admin.css";
+import "./admin-phase5.css";
 
 type Status = "loading" | "authenticated" | "signed-out" | "unconfigured";
 
@@ -69,9 +70,7 @@ export default function AdminAuthGate({ children }: { children: ReactNode }) {
             <label>Email<input type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
             <label>Password<input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} /></label>
             {error && <div className="admin-auth-error" role="alert">{error}</div>}
-            <button type="submit" className="admin-primary-button" disabled={submitting}>
-              {submitting ? "Signing in…" : "Sign In"}
-            </button>
+            <button type="submit" className="admin-primary-button" disabled={submitting}>{submitting ? "Signing in…" : "Sign In"}</button>
           </form>
         )}
 
