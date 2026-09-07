@@ -7,6 +7,12 @@ export const notFoundHandler: RequestHandler = (req, _res, next) => {
   next(new AppError(404, "NOT_FOUND", `Route ${req.method} ${req.path} was not found`));
 };
 
+type BodyParserError = Error & {
+  status?: number;
+  statusCode?: number;
+  type?: string;
+};
+
 export const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {
   const requestId = typeof res.locals.requestId === "string" ? res.locals.requestId : undefined;
 
@@ -28,6 +34,29 @@ export const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {
         code: error.code,
         message: error.message,
         ...(error.details === undefined ? {} : { details: error.details }),
+        requestId,
+      },
+    });
+    return;
+  }
+
+  const parserError = error as BodyParserError;
+  if (parserError.type === "entity.too.large" || parserError.status === 413 || parserError.statusCode === 413) {
+    res.status(413).json({
+      error: {
+        code: "BODY_TOO_LARGE",
+        message: "The request body is too large.",
+        requestId,
+      },
+    });
+    return;
+  }
+
+  if (parserError.type === "entity.parse.failed" && error instanceof SyntaxError) {
+    res.status(400).json({
+      error: {
+        code: "INVALID_JSON",
+        message: "The request body contains invalid JSON.",
         requestId,
       },
     });

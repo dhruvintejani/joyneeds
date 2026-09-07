@@ -15,12 +15,17 @@
     "build:backend": "npm run build --workspace backend",
     "typecheck": "npm run typecheck --workspace frontend && npm run typecheck --workspace backend",
     "test": "npm run test --workspace frontend && npm run test --workspace backend",
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
     "db:generate": "npm run prisma:generate --workspace backend",
     "db:validate": "npm run prisma:validate --workspace backend",
     "db:migrate:dev": "npm run db:migrate:dev --workspace backend",
     "db:migrate:deploy": "npm run db:migrate:deploy --workspace backend",
     "db:seed": "npm run db:seed --workspace backend",
     "db:studio": "npm run db:studio --workspace backend"
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.2",
+    "mysql2": "3.24.3"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"

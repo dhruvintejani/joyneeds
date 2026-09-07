@@ -31,6 +31,20 @@ enum PaymentStatus {
   PARTIALLY_REFUNDED
 }
 
+enum RefundStatus {
+  CREATED
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+enum EmailDeliveryStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+}
+
 model User {
   id          String   @id @default(cuid())
   clerkUserId String   @unique @map("clerk_user_id")
@@ -47,6 +61,18 @@ model User {
   orders    Order[]
 
   @@map("users")
+}
+
+model AdminSession {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique @map("token_hash")
+  email      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  lastSeenAt DateTime @default(now()) @map("last_seen_at")
+
+  @@index([expiresAt])
+  @@map("admin_sessions")
 }
 
 model Address {
@@ -200,36 +226,38 @@ model CartItem {
 }
 
 model Order {
-  id            String      @id @default(cuid())
-  orderNumber   String      @unique @map("order_number")
-  userId        String?     @map("user_id")
-  customerName  String      @map("customer_name")
-  customerEmail String      @map("customer_email")
-  customerPhone String      @map("customer_phone")
-  addressLine1  String      @map("address_line_1")
-  addressLine2  String?     @map("address_line_2")
-  city          String
-  state         String
-  postalCode    String      @map("postal_code")
-  country       String      @default("IN")
-  subtotalPaise Int         @map("subtotal_paise")
-  shippingPaise Int         @default(0) @map("shipping_paise")
-  discountPaise Int         @default(0) @map("discount_paise")
-  totalPaise    Int         @map("total_paise")
-  currency      String      @default("INR")
-  status        OrderStatus @default(PENDING)
-  courier       String?
-  trackingNumber String?    @map("tracking_number")
-  trackingUrl   String?     @map("tracking_url")
-  shippedAt     DateTime?   @map("shipped_at")
-  deliveredAt   DateTime?   @map("delivered_at")
-  cancelledAt   DateTime?   @map("cancelled_at")
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  id                   String      @id @default(cuid())
+  orderNumber          String      @unique @map("order_number")
+  userId               String?     @map("user_id")
+  customerName         String      @map("customer_name")
+  customerEmail        String      @map("customer_email")
+  customerPhone        String      @map("customer_phone")
+  addressLine1         String      @map("address_line_1")
+  addressLine2         String?     @map("address_line_2")
+  city                 String
+  state                String
+  postalCode           String      @map("postal_code")
+  country              String      @default("IN")
+  subtotalPaise        Int         @map("subtotal_paise")
+  shippingPaise        Int         @default(0) @map("shipping_paise")
+  discountPaise        Int         @default(0) @map("discount_paise")
+  totalPaise           Int         @map("total_paise")
+  currency             String      @default("INR")
+  status               OrderStatus @default(PENDING)
+  courier              String?
+  trackingNumber       String?     @map("tracking_number")
+  trackingUrl          String?     @map("tracking_url")
+  inventoryCommittedAt DateTime?   @map("inventory_committed_at")
+  shippedAt            DateTime?   @map("shipped_at")
+  deliveredAt          DateTime?   @map("delivered_at")
+  cancelledAt          DateTime?   @map("cancelled_at")
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
 
-  user     User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  items    OrderItem[]
-  payments Payment[]
+  user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items          OrderItem[]
+  payments       Payment[]
+  emailDeliveries EmailDelivery[]
 
   @@index([userId, createdAt])
   @@index([customerEmail, createdAt])
@@ -238,14 +266,14 @@ model Order {
 }
 
 model OrderItem {
-  id            String  @id @default(cuid())
-  orderId       String  @map("order_id")
-  productId     String? @map("product_id")
-  productName   String  @map("product_name")
-  sku           String
-  pricePaise    Int     @map("price_paise")
-  quantity      Int
-  productImage  String? @map("product_image")
+  id           String  @id @default(cuid())
+  orderId      String  @map("order_id")
+  productId    String? @map("product_id")
+  productName  String  @map("product_name")
+  sku          String
+  pricePaise   Int     @map("price_paise")
+  quantity     Int
+  productImage String? @map("product_image")
 
   order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
@@ -258,23 +286,40 @@ model OrderItem {
 model Payment {
   id                  String        @id @default(cuid())
   orderId             String        @map("order_id")
-  provider             String        @default("RAZORPAY")
-  providerOrderId      String?       @unique @map("provider_order_id")
-  providerPaymentId    String?       @unique @map("provider_payment_id")
-  amountPaise          Int           @map("amount_paise")
-  refundedAmountPaise  Int           @default(0) @map("refunded_amount_paise")
-  currency             String        @default("INR")
-  status               PaymentStatus @default(CREATED)
-  verifiedAt           DateTime?     @map("verified_at")
-  createdAt            DateTime      @default(now()) @map("created_at")
-  updatedAt            DateTime      @updatedAt @map("updated_at")
+  provider            String        @default("RAZORPAY")
+  providerOrderId     String?       @unique @map("provider_order_id")
+  providerPaymentId   String?       @unique @map("provider_payment_id")
+  amountPaise         Int           @map("amount_paise")
+  refundedAmountPaise Int           @default(0) @map("refunded_amount_paise")
+  currency            String        @default("INR")
+  status              PaymentStatus @default(CREATED)
+  verifiedAt          DateTime?     @map("verified_at")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
 
-  order  Order          @relation(fields: [orderId], references: [id], onDelete: Restrict)
-  events PaymentEvent[]
+  order   Order          @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  events  PaymentEvent[]
+  refunds Refund[]
 
   @@index([orderId, createdAt])
   @@index([status, createdAt])
   @@map("payments")
+}
+
+model Refund {
+  id               String       @id @default(cuid())
+  paymentId        String       @map("payment_id")
+  providerRefundId String       @unique @map("provider_refund_id")
+  amountPaise      Int          @map("amount_paise")
+  status           RefundStatus @default(CREATED)
+  reason           String?
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([paymentId, status])
+  @@map("refunds")
 }
 
 model PaymentEvent {
@@ -291,4 +336,28 @@ model PaymentEvent {
   @@index([paymentId])
   @@index([eventType, createdAt])
   @@map("payment_events")
+}
+
+model EmailDelivery {
+  id                String              @id @default(cuid())
+  orderId           String              @map("order_id")
+  dedupeKey         String              @unique @map("dedupe_key")
+  messageType       String              @map("message_type")
+  recipientEmail    String              @map("recipient_email")
+  recipientName     String?             @map("recipient_name")
+  subject           String
+  status            EmailDeliveryStatus @default(PENDING)
+  providerMessageId String?             @unique @map("provider_message_id")
+  attemptCount      Int                 @default(0) @map("attempt_count")
+  lastAttemptAt     DateTime?           @map("last_attempt_at")
+  lastError         String?             @map("last_error")
+  sentAt            DateTime?           @map("sent_at")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@index([status, updatedAt])
+  @@map("email_deliveries")
 }
