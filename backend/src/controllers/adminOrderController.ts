@@ -1,4 +1,5 @@
 import type { RequestHandler } from "express";
+import { notifyOrderStatusSafely } from "../services/emailService.js";
 import { getAdminOrder, listAdminOrders, updateAdminOrder } from "../services/orderService.js";
 import type {
   AdminOrderListQuery,
@@ -17,7 +18,7 @@ export const adminGetOrderController: RequestHandler = async (_req, res) => {
 
 export const adminUpdateOrderController: RequestHandler = async (_req, res) => {
   const { id } = res.locals.validatedParams as AdminOrderParams;
-  res.json({
-    data: await updateAdminOrder(id, res.locals.validatedBody as AdminOrderUpdateBody),
-  });
+  const order = await updateAdminOrder(id, res.locals.validatedBody as AdminOrderUpdateBody);
+  await notifyOrderStatusSafely(order.id, order.status);
+  res.json({ data: order });
 };
