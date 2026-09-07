@@ -1,35 +1,23 @@
 import { clerkMiddleware, getAuth } from "@clerk/express";
 import type { RequestHandler } from "express";
-import { adminClerkUserIds, clerkConfigured } from "../config/env.js";
+import { clerkConfigured } from "../config/env.js";
 import { AppError } from "../utils/AppError.js";
 
 export const clerkRequestMiddleware = clerkConfigured ? clerkMiddleware() : null;
 
-export const requireAdmin: RequestHandler = (req, res, next) => {
+export const requireCustomer: RequestHandler = (req, res, next) => {
   try {
     if (!clerkConfigured) {
       throw new AppError(
         503,
-        "ADMIN_AUTH_NOT_CONFIGURED",
-        "Admin authentication is not configured yet.",
+        "CUSTOMER_AUTH_NOT_CONFIGURED",
+        "Customer sign-in is not configured yet.",
       );
     }
 
-    const { userId } = getAuth(req);
-    if (!userId) {
-      throw new AppError(401, "AUTH_REQUIRED", "Authentication is required.");
-    }
-
-    if (!adminClerkUserIds.size) {
-      throw new AppError(
-        503,
-        "ADMIN_ALLOWLIST_NOT_CONFIGURED",
-        "The admin allowlist is not configured yet.",
-      );
-    }
-
-    if (!adminClerkUserIds.has(userId)) {
-      throw new AppError(403, "ADMIN_FORBIDDEN", "This account does not have admin access.");
+    const { isAuthenticated, userId } = getAuth(req);
+    if (!isAuthenticated || !userId) {
+      throw new AppError(401, "AUTH_REQUIRED", "Sign in to access this account.");
     }
 
     res.locals.clerkUserId = userId;
@@ -37,4 +25,16 @@ export const requireAdmin: RequestHandler = (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+// Phase 5 replaces this fail-closed placeholder with the separate JoyNeeds
+// admin email/password + secure session authentication required by the project brief.
+export const requireAdmin: RequestHandler = (_req, _res, next) => {
+  next(
+    new AppError(
+      503,
+      "ADMIN_AUTH_NOT_CONFIGURED",
+      "Admin authentication will be enabled with the dedicated admin session system.",
+    ),
+  );
 };
