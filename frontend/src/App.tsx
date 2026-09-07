@@ -8,6 +8,7 @@ import Toast from "./components/common/Toast";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import SEO from "./components/common/SEO";
 import { Skeleton } from "./components/common/UI";
+import AdminAuthGate from "./admin/AdminAuthGate";
 
 const Home = lazy(() => import("./pages/Home"));
 const Shop = lazy(() => import("./pages/Shop"));
@@ -21,7 +22,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Policy = lazy(() => import("./pages/Policy"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const AdminRouter = lazy(() => import("./admin/AdminRouter"));
+const AdminRouter = lazy(() => import("./admin/AdminPhase5Router"));
 
 export default function App() {
   return (
@@ -34,7 +35,7 @@ export default function App() {
             <Toast />
             <Suspense fallback={<Skeleton />}>
               <Routes>
-                <Route path="/admin/*" element={<AdminRouter />} />
+                <Route path="/admin/*" element={<AdminAuthGate><AdminRouter /></AdminAuthGate>} />
                 <Route element={<MainLayout />}>
                   <Route path="/" element={<Home />} />
                   <Route path="/shop" element={<Shop />} />
@@ -48,13 +49,7 @@ export default function App() {
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/faq" element={<FAQ />} />
-                  {[
-                    "privacy-policy",
-                    "terms",
-                    "shipping-policy",
-                    "return-policy",
-                    "refund-cancellation",
-                  ].map((path) => (
+                  {["privacy-policy", "terms", "shipping-policy", "return-policy", "refund-cancellation"].map((path) => (
                     <Route path={"/" + path} key={path} element={<Policy />} />
                   ))}
                   <Route path="/terms-and-conditions" element={<Navigate to="/terms" replace />} />
