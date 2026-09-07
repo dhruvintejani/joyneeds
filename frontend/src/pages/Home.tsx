@@ -1,213 +1,174 @@
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  Grid2X2,
-  Heart,
-  ListChecks,
-  MessageCircle,
-  CookingPot,
   Boxes,
-  Laptop,
-  Car,
-  Sparkles,
-  PawPrint,
+  CircleHelp,
+  FileCheck2,
+  Heart,
+  Leaf,
+  ShoppingBag,
 } from "lucide-react";
 import ProductCard from "../components/product/ProductCard";
+import ProductImage from "../components/common/ProductImage";
 import { Reveal, Skeleton } from "../components/common/UI";
-import { site } from "../config/site";
+import { SectionHeading } from "../components/common/ReferenceUI";
 import { useCatalogStore } from "../store/catalogStore";
-
-const icons = [CookingPot, Boxes, Laptop, Car, Sparkles, PawPrint];
 
 export default function Home() {
   const products = useCatalogStore((state) => state.products);
   const categories = useCatalogStore((state) => state.categories);
   const status = useCatalogStore((state) => state.status);
-  const featured = products.filter((product) => product.featured).slice(0, 8);
-  const best = site.catalogVerified
-    ? products.filter((product) => product.bestseller).slice(0, 4)
-    : [];
-  const arrivals = products.filter((product) => product.newArrival).slice(0, 4);
 
   if (status === "idle" || status === "loading") return <Skeleton />;
 
+  const featured = products.filter((product) => product.featured).slice(0, 5);
+  const showProducts = featured.length ? featured : products.slice(0, 5);
+
   return (
-    <div className="container">
-      <Reveal>
-        <section className="hero">
-          <div className="hero-copy">
-            <p className="eyebrow">THE EVERYDAY EDIT</p>
+    <div className="reference-home-page">
+      <section className="reference-home-hero">
+        <div className="container reference-home-hero-inner">
+          <div className="reference-home-copy">
+            <p className="reference-kicker">EVERYDAY ESSENTIALS</p>
             <h1>
-              Little finds.
+              Useful finds for
               <br />
-              <span>Better everyday.</span>
+              <span>a better everyday.</span>
             </h1>
-            <p>
-              Useful essentials for your home, your workspace, and all the moments
-              in between.
+            <p className="reference-hero-lead">
+              Thoughtfully presented products for home, work and daily life —
+              with clear details and less shopping clutter.
             </p>
-            <div className="hero-actions">
+            <div className="reference-hero-actions">
               <Link className="button primary" to="/shop">
-                Explore the collection <ArrowRight size={18} />
+                Shop Now <ArrowRight size={18} />
               </Link>
-              <a className="text-link" href="#categories">
-                Shop by category
+              <a className="button secondary" href="#categories">
+                Explore Categories
               </a>
             </div>
-            <div className="hero-meta" aria-label="JoyNeeds shopping features">
-              <span>Clear product details</span>
-              <span>Guest shopping</span>
-              <span>Saved on your browser</span>
+            <div className="reference-hero-points" aria-label="JoyNeeds features">
+              <span><FileCheck2 size={20} /> Clear details</span>
+              <span><ShoppingBag size={20} /> Guest shopping</span>
+              <span><Heart size={20} /> Save favourites</span>
             </div>
           </div>
-          <div className="hero-brand">
-            <img
-              src="/brand/joyneeds-logo.png"
-              alt="JoyNeeds — everyday essentials"
-              width={2048}
-              height={682}
-              fetchPriority="high"
-            />
-            <div className="hero-note">
-              <span>HOME · WORK · LIFE</span>
-              <p>Find what fits your day.</p>
+
+          <div className="reference-home-visual" aria-label="JoyNeeds lifestyle">
+            <img src="/reference/reference-home.webp" alt="Calm home essentials setting" />
+            <div className="reference-home-floating-card">
+              <Leaf size={21} />
+              <span>Small essentials.<br />A little more joy.</span>
+              <ArrowRight size={18} />
             </div>
           </div>
-        </section>
-      </Reveal>
+        </div>
+      </section>
 
-      <Reveal>
-        <section className="section categories-section" id="categories">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">MAKE ROOM FOR USEFUL</p>
-              <h2>What’s on your list?</h2>
-            </div>
-            <Link to="/shop" className="text-link">
-              Browse all <ArrowRight size={16} />
-            </Link>
-          </div>
-          <div className="category-grid">
-            {categories.map((category, index) => {
-              const Icon = icons[index] || Grid2X2;
-              return (
-                <Link
-                  className="category-tile"
-                  key={category.id}
-                  to={"/category/" + category.slug}
-                >
-                  <span className="category-icon">
-                    <Icon size={25} strokeWidth={1.55} />
-                  </span>
-                  <span>{category.name}</span>
-                  <ArrowRight size={16} />
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      </Reveal>
-
-      <Reveal>
-        <section className="section">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">A GOOD PLACE TO START</p>
-              <h2>The featured edit</h2>
-            </div>
-            <Link to="/shop?featured=1" className="text-link">
-              View all <ArrowRight size={16} />
-            </Link>
-          </div>
-          <div className="product-grid">
-            {featured.map((product) => (
-              <ProductCard product={product} key={product.id} />
-            ))}
-          </div>
-        </section>
-      </Reveal>
-
-      <Reveal>
-        <section className="discovery-band">
-          <div>
-            <p className="eyebrow">LESS CLUTTER. MORE CLARITY.</p>
-            <h2>A place for everything.</h2>
-            <p>
-              Explore storage and organization for the spaces you use every day.
-            </p>
-          </div>
-          <Link to="/category/storage-organization" className="button secondary">
-            Discover storage <ArrowRight size={18} />
-          </Link>
-        </section>
-      </Reveal>
-
-      {[
-        [best, "Best sellers"],
-        [arrivals, "Just added"],
-      ].map(([items, title]) => {
-        const list = items as typeof products;
-        return (
-          list.length > 0 && (
-            <Reveal key={title as string}>
-              <section className="section">
-                <div className="section-heading">
-                  <h2>{title as string}</h2>
-                  <Link to="/shop" className="text-link">
-                    Explore more
+      <div className="container">
+        <Reveal>
+          <section className="reference-section" id="categories">
+            <SectionHeading title="Shop by Category" to="/shop" linkLabel="View all categories" />
+            <div className="reference-category-cards">
+              {categories.slice(0, 5).map((category) => {
+                const firstProduct = products.find((product) => product.category === category.name);
+                return (
+                  <Link
+                    className="reference-category-card"
+                    key={category.id}
+                    to={`/category/${category.slug}`}
+                  >
+                    <div className="reference-category-photo">
+                      {firstProduct ? (
+                        <ProductImage src={firstProduct.image} alt="" />
+                      ) : (
+                        <span><Boxes size={32} /></span>
+                      )}
+                    </div>
+                    <div>
+                      <strong>{category.name}</strong>
+                      <span>{category.description || "Explore useful everyday picks"}</span>
+                    </div>
                   </Link>
-                </div>
-                <div className="product-grid">
-                  {list.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              </section>
-            </Reveal>
-          )
-        );
-      })}
-
-      <Reveal>
-        <section className="section">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">SHOPPING, KEPT SIMPLE</p>
-              <h2>A little less searching.</h2>
+                );
+              })}
             </div>
-            <Link className="text-link" to="/about">
-              Meet JoyNeeds <ArrowRight size={16} />
-            </Link>
-          </div>
-          <div className="benefit-grid">
-            {[
-              {
-                Icon: ListChecks,
-                title: "Details before decisions",
-                text: "Compare prices, features, and product information in one place.",
-              },
-              {
-                Icon: Heart,
-                title: "Keep your favourites",
-                text: "Save your finds and come back to them on this browser.",
-              },
-              {
-                Icon: MessageCircle,
-                title: "Questions are welcome",
-                text: "Find our contact details and shopping policies whenever you need them.",
-              },
-            ].map(({ Icon, title, text }) => (
-              <div className="benefit" key={title}>
-                <span className="benefit-icon">
-                  <Icon size={22} strokeWidth={1.55} />
-                </span>
-                <h3>{title}</h3>
-                <p>{text}</p>
+          </section>
+        </Reveal>
+
+        <Reveal>
+          <section className="reference-section">
+            <SectionHeading
+              eyebrow="A GOOD PLACE TO START"
+              title="Featured Products"
+              to="/shop?featured=1"
+              linkLabel="Browse all"
+            />
+            {showProducts.length ? (
+              <div className="product-grid reference-home-product-grid">
+                {showProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
               </div>
-            ))}
-          </div>
-        </section>
-      </Reveal>
+            ) : (
+              <div className="reference-empty-panel">Products will appear here when the catalog is available.</div>
+            )}
+          </section>
+        </Reveal>
+
+        <Reveal>
+          <section className="reference-story-band">
+            <div className="reference-story-image" aria-hidden="true">
+              <img src="/reference/reference-home.webp" alt="" />
+            </div>
+            <div className="reference-story-copy">
+              <p className="reference-kicker">WHY JOYNEEDS</p>
+              <h2>Less noise. More useful choices.</h2>
+              <p>
+                JoyNeeds is being built around clear product information, calm
+                browsing and practical everyday finds — without fake urgency or
+                exaggerated claims.
+              </p>
+              <Link className="button primary" to="/about">
+                Our Story <ArrowRight size={17} />
+              </Link>
+            </div>
+          </section>
+        </Reveal>
+
+        <Reveal>
+          <section className="reference-section">
+            <SectionHeading eyebrow="SHOPPING, KEPT SIMPLE" title="Designed around real decisions" />
+            <div className="reference-benefit-grid">
+              {[
+                {
+                  Icon: FileCheck2,
+                  title: "Details before decisions",
+                  text: "See the product information we actually have, with missing details called out clearly.",
+                },
+                {
+                  Icon: Heart,
+                  title: "Keep your favourites",
+                  text: "Save items to your browser and return to them without creating an account.",
+                },
+                {
+                  Icon: CircleHelp,
+                  title: "Questions are welcome",
+                  text: "Policies, FAQs and contact options stay easy to reach throughout the site.",
+                },
+              ].map(({ Icon, title, text }) => (
+                <article className="reference-benefit-card" key={title}>
+                  <span><Icon size={24} /></span>
+                  <div>
+                    <h3>{title}</h3>
+                    <p>{text}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </Reveal>
+      </div>
     </div>
   );
 }

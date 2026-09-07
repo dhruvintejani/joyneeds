@@ -11,13 +11,11 @@ export default function SearchBox() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const products = useCatalogStore((state) => state.products);
-  const catalogStatus = useCatalogStore((state) => state.status);
   const wrapper = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const id = useId();
-
   const results = debounced.trim()
     ? products.filter((product) => matchesSearch(product, debounced)).slice(0, 5)
     : [];
@@ -30,9 +28,7 @@ export default function SearchBox() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  useEffect(() => {
-    setOpen(false);
-  }, [location]);
+  useEffect(() => setOpen(false), [location]);
 
   useEffect(() => {
     const close = (event: PointerEvent) => {
@@ -43,10 +39,15 @@ export default function SearchBox() {
   }, []);
 
   const visible = open && !!query.trim();
+  const submit = () => {
+    const trimmed = query.trim();
+    navigate(trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : "/shop");
+    setOpen(false);
+  };
 
   return (
     <div
-      className="search-box"
+      className="search-box reference-search-box"
       ref={wrapper}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
@@ -55,14 +56,10 @@ export default function SearchBox() {
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          navigate("/search?q=" + encodeURIComponent(query.trim()));
-          setOpen(false);
+          submit();
         }}
       >
-        <Search size={18} aria-hidden="true" />
-        <label className="sr-only" htmlFor={id}>
-          Search products
-        </label>
+        <label className="sr-only" htmlFor={id}>Search products</label>
         <input
           ref={input}
           id={id}
@@ -70,11 +67,9 @@ export default function SearchBox() {
           role="combobox"
           aria-autocomplete="list"
           aria-expanded={visible}
-          aria-controls={id + "-results"}
-          aria-activedescendant={
-            visible && active >= 0 ? id + "-option-" + active : undefined
-          }
-          placeholder="Search your everyday needs"
+          aria-controls={`${id}-results`}
+          aria-activedescendant={visible && active >= 0 ? `${id}-option-${active}` : undefined}
+          placeholder="Search for products, categories or brands…"
           value={query}
           onFocus={() => setOpen(true)}
           onChange={(event) => {
@@ -92,21 +87,13 @@ export default function SearchBox() {
               setOpen(true);
               setActive((index) =>
                 results.length
-                  ? (index +
-                      (event.key === "ArrowDown" ? 1 : -1) +
-                      results.length) %
-                    results.length
+                  ? (index + (event.key === "ArrowDown" ? 1 : -1) + results.length) % results.length
                   : -1,
               );
             }
-            if (
-              event.key === "Enter" &&
-              visible &&
-              active >= 0 &&
-              results[active]
-            ) {
+            if (event.key === "Enter" && visible && active >= 0 && results[active]) {
               event.preventDefault();
-              navigate("/product/" + results[active].slug);
+              navigate(`/product/${results[active].slug}`);
               setOpen(false);
             }
           }}
@@ -114,34 +101,34 @@ export default function SearchBox() {
         {query && (
           <button
             type="button"
-            className="icon-button"
+            className="reference-search-clear"
             aria-label="Clear search"
             onClick={() => {
               setQuery("");
               input.current?.focus();
             }}
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         )}
+        <button className="reference-search-submit" type="submit" aria-label="Search">
+          <Search size={19} />
+        </button>
       </form>
+
       {visible && (
         <div className="search-results">
-          <ul
-            id={id + "-results"}
-            role="listbox"
-            aria-label="Product suggestions"
-          >
+          <ul id={`${id}-results`} role="listbox" aria-label="Product suggestions">
             {results.map((product, index) => (
               <li
                 key={product.id}
-                id={id + "-option-" + index}
+                id={`${id}-option-${index}`}
                 role="option"
                 aria-selected={active === index}
                 onMouseEnter={() => setActive(index)}
                 onPointerDown={(event) => event.preventDefault()}
                 onClick={() => {
-                  navigate("/product/" + product.slug);
+                  navigate(`/product/${product.slug}`);
                   setOpen(false);
                 }}
                 className={active === index ? "active" : ""}
@@ -157,16 +144,12 @@ export default function SearchBox() {
           </ul>
           {!results.length && (
             <p className="search-message" role="status">
-              {catalogStatus === "loading" || debounced !== query
-                ? "Searching…"
-                : catalogStatus === "error"
-                  ? "Search is temporarily unavailable."
-                  : "No matching products. Try another word."}
+              {debounced !== query ? "Searching…" : "No matching products. Try another word."}
             </p>
           )}
           <Link
             className="search-all"
-            to={"/search?q=" + encodeURIComponent(query)}
+            to={`/search?q=${encodeURIComponent(query)}`}
             onClick={() => setOpen(false)}
           >
             See all results

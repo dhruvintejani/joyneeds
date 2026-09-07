@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Plus } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCartStore } from "../../store/cartStore";
 import { useDiscoveryStore } from "../../store/discoveryStore";
 import type { Product } from "../../types/catalog";
 import { site } from "../../config/site";
-import { money, discount, maxQuantity } from "../../utils/catalog";
+import { discount, maxQuantity, money } from "../../utils/catalog";
 import ProductImage from "../common/ProductImage";
 
 export default function ProductCard({ product }: { product: Product; index?: number }) {
@@ -18,79 +18,64 @@ export default function ProductCard({ product }: { product: Product; index?: num
 
   return (
     <motion.article
-      className="product-card"
-      whileHover={{ y: -3 }}
+      className="product-card reference-product-card"
+      whileHover={{ y: -4 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
     >
-      <div className="product-image-wrap">
-        <Link to={"/product/" + product.slug} tabIndex={-1} aria-hidden="true">
-          <ProductImage
-            src={product.image}
-            alt={product.name}
-            className="product-image"
-          />
+      <div className="product-image-wrap reference-product-image-wrap">
+        <Link to={`/product/${product.slug}`} tabIndex={-1} aria-hidden="true">
+          <ProductImage src={product.image} alt={product.name} className="product-image" />
         </Link>
         <button
-          className={"icon-button wishlist-toggle " + (saved ? "saved" : "")}
-          aria-label={
-            (saved ? "Remove " : "Save ") +
-            product.name +
-            (saved ? " from wishlist" : " to wishlist")
-          }
+          className={`reference-wishlist-button ${saved ? "saved" : ""}`}
+          aria-label={`${saved ? "Remove" : "Save"} ${product.name} ${saved ? "from" : "to"} wishlist`}
           aria-pressed={saved}
           onClick={() => {
             toggle(product.id);
             toast.success(saved ? "Removed from wishlist" : "Saved to wishlist");
           }}
         >
-          <Heart size={18} fill={saved ? "currentColor" : "none"} />
+          <Heart size={17} fill={saved ? "currentColor" : "none"} />
         </button>
-        {(off > 0 ||
-          (site.catalogVerified && product.bestseller) ||
-          product.newArrival) && (
-          <div className="product-badge-stack" aria-label="Product highlights">
-            {off > 0 && (
-              <span className="product-badge product-badge-sale">{off}% off</span>
-            )}
+        {(product.newArrival || off > 0 || (site.catalogVerified && product.bestseller)) && (
+          <div className="reference-product-badges" aria-label="Product highlights">
+            {product.newArrival && <span className="reference-badge green">New</span>}
+            {off > 0 && <span className="reference-badge green">{off}% off</span>}
             {site.catalogVerified && product.bestseller && (
-              <span className="product-badge">Bestseller</span>
+              <span className="reference-badge gold">Bestseller</span>
             )}
-            {product.newArrival && <span className="product-badge">New</span>}
           </div>
         )}
       </div>
-      <div className="product-content">
-        <p className="eyebrow">{product.category}</p>
-        <Link className="product-name" to={"/product/" + product.slug}>
+
+      <div className="reference-product-content">
+        <Link className="reference-product-name" to={`/product/${product.slug}`}>
           {product.name}
         </Link>
-        {site.catalogVerified &&
-          product.rating !== null &&
-          product.reviewCount > 0 && (
-            <p className="rating">
-              ★ {product.rating}{" "}
-              <span className="muted">({product.reviewCount})</span>
-            </p>
-          )}
-        <div className="product-bottom">
-          <div className="product-price">
-            <strong>{money(product.price)}</strong>
-            {off > 0 && <del>{money(product.originalPrice!)}</del>}
-          </div>
-          <button
-            className="add-card-button"
-            disabled={!available}
-            aria-label={"Add " + product.name + " to cart"}
-            onClick={() => {
-              if (add(product)) toast.success("Added to cart");
-              else toast.error("Quantity limit reached");
-            }}
-          >
-            <Plus size={16} />
-            <span>{available ? "Add" : "Unavailable"}</span>
-          </button>
+        <p className="reference-product-meta">
+          {product.subcategory || product.category}
+        </p>
+        {site.catalogVerified && product.rating !== null && product.reviewCount > 0 && (
+          <p className="reference-rating">
+            ★ {product.rating} <span>({product.reviewCount})</span>
+          </p>
+        )}
+        <div className="reference-product-price">
+          <strong>{money(product.price)}</strong>
+          {off > 0 && product.originalPrice && <del>{money(product.originalPrice)}</del>}
         </div>
-        {!available && <p className="muted small">Currently unavailable</p>}
+        <button
+          className="reference-add-button"
+          disabled={!available}
+          aria-label={`Add ${product.name} to cart`}
+          onClick={() => {
+            if (add(product)) toast.success("Added to cart");
+            else toast.error("Quantity limit reached");
+          }}
+        >
+          <ShoppingCart size={17} />
+          {available ? "Add to Cart" : "Unavailable"}
+        </button>
       </div>
     </motion.article>
   );
