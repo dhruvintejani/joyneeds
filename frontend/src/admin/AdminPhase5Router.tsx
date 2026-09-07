@@ -16,7 +16,6 @@ import {
   ArrowLeft,
   BarChart3,
   Boxes,
-  CircleDollarSign,
   ClipboardList,
   ExternalLink,
   FileText,
@@ -110,12 +109,7 @@ function AdminLayout() {
         <nav className="admin-nav">{nav.map(({ to, label, Icon, exact }) => <NavLink key={to} to={to} end={exact} className={({ isActive }) => isActive ? "active" : ""}><Icon size={20} /><span>{label}</span></NavLink>)}</nav>
         <div className="admin-sidebar-spacer" />
         <Link className="admin-view-store" to="/"><ExternalLink size={18} /> View Store</Link>
-        <button
-          className="admin-view-store"
-          onClick={async () => {
-            try { await logoutAdmin(); } finally { window.location.assign("/admin"); }
-          }}
-        ><LogOut size={18} /> Sign Out</button>
+        <button className="admin-view-store" onClick={async () => { try { await logoutAdmin(); } finally { window.location.assign("/admin"); } }}><LogOut size={18} /> Sign Out</button>
         <div className="admin-sidebar-footer"><img src="/brand/joyneeds-logo.png" alt="JoyNeeds" /><span>Admin Panel</span><small>Secure session</small></div>
       </aside>
       {open && <button className="admin-overlay" onClick={() => setOpen(false)} aria-label="Close navigation" />}
