@@ -27,8 +27,8 @@ test("orders use database prices and commit/release known inventory safely", asy
 
     const order = await createPendingOrder(
       {
-        customerName: "Phase Six Test",
-        customerEmail: "phase6@example.com",
+        customerName: "Checkout Test",
+        customerEmail: "checkout@example.com",
         customerPhone: "9000000000",
         addressLine1: "10 Test Street",
         addressLine2: null,
@@ -45,6 +45,8 @@ test("orders use database prices and commit/release known inventory safely", asy
     assert.equal(order.totalPaise, product.pricePaise * 2);
     assert.equal(order.status, "PENDING");
     assert.equal(order.inventoryCommittedAt, null);
+    assert.equal(order.paymentReady, true, "an enabled order must continue to Razorpay preparation");
+    assert.equal(order.inventoryReserved, false, "pending orders must not claim inventory is reserved");
 
     const beforeConfirm = await prisma.product.findUniqueOrThrow({
       where: { id: product.id },
