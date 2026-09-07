@@ -1,6 +1,12 @@
 import { clerkMiddleware, getAuth } from "@clerk/express";
 import type { RequestHandler } from "express";
-import { clerkConfigured } from "../config/env.js";
+import { clerkConfigured, env } from "../config/env.js";
+import {
+  ADMIN_SESSION_COOKIE,
+  getAdminSession,
+  readCookie,
+  touchAdminSession,
+} from "../services/adminAuthService.js";
 import { AppError } from "../utils/AppError.js";
 
 export const clerkRequestMiddleware = clerkConfigured ? clerkMiddleware() : null;
@@ -27,14 +33,28 @@ export const requireCustomer: RequestHandler = (req, res, next) => {
   }
 };
 
-// Phase 5 replaces this fail-closed placeholder with the separate JoyNeeds
-// admin email/password + secure session authentication required by the project brief.
-export const requireAdmin: RequestHandler = (_req, _res, next) => {
-  next(
-    new AppError(
-      503,
-      "ADMIN_AUTH_NOT_CONFIGURED",
-      "Admin authentication will be enabled with the dedicated admin session system.",
-    ),
-  );
+export const requireAdmin: RequestHandler = async (req, res, next) => {
+  try {
+    const token = readCookie(req.headers.cookie, ADMIN_SESSION_COOKIE);
+    const session = await getAdminSession(token);
+    if (!session) {
+      throw new AppError(401, "ADMIN_AUTH_REQUIRED", "Admin sign-in is required.");
+    }
+
+    res.locals.adminSessionId = session.id;
+    res.locals.adminEmail = session.email;
+    void touchAdminSession(session.id);
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const requireAdminWriteOrigin: RequestHandler = (req, _res, next) => {
+  const origin = req.get("origin");
+  if (!origin || origin !== env.FRONTEND_URL) {
+    next(new AppError(403, "ADMIN_ORIGIN_DENIED", "This admin request origin is not allowed."));
+    return;
+  }
+  next();
 };
