@@ -1,10 +1,12 @@
 import type { RequestHandler } from "express";
+import { prisma } from "../config/prisma.js";
 import {
   createRazorpayOrder,
   handleRazorpayWebhook,
   refundAdminOrder,
   verifyRazorpayPayment,
 } from "../services/paymentService.js";
+import { AppError } from "../utils/AppError.js";
 import type {
   AdminRefundBody,
   CreateRazorpayOrderBody,
@@ -14,7 +16,19 @@ import type { AdminOrderParams } from "../validators/orderValidators.js";
 
 export const createRazorpayOrderController: RequestHandler = async (_req, res) => {
   const clerkUserId = (res.locals.clerkUserId as string | undefined) ?? null;
-  const data = await createRazorpayOrder(res.locals.validatedBody as CreateRazorpayOrderBody, clerkUserId);
+  const body = res.locals.validatedBody as CreateRazorpayOrderBody;
+  const paid = await prisma.payment.findFirst({
+    where: {
+      orderId: body.orderId,
+      provider: "RAZORPAY",
+      status: { in: ["PAID", "PARTIALLY_REFUNDED", "REFUNDED"] },
+    },
+    select: { id: true },
+  });
+  if (paid) {
+    throw new AppError(409, "PAYMENT_ALREADY_CAPTURED", "This order already has a captured Razorpay payment.");
+  }
+  const data = await createRazorpayOrder(body, clerkUserId);
   res.status(201).json({ data });
 };
 
