@@ -12,6 +12,7 @@ import {
 import { useCartStore } from "../../store/cartStore";
 import { useDiscoveryStore } from "../../store/discoveryStore";
 import { useCatalogStore } from "../../store/catalogStore";
+import { useCustomerAuth } from "../../auth/CustomerAuthProvider";
 import { site } from "../../config/site";
 import SearchBox from "../common/SearchBox";
 import { Drawer } from "../common/UI";
@@ -22,6 +23,13 @@ export default function Header() {
   const count = useCartStore((state) => state.getCartCount());
   const saved = useDiscoveryStore((state) => state.wishlist.length);
   const categories = useCatalogStore((state) => state.categories);
+  const auth = useCustomerAuth();
+  const accountTitle = auth.enabled && auth.isSignedIn
+    ? auth.user?.firstName || "Account"
+    : auth.enabled
+      ? "Sign in"
+      : "Account";
+  const accountSubtitle = auth.enabled && auth.isSignedIn ? "Signed in" : "Guest";
 
   return (
     <header className="site-header reference-header">
@@ -40,12 +48,7 @@ export default function Header() {
 
       <div className="container reference-header-main">
         <Link to="/" className="reference-brand" aria-label="JoyNeeds home">
-          <img
-            src="/brand/joyneeds-logo.png"
-            alt="JoyNeeds"
-            width={2048}
-            height={682}
-          />
+          <img src="/brand/joyneeds-logo.png" alt="JoyNeeds" width={2048} height={682} />
         </Link>
 
         <div className="reference-header-search">
@@ -53,17 +56,13 @@ export default function Header() {
         </div>
 
         <div className="reference-header-actions">
-          <span
-            className="reference-account-preview"
-            title="Account sign-in will be added in a later phase"
-            aria-label="Guest account; sign-in is not enabled yet"
-          >
+          <Link className="reference-account-preview" to="/account" aria-label="Customer account">
             <UserRound size={21} />
             <span>
-              <b>Account</b>
-              <small>Guest</small>
+              <b>{accountTitle}</b>
+              <small>{accountSubtitle}</small>
             </span>
-          </span>
+          </Link>
           <Link className="reference-action-link" to="/wishlist" aria-label={`Wishlist, ${saved} items`}>
             <span className="reference-action-icon">
               <Heart size={21} />
@@ -102,15 +101,9 @@ export default function Header() {
             </button>
             {categoriesOpen && (
               <div className="reference-category-dropdown">
-                <Link to="/shop" onClick={() => setCategoriesOpen(false)}>
-                  All products
-                </Link>
+                <Link to="/shop" onClick={() => setCategoriesOpen(false)}>All products</Link>
                 {categories.map((category) => (
-                  <Link
-                    key={category.id}
-                    to={`/category/${category.slug}`}
-                    onClick={() => setCategoriesOpen(false)}
-                  >
+                  <Link key={category.id} to={`/category/${category.slug}`} onClick={() => setCategoriesOpen(false)}>
                     {category.name}
                   </Link>
                 ))}
@@ -122,9 +115,7 @@ export default function Header() {
             <NavLink to="/">Home</NavLink>
             <NavLink to="/shop">All Products</NavLink>
             {categories.slice(0, 3).map((category) => (
-              <NavLink key={category.id} to={`/category/${category.slug}`}>
-                {category.name}
-              </NavLink>
+              <NavLink key={category.id} to={`/category/${category.slug}`}>{category.name}</NavLink>
             ))}
             <NavLink to="/about">About Us</NavLink>
             <NavLink to="/contact">Contact</NavLink>
@@ -147,10 +138,9 @@ export default function Header() {
           <Link to="/">Home</Link>
           <Link to="/shop">All products</Link>
           {categories.map((category) => (
-            <Link key={category.id} to={`/category/${category.slug}`}>
-              {category.name}
-            </Link>
+            <Link key={category.id} to={`/category/${category.slug}`}>{category.name}</Link>
           ))}
+          <Link to="/account">Account</Link>
           <Link to="/wishlist">Wishlist</Link>
           <Link to="/cart">Cart</Link>
           <Link to="/about">About us</Link>
