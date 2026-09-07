@@ -27,6 +27,7 @@ import {
   adminListProductImagesController,
   adminReplaceProductImageController,
 } from "../controllers/adminProductImageController.js";
+import { adminRefundOrderController } from "../controllers/paymentController.js";
 import { requireAdmin, requireAdminWriteOrigin } from "../middleware/auth.js";
 import {
   uploadProductImages,
@@ -48,6 +49,7 @@ import {
   adminOrderParamsSchema,
   adminOrderUpdateSchema,
 } from "../validators/orderValidators.js";
+import { adminRefundSchema } from "../validators/paymentValidators.js";
 
 export const adminRouter = Router();
 
@@ -92,6 +94,13 @@ adminRouter.patch(
   validateParams(adminOrderParamsSchema),
   validateBody(adminOrderUpdateSchema),
   adminUpdateOrderController,
+);
+adminRouter.post(
+  "/orders/:id/refund",
+  requireAdminWriteOrigin,
+  validateParams(adminOrderParamsSchema),
+  validateBody(adminRefundSchema),
+  adminRefundOrderController,
 );
 
 adminRouter.get("/products", validateQuery(adminProductListQuerySchema), adminListProductsController);
