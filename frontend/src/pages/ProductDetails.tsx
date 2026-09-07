@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Heart, ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  FileCheck2,
+  Heart,
+  PackageCheck,
+  ShoppingCart,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import type { Product } from "../types/catalog";
 import { useCatalogStore } from "../store/catalogStore";
@@ -17,6 +23,7 @@ import {
   QuantitySelector,
   Skeleton,
 } from "../components/common/UI";
+import { SectionHeading } from "../components/common/ReferenceUI";
 
 export default function ProductDetails() {
   const { slug } = useParams();
@@ -28,7 +35,7 @@ export default function ProductDetails() {
   if (status === "idle" || status === "loading") return <Skeleton />;
   if (!product)
     return (
-      <div className="container">
+      <div className="container section-bottom">
         <EmptyState title="Product not found">
           This product may no longer be in the collection.
         </EmptyState>
@@ -75,14 +82,6 @@ function ProductView({
   const limit = maxQuantity(product);
   const remaining = Math.max(0, limit - current);
   const off = discount(product);
-  const addItem = (buy = false) => {
-    if (add(product, quantity)) {
-      toast.success("Added to cart");
-      if (buy) navigate("/checkout");
-    } else {
-      toast.error("Please reduce the quantity; your cart is at the limit.");
-    }
-  };
   const related = products
     .filter((item) => item.category === product.category && item.id !== product.id)
     .slice(0, 4);
@@ -92,21 +91,43 @@ function ProductView({
     .filter((item): item is Product => !!item)
     .slice(0, 4);
 
+  const addItem = (buy = false) => {
+    if (add(product, quantity)) {
+      toast.success("Added to cart");
+      if (buy) navigate("/checkout");
+    } else {
+      toast.error("Please reduce the quantity; your cart is at the limit.");
+    }
+  };
+
   return (
-    <div className="container">
+    <div className="container reference-product-page section-bottom">
       <Breadcrumb
         items={[
           { label: "Shop", to: "/shop" },
-          {
-            label: product.category,
-            to: "/category/" + categorySlug,
-          },
+          { label: product.category, to: `/category/${categorySlug}` },
           { label: product.name },
         ]}
       />
-      <div className="detail-grid">
-        <div>
-          <div className="main-product-image">
+
+      <section className="reference-product-detail">
+        <div className="reference-product-gallery">
+          {gallery.length > 1 && (
+            <div className="reference-thumbnails" aria-label="Product images">
+              {gallery.map((src, index) => (
+                <button
+                  key={src + index}
+                  className={photo === index ? "selected" : ""}
+                  aria-label={`View photo ${index + 1}`}
+                  aria-pressed={photo === index}
+                  onClick={() => setPhoto(index)}
+                >
+                  <ProductImage src={src} alt={`${product.name} view ${index + 1}`} />
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="reference-main-product-image">
             <ProductImage
               src={gallery[photo] || gallery[0]}
               alt={product.name}
@@ -114,164 +135,141 @@ function ProductView({
               className="detail-photo"
             />
           </div>
-          {gallery.length > 1 && (
-            <div className="thumbnails">
-              {gallery.map((src, index) => (
-                <button
-                  key={src + index}
-                  className={photo === index ? "selected" : ""}
-                  aria-label={"View photo " + (index + 1)}
-                  aria-pressed={photo === index}
-                  onClick={() => setPhoto(index)}
-                >
-                  <ProductImage
-                    src={src}
-                    alt={product.name + " view " + (index + 1)}
-                  />
-                </button>
-              ))}
-            </div>
-          )}
         </div>
-        <div className="product-info">
-          <p className="eyebrow">{product.category}</p>
+
+        <div className="reference-product-info">
+          <p className="reference-kicker">{product.category}</p>
           <h1>{product.name}</h1>
-          {site.catalogVerified &&
-            product.rating !== null &&
-            product.reviewCount > 0 && (
-              <p>
-                ★ {product.rating} · {product.reviewCount} reviews
-              </p>
-            )}
-          <div className="detail-price">
+          <p className="reference-product-lead">{product.shortDescription}</p>
+
+          {site.catalogVerified && product.rating !== null && product.reviewCount > 0 && (
+            <p className="reference-rating">★ {product.rating} <span>({product.reviewCount} reviews)</span></p>
+          )}
+
+          <div className="reference-detail-price">
             <strong>{money(product.price)}</strong>
-            {off > 0 && (
+            {off > 0 && product.originalPrice && (
               <>
-                <del>{money(product.originalPrice!)}</del>
-                <span className="badge">Save {off}%</span>
+                <del>{money(product.originalPrice)}</del>
+                <span className="reference-badge green">{off}% off</span>
               </>
             )}
           </div>
-          <p className="muted">{product.shortDescription}</p>
-          <p className="stock-label">
-            {limit ? "Available in the catalog" : "Currently unavailable"}
-          </p>
+
+          <div className={`reference-stock-card ${limit ? "available" : "unavailable"}`}>
+            <PackageCheck size={20} />
+            <div>
+              <strong>{limit ? "Available in the catalog" : "Currently unavailable"}</strong>
+              <span>{product.sku ? `SKU ${product.sku}` : "Product availability"}</span>
+            </div>
+          </div>
+
           {!site.catalogVerified && (
             <p className="notice small">
               Catalog information is awaiting confirmation. Orders are not open.
             </p>
           )}
-          <div className="purchase-row">
-            <QuantitySelector
-              value={quantity}
-              max={remaining}
-              onChange={setQuantity}
-            />
+
+          <div className="reference-purchase-controls">
+            <div>
+              <label>Quantity</label>
+              <QuantitySelector value={quantity} max={remaining} onChange={setQuantity} />
+            </div>
             <Button disabled={remaining < quantity} onClick={() => addItem()}>
-              Add to cart <ArrowRight size={17} />
+              <ShoppingCart size={17} /> Add to Cart
             </Button>
             <button
-              className={"icon-button save-detail " + (saved ? "saved" : "")}
+              className={`reference-save-button ${saved ? "saved" : ""}`}
               aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
               aria-pressed={saved}
               onClick={() => {
                 toggle(product.id);
-                toast.success(
-                  saved ? "Removed from wishlist" : "Saved to wishlist",
-                );
+                toast.success(saved ? "Removed from wishlist" : "Saved to wishlist");
               }}
             >
-              <Heart fill={saved ? "currentColor" : "none"} size={20} />
+              <Heart size={19} fill={saved ? "currentColor" : "none"} />
+              {saved ? "Saved" : "Add to Wishlist"}
             </button>
           </div>
+
           <Button
-            className="full-width"
+            className="full-width reference-buy-button"
             variant="secondary"
             disabled={remaining < quantity}
             onClick={() => addItem(true)}
           >
-            Buy now · review checkout
+            Review checkout <ArrowRight size={17} />
           </Button>
-          <p className="muted small">No payment is taken in this preview.</p>
-          <dl className="product-meta">
-            <div>
-              <dt>SKU</dt>
-              <dd>{product.sku}</dd>
-            </div>
-            <div>
-              <dt>Delivery</dt>
-              <dd>{site.shippingTimelines || pendingPolicy}</dd>
-            </div>
-            <div>
-              <dt>Returns</dt>
-              <dd>
-                {site.returnWindow || pendingPolicy}{" "}
-                <Link to="/return-policy" className="text-link">
-                  Read policy
-                </Link>
-              </dd>
-            </div>
-          </dl>
+
+          <div className="reference-detail-trust">
+            <Link to="/shipping-policy">
+              <FileCheck2 size={21} />
+              <span><strong>Shipping</strong><small>{site.shippingTimelines || "Details pending confirmation"}</small></span>
+            </Link>
+            <Link to="/return-policy">
+              <PackageCheck size={21} />
+              <span><strong>Returns</strong><small>{site.returnWindow || "Policy details pending confirmation"}</small></span>
+            </Link>
+          </div>
         </div>
-      </div>
-      <section className="details-section">
+      </section>
+
+      <section className="reference-product-tabs">
         <details open>
-          <summary>Product details</summary>
-          <p>{product.fullDescription || product.shortDescription}</p>
-          <ul>
-            {product.features.map((feature) => (
-              <li key={feature}>{feature}</li>
-            ))}
-          </ul>
+          <summary>Description</summary>
+          <div className="reference-detail-panel">
+            <div>
+              <h2>Product Description</h2>
+              <p>{product.fullDescription || product.shortDescription}</p>
+              {product.features.length > 0 && (
+                <ul>
+                  {product.features.map((feature) => <li key={feature}>{feature}</li>)}
+                </ul>
+              )}
+            </div>
+          </div>
         </details>
         <details>
           <summary>Specifications</summary>
-          {product.specifications && Object.keys(product.specifications).length ? (
-            <dl className="product-meta">
-              {Object.entries(product.specifications).map(([key, value]) => (
-                <div key={key}>
-                  <dt>{key}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
-          ) : (
-            <p>
-              Additional specifications have not been supplied. Contact us if
-              you need a specific detail.
-            </p>
-          )}
+          <div className="reference-detail-panel">
+            {product.specifications && Object.keys(product.specifications).length ? (
+              <dl className="reference-spec-list">
+                {Object.entries(product.specifications).map(([key, value]) => (
+                  <div key={key}><dt>{key}</dt><dd>{value}</dd></div>
+                ))}
+              </dl>
+            ) : (
+              <p>Additional specifications have not been supplied yet.</p>
+            )}
+          </div>
         </details>
         <details>
-          <summary>Shipping & returns</summary>
-          <p>{site.shippingTimelines || pendingPolicy}</p>
-          <p>{site.returnWindow || pendingPolicy}</p>
-          <Link to="/shipping-policy" className="text-link">
-            Shipping policy
-          </Link>{" "}
-          ·{" "}
-          <Link className="text-link" to="/return-policy">
-            Return policy
-          </Link>
+          <summary>Shipping & Returns</summary>
+          <div className="reference-detail-panel">
+            <p>{site.shippingTimelines || pendingPolicy}</p>
+            <p>{site.returnWindow || pendingPolicy}</p>
+            <Link className="reference-link" to="/shipping-policy">Shipping policy</Link>{" · "}
+            <Link className="reference-link" to="/return-policy">Return policy</Link>
+          </div>
         </details>
       </section>
-      {[
-        { list: related, title: "You might also find useful" },
-        { list: recently, title: "Recently viewed" },
-      ].map(
-        ({ list, title }) =>
-          list.length > 0 && (
-            <section className="section" key={title}>
-              <div className="section-heading">
-                <h2>{title}</h2>
-              </div>
-              <div className="product-grid">
-                {list.map((item) => (
-                  <ProductCard key={item.id} product={item} />
-                ))}
-              </div>
-            </section>
-          ),
+
+      {related.length > 0 && (
+        <section className="reference-section">
+          <SectionHeading title="You May Also Like" to="/shop" linkLabel="View all products" />
+          <div className="product-grid reference-related-grid">
+            {related.map((item) => <ProductCard key={item.id} product={item} />)}
+          </div>
+        </section>
+      )}
+
+      {recently.length > 0 && (
+        <section className="reference-section">
+          <SectionHeading title="Recently Viewed" />
+          <div className="product-grid reference-related-grid">
+            {recently.map((item) => <ProductCard key={item.id} product={item} />)}
+          </div>
+        </section>
       )}
     </div>
   );

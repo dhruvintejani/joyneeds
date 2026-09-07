@@ -1,0 +1,81 @@
+.reference-search-box form { position: relative; padding-right: 46px; }
+.reference-search-box input[type="search"]::-webkit-search-cancel-button { display: none; }
+.reference-search-clear {
+  position: absolute;
+  right: 47px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #6b8298;
+  background: transparent;
+  cursor: pointer;
+}
+.reference-search-submit {
+  position: absolute;
+  right: 4px;
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: white;
+  background: #073f69;
+  cursor: pointer;
+}
+.reference-search-submit:hover { background: #0b5987; }
+.reference-search-submit:focus-visible,
+.reference-search-clear:focus-visible { outline: 3px solid rgba(29,127,190,.22); outline-offset: 2px; }
+.search-results { position: absolute; left: 0; right: 0; z-index: 60; }
+.search-results ul { margin: 0; padding: 5px; list-style: none; }
+.search-results li {
+  padding: 7px;
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 9px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.search-results li img { width: 44px; height: 44px; object-fit: cover; border-radius: 5px; background: #f0f4f6; }
+.search-results li div { display: grid; min-width: 0; gap: 2px; }
+.search-results li strong { color: #082f54; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.search-results li span { color: #6a8298; font-size: 9px; }
+.search-results li b { color: #082f54; font-size: 11px; }
+.search-message { margin: 0; padding: 14px; color: #668096; font-size: 11px; }
+.search-all { display: block; padding: 11px 13px; border-top: 1px solid #e1eaf0; color: #0a67a8; font-size: 10px; font-weight: 800; text-decoration: none; }
+
+/* Keep the reference design dense and clean even when legacy styles are present. */
+.reference-home-page .section,
+.reference-shop-page .section,
+.reference-product-page .section { margin-block: 0; }
+.reference-product-card .product-image,
+.reference-summary-product img,
+.reference-cart-image img { display: block; }
+.reference-product-card .eyebrow,
+.reference-product-card .product-bottom,
+.reference-product-card .add-card-button { display: none !important; }
+.reference-checkout-page .page-heading,
+.reference-shop-page .page-heading,
+.reference-wishlist-page .page-heading { display: none; }
+.reference-checkout-form .field input,
+.reference-checkout-form .field textarea,
+.reference-contact-form-card .field input,
+.reference-contact-form-card .field textarea { width: 100%; }
+.reference-checkout-form .field textarea,
+.reference-contact-form-card .field textarea { padding: 11px 12px; }
+.reference-checkout-form .field input,
+.reference-contact-form-card .field input { padding-inline: 12px; }
+.reference-checkout-form .field > label,
+.reference-contact-form-card .field > label { display: block; margin-bottom: 6px; }
+.reference-checkout-form .field .field-error,
+.reference-contact-form-card .field .field-error { margin-top: 4px; font-size: 10px; }
+
+@media (max-width: 620px) {
+  .reference-search-box form { padding-right: 44px; }
+  .reference-search-clear { right: 44px; }
+  .reference-header-search .search-results { top: calc(100% + 4px); }
+}
