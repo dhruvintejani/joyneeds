@@ -4,10 +4,14 @@ import "./index.css";
 import "./premium.css";
 import "./reference.css";
 import "./reference-polish.css";
+import "./auth/auth.css";
 import App from "./App";
+import { CustomerAuthProvider } from "./auth/CustomerAuthProvider";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <CustomerAuthProvider>
+      <App />
+    </CustomerAuthProvider>
   </StrictMode>,
 );
