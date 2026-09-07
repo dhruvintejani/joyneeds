@@ -5,6 +5,7 @@ import { safeStorage } from "../utils/storage";
 import { maxQuantity } from "../utils/catalog";
 
 export type CartItem = { product: Product; quantity: number };
+export type ServerCartItem = { productId: string; quantity: number };
 
 type CartStore = {
   items: CartItem[];
@@ -15,6 +16,7 @@ type CartStore = {
   decreaseQuantity: (id: string) => void;
   clearCart: () => void;
   reconcileCatalog: (products: Product[]) => void;
+  mergeServerCart: (serverItems: ServerCartItem[], products: Product[]) => CartItem[];
   getCartTotal: () => number;
   getCartCount: () => number;
   getItemQuantity: (id: string) => number;
@@ -150,6 +152,27 @@ export function reconcileCart(items: CartItem[], products: Product[]): CartItem[
   return result;
 }
 
+export function mergeServerCart(
+  localItems: CartItem[],
+  serverItems: ServerCartItem[],
+  products: Product[],
+): CartItem[] {
+  const local = reconcileCart(localItems, products);
+  const quantities = new Map(local.map((item) => [item.product.id, item.quantity]));
+  for (const item of serverItems) {
+    if (!Number.isInteger(item.quantity) || item.quantity < 1) continue;
+    const product = products.find((candidate) => candidate.id === item.productId);
+    if (!product) continue;
+    const limit = maxQuantity(product);
+    if (limit < 1) continue;
+    const previous = quantities.get(product.id) ?? 0;
+    quantities.set(product.id, Math.min(limit, Math.max(previous, item.quantity)));
+  }
+  return products
+    .filter((product) => quantities.has(product.id))
+    .map((product) => ({ product, quantity: quantities.get(product.id)! }));
+}
+
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
@@ -195,6 +218,11 @@ export const useCartStore = create<CartStore>()(
       clearCart: () => set({ items: [] }),
       reconcileCatalog: (products) =>
         set((state) => ({ items: reconcileCart(state.items, products) })),
+      mergeServerCart: (serverItems, products) => {
+        const merged = mergeServerCart(get().items, serverItems, products);
+        set({ items: merged });
+        return merged;
+      },
       getCartTotal: () =>
         get().items.reduce(
           (sum, item) =>
@@ -211,7 +239,7 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: "joyneeds-cart",
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => safeStorage),
       partialize: (state) => ({ items: state.items }),
       merge: (persisted, current) => ({
