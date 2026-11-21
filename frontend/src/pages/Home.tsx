@@ -21,8 +21,8 @@ export default function Home() {
 
   if (status === "idle" || status === "loading") return <Skeleton />;
 
-  const featured = products.filter((product) => product.featured).slice(0, 5);
-  const showProducts = featured.length ? featured : products.slice(0, 5);
+  const featured = products.filter((product) => product.featured).slice(0, 8);
+  const showProducts = featured.length ? featured : products.slice(0, 8);
 
   return (
     <div className="reference-home-page">
@@ -31,13 +31,12 @@ export default function Home() {
           <div className="reference-home-copy">
             <p className="reference-kicker">EVERYDAY ESSENTIALS</p>
             <h1>
-              Useful finds for
+              Make everyday
               <br />
-              <span>a better everyday.</span>
+              <span>feel effortless.</span>
             </h1>
             <p className="reference-hero-lead">
-              Thoughtfully presented products for home, work and daily life —
-              with clear details and less shopping clutter.
+              Discover practical essentials for your home, workspace and everyday routines. Find what fits your life, all in one place.
             </p>
             <div className="reference-hero-actions">
               <Link className="button primary" to="/shop">
@@ -68,9 +67,9 @@ export default function Home() {
       <div className="container">
         <Reveal>
           <section className="reference-section" id="categories">
-            <SectionHeading title="Shop by Category" to="/shop" linkLabel="View all categories" />
+            <SectionHeading eyebrow="FIND YOUR ESSENTIALS" title="Shop by category" to="/shop" linkLabel="Explore all" />
             <div className="reference-category-cards">
-              {categories.slice(0, 5).map((category) => {
+              {categories.map((category) => {
                 const firstProduct = products.find((product) => product.category === category.name);
                 return (
                   <Link
@@ -116,6 +115,20 @@ export default function Home() {
           </section>
         </Reveal>
 
+        <Reveal>
+          <section className="reference-section">
+            <SectionHeading eyebrow="DISCOVER MORE" title="Explore the collection" to="/shop" linkLabel="View all products" />
+            <div className="jn-discovery-grid">
+              {categories.slice(0, 3).map((category) => (
+                <Link key={category.id} to={`/category/${category.slug}`} className="jn-discovery-tile">
+                  <span className="jn-discovery-icon"><Boxes size={26} strokeWidth={1.5} /></span>
+                  <span><strong>{category.name}</strong><small>{category.description || "Discover the collection"}</small></span>
+                  <ArrowRight size={20} />
+                </Link>
+              ))}
+            </div>
+          </section>
+        </Reveal>
         <Reveal>
           <section className="reference-story-band">
             <div className="reference-story-image" aria-hidden="true">

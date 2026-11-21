@@ -138,6 +138,14 @@ async function commitInventoryAndConfirm(orderId: string) {
     if (["CANCELLED", "REFUNDED"].includes(order.status)) return false;
     if (order.status !== "PENDING") return true;
 
+    // Claim the pending order transactionally before touching stock. Concurrent
+    // webhook/browser confirmations must not both decrement inventory.
+    const claimed = await tx.order.updateMany({ where: { id: order.id, status: "PENDING" }, data: { status: "CONFIRMED" } });
+    if (claimed.count !== 1) {
+      const current = await tx.order.findUnique({ where: { id: order.id }, select: { status: true } });
+      return Boolean(current && !["PENDING", "CANCELLED", "REFUNDED"].includes(current.status));
+    }
+
     if (!order.inventoryCommittedAt) {
       for (const item of order.items) {
         if (!item.productId) continue;

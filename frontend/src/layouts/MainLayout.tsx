@@ -44,9 +44,9 @@ export default function MainLayout() {
           You’re offline. Some pages and photos may not be available.
         </div>
       )}
-      {catalogStatus === "error" && (
+      {(catalogStatus === "error" || catalogStatus === "preview") && (
         <div role="alert" className="offline">
-          {catalogError || "The product catalog is temporarily unavailable."}{" "}
+          {catalogStatus === "preview" ? "Browsing the preview catalog. Live prices, availability and checkout are not active." : (catalogError || "The product catalog is temporarily unavailable.")}{" "}
           <button className="text-link" onClick={() => void loadCatalog(true)}>
             Retry
           </button>

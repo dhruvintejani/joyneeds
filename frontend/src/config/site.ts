@@ -17,7 +17,7 @@ export const site = {
   shippingFee: null as number | null,
   catalogVerified: false,
   policiesVerified: false,
-  // This frontend has no order/payment service. Do not enable payments here.
-  checkoutEnabled: false,
+  // The backend enforces its own independent payment and order gates.
+  checkoutEnabled: import.meta.env.VITE_CHECKOUT_ENABLED === "true",
 };
 export const pendingPolicy = "To be confirmed before orders open.";

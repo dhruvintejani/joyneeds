@@ -18,6 +18,7 @@ import {
   verifyRazorpayCheckout,
 } from "../api/payments";
 import { useCartStore } from "../store/cartStore";
+import { useCatalogStore } from "../store/catalogStore";
 import { money, maxQuantity } from "../utils/catalog";
 import { site } from "../config/site";
 import FormField from "../components/common/FormField";
@@ -40,6 +41,8 @@ export default function Checkout() {
   const total = useCartStore((state) => state.getCartTotal());
   const clearCart = useCartStore((state) => state.clearCart);
   const auth = useCustomerAuth();
+  const catalogStatus = useCatalogStore((state) => state.status);
+  const canCheckout = site.checkoutEnabled && catalogStatus === "ready";
   const [completed, setCompleted] = useState<{ orderNumber: string; fulfillmentReady: boolean } | null>(null);
 
   if (completed) {
@@ -110,6 +113,7 @@ export default function Checkout() {
           enableReinitialize={false}
           onSubmit={async (values, { setStatus, setSubmitting }) => {
             setStatus(undefined);
+            if (!canCheckout) { setStatus("Online payments are not available yet."); setSubmitting(false); return; }
             try {
               const token = auth.isSignedIn ? await auth.getToken() : null;
               const order = await createOrder(
@@ -206,8 +210,8 @@ export default function Checkout() {
                     <p>The backend creates the Razorpay order from the server total and verifies the returned signature and captured payment before fulfillment.</p>
                   </div>
                 </div>
-                <Button className="full-width" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Preparing secure payment…" : "Pay securely with Razorpay"}
+                <Button className="full-width" type="submit" disabled={isSubmitting || !canCheckout}>
+                  {!canCheckout ? "Online payments not available" : isSubmitting ? "Preparing secure payment…" : "Pay securely"}
                   <CreditCard size={17} />
                 </Button>
                 {status && <p className="notice" role="status">{status}</p>}

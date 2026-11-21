@@ -245,3 +245,7 @@ A root `package-lock.json` is not currently committed. CI and deployment therefo
 ## 11. Rollback note
 
 Application code can be rolled back, but database migrations are forward changes. Do not assume rolling back a Render commit automatically rolls back Neon schema changes. Prefer backward-compatible migrations and take a Neon restore point/branch before risky schema changes.
+
+## Storefront safety gate
+
+Without `VITE_API_URL`, the public storefront shows a clearly identified browse-only preview of the bundled catalog. `VITE_CHECKOUT_ENABLED` defaults to false and must not be enabled until the backend and merchant payment integration are fully tested. A preview catalog can never submit a payment. The existing backend uses Prisma and Neon PostgreSQL; it retains the Razorpay implementation, disabled by default. Paytm UPI is a separate provider integration and is not activated by changing a label or API key.
