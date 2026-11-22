@@ -175,7 +175,7 @@ function OrderDetails({ orderId }: { orderId: string }) {
 
   const allowed = nextStatuses[order.status];
   const payment = order.payments[0];
-  const refundablePaise = payment && ["PAID", "PARTIALLY_REFUNDED"].includes(payment.status)
+  const refundablePaise = payment?.provider === "RAZORPAY" && ["PAID", "PARTIALLY_REFUNDED"].includes(payment.status)
     ? Math.max(0, payment.amountPaise - payment.refundedAmountPaise)
     : 0;
 
@@ -236,6 +236,7 @@ function OrderDetails({ orderId }: { orderId: string }) {
               <div><dt>Refunded</dt><dd>{money(payment.refundedAmountPaise)}</dd></div>
               <div><dt>Provider payment</dt><dd>{payment.providerPaymentId ?? "Not captured"}</dd></div>
             </dl>
+            {payment?.provider === "PAYTM" && payment.status === "PAID" && <p className="admin-muted" role="status">Paytm payment verified. Automated refunds are not configured; process refunds through the verified Paytm merchant account and reconcile them before updating records.</p>}
             {refundablePaise > 0 && <div className="admin-form-card">
               <p className="admin-muted">Refundable balance: {money(refundablePaise)}. Razorpay processes refunds back to the original payment source.</p>
               <label>Refund amount (₹)<input type="number" min="0.01" max={refundablePaise / 100} step="0.01" value={refundAmount} onChange={(event) => setRefundAmount(event.target.value)} placeholder={String(refundablePaise / 100)} /></label>
@@ -264,7 +265,7 @@ function OrderDetails({ orderId }: { orderId: string }) {
           </> : <p className="admin-muted">No Razorpay payment has started for this order.</p>}
           <hr />
           <dl><div><dt>Subtotal</dt><dd>{money(order.subtotalPaise)}</dd></div><div><dt>Shipping</dt><dd>{money(order.shippingPaise)}</dd></div><div><dt>Discount</dt><dd>{money(order.discountPaise)}</dd></div><div><dt>Total</dt><dd><strong>{money(order.totalPaise)}</strong></dd></div></dl>
-          <p className="admin-muted">Paid/refunded state comes from verified Razorpay responses and signed webhooks, not manual status selection.</p>
+          <p className="admin-muted">Payment status comes from verified gateway responses. Paytm refunds require separate provider-side reconciliation.</p>
         </aside>
       </div>
     </div>
