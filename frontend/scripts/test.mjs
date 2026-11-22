@@ -105,12 +105,12 @@ try {
   assert.ok(notFound.includes('jn-404-hero'), 'Missing designed 404 presentation');
   assert.ok(style.includes('--jn-font-ui') && style.includes('--jn-font-display'));
   const provider = readFileSync(new URL('../src/auth/CustomerAuthProvider.tsx', import.meta.url), 'utf8');
-  const authPage = readFileSync(new URL('../src/pages/AuthPage.tsx', import.meta.url), 'utf8');
+  const authPageSetup = readFileSync(new URL('../src/pages/AuthPage.tsx', import.meta.url), 'utf8');
   const api = readFileSync(new URL('../src/api/catalog.ts', import.meta.url), 'utf8');
   const proxy = readFileSync(new URL('../../api/proxy.ts', import.meta.url), 'utf8');
   const vercel = JSON.parse(readFileSync(new URL('../../vercel.json', import.meta.url), 'utf8'));
   assert.ok(provider.includes('signInFallbackRedirectUrl="/account"') && provider.includes('signUpFallbackRedirectUrl="/account"'));
-  assert.ok(authPage.includes('fallbackRedirectUrl="/account"'), 'Auth pages need account redirects');
+  assert.ok(authPageSetup.includes('fallbackRedirectUrl="/account"'), 'Auth pages need account redirects');
   assert.ok(api.includes('configuredApiUrl === "same-origin"'), 'Missing first-party API option');
   assert.ok(proxy.includes('BACKEND_ORIGIN') && proxy.includes('namespaces') && proxy.includes('set-cookie'), 'Missing secure API relay protections');
   assert.ok(vercel.rewrites.some((entry) => entry.source === '/api/:path*'), 'Missing API relay rewrite');
