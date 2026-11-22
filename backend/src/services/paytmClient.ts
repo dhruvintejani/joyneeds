@@ -21,7 +21,7 @@ export function checkoutHost() {
   return env.PAYTM_ENV === "production" ? productionHost : stageHost;
 }
 export function parsePaytmAmount(value: unknown): number | null {
-  if (typeof value !== "string" || !/^(0|[1-9]\\d{0,8})(?:\\.(\\d{1,2}))?$/.test(value)) return null;
+  if (typeof value !== "string" || !/^(0|[1-9]\d{0,8})(?:\.(\d{1,2}))?$/.test(value)) return null;
   const [rupees, paise = ""] = value.split(".");
   const total = Number(rupees) * 100 + Number(paise.padEnd(2, "0"));
   return Number.isSafeInteger(total) ? total : null;

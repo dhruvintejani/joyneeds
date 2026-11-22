@@ -80,5 +80,5 @@ export async function reconcilePaytmStatus(orderNumber: string) {
     });
     return { paid: false, pending: false, fulfillmentReady: false, orderNumber };
   }
-  return { paid: false, pending: true, fulfillmentReady: false, orderNumber };
+  return { paid: false, pending: status.resultInfo?.resultStatus !== "NO_RECORD_FOUND", fulfillmentReady: false, orderNumber };
 }
