@@ -19,6 +19,9 @@ import {
   ClipboardList,
   ExternalLink,
   FileText,
+  CircleHelp,
+  ArrowRight,
+  LockKeyhole,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -65,6 +68,7 @@ const nav = [
   { to: "/admin/coupons", label: "Coupons", Icon: TicketPercent },
   { to: "/admin/content", label: "Content", Icon: FileText },
   { to: "/admin/settings", label: "Settings", Icon: Settings },
+  { to: "/admin/help", label: "Help & setup", Icon: CircleHelp },
 ];
 
 const moneyPaise = (value: number) =>
@@ -85,11 +89,12 @@ export default function AdminPhase5Router() {
           <Route path="orders/:orderId" element={<PendingModule title="Order Details" text="Order details are served by the dedicated secure order workspace." />} />
           <Route path="customers" element={<PendingModule title="Customers" text="A standalone customer-management API is not enabled. Customer counts and account/order data come from real synced records only." />} />
           <Route path="customers/:customerId" element={<PendingModule title="Customer Details" text="Standalone customer administration is not enabled; no sample customer profile is shown." />} />
-          <Route path="analytics" element={<PendingModule title="Analytics" text="Dedicated analytics reports are not enabled. Dashboard revenue and counts use real server-side order/payment data." />} />
+          <Route path="analytics" element={<AnalyticsOverview />} />
           <Route path="coupons" element={<PendingModule title="Coupons" text="Promotion and coupon rules are not enabled, so no fake coupon data is shown." />} />
           <Route path="content" element={<PendingModule title="Content" text="Store content persistence is not enabled; storefront content remains code-managed." />} />
           <Route path="settings" element={<SettingsPage />} />
-          <Route path="*" element={<Navigate to="/admin" replace />} />
+          <Route path="help" element={<AdminHelp />} />
+          <Route path="*" element={<AdminNotFound />} />
         </Route>
       </Routes>
     </>
@@ -106,7 +111,7 @@ function AdminLayout() {
   return (
     <div className="admin-app">
       <aside className={`admin-sidebar ${open ? "open" : ""}`}>
-        <div className="admin-brand-row"><Link to="/admin"><img src="/brand/joyneeds-logo.png" alt="JoyNeeds" /></Link><button className="admin-mobile-close" onClick={() => setOpen(false)}><X size={20} /></button></div>
+        <div className="admin-brand-row"><Link to="/admin"><img src="/brand/joyneeds-logo.png" alt="JoyNeeds" /></Link><button className="admin-mobile-close" onClick={() => setOpen(false)} aria-label="Close admin navigation"><X size={20} /></button></div>
         <nav className="admin-nav">{nav.map(({ to, label, Icon, exact }) => <NavLink key={to} to={to} end={exact} className={({ isActive }) => isActive ? "active" : ""}><Icon size={20} /><span>{label}</span></NavLink>)}</nav>
         <div className="admin-sidebar-spacer" />
         <Link className="admin-view-store" to="/"><ExternalLink size={18} /> View Store</Link>
@@ -116,8 +121,8 @@ function AdminLayout() {
       {open && <button className="admin-overlay" onClick={() => setOpen(false)} aria-label="Close navigation" />}
       <div className="admin-shell">
         <header className="admin-topbar">
-          <button className="admin-menu-button" onClick={() => setOpen(true)}><Menu size={21} /></button>
-          <form className="admin-global-search" onSubmit={(event) => { event.preventDefault(); navigate(query.trim() ? `/admin/products?q=${encodeURIComponent(query.trim())}` : "/admin/products"); }}><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products..." /></form>
+          <button className="admin-menu-button" onClick={() => setOpen(true)} aria-label="Open admin navigation"><Menu size={21} /></button>
+          <form className="admin-global-search" onSubmit={(event) => { event.preventDefault(); navigate(query.trim() ? `/admin/products?q=${encodeURIComponent(query.trim())}` : "/admin/products"); }}><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products..." aria-label="Search admin products" /></form>
           <div className="admin-top-actions"><div className="admin-user-badge">A</div><div className="admin-user-copy"><strong>Admin</strong><small>Secure session</small></div></div>
         </header>
         <main className="admin-content"><Outlet /></main>
@@ -285,9 +290,117 @@ function Categories() {
 }
 
 function PendingModule({ title, text }: { title: string; text: string }) {
-  return <div><PageHeader title={title} subtitle={text} /><section className="admin-panel"><div className="admin-empty-module"><span><ClipboardList size={30} /></span><h2>{title} is not enabled</h2><p>{text}</p></div></section></div>;
+  const features: Record<string, string[]> = {
+    Customers: ["Customer profiles", "Support history", "Marketing preferences"],
+    "Customer Details": ["Customer profile", "Order history", "Account support"],
+    Coupons: ["Discount codes", "Usage limits", "Start and end dates"],
+    Content: ["Homepage sections", "Store notices", "Editorial banners"],
+  };
+  return (
+    <div className="jn-admin-module">
+      <PageHeader title={title} subtitle="Management workspace" />
+      <section className="admin-panel jn-admin-module-intro">
+        <span className="jn-admin-module-icon"><LockKeyhole size={29}/></span>
+        <p className="admin-eyebrow">NOT ACTIVE YET</p>
+        <h2>{title} management is being prepared.</h2>
+        <p>{text}</p>
+        <div className="jn-admin-module-features">
+          {(features[title] || ["Reporting", "Management", "Activity history"]).map((name) =>
+            <span key={name}><CircleHelp size={15}/>{name}</span>)}
+        </div>
+        <div className="jn-admin-module-actions">
+          <Link className="admin-primary-button" to="/admin">Back to dashboard <ArrowRight size={16}/></Link>
+          <Link className="admin-outline-button" to="/admin/help">Setup guide</Link>
+        </div>
+      </section>
+      <div className="jn-admin-module-links">
+        <Link to="/admin/products"><Package size={20}/><span><strong>Manage products</strong><small>Catalog and inventory</small></span><ArrowRight size={16}/></Link>
+        <Link to="/admin/orders"><ClipboardList size={20}/><span><strong>Review orders</strong><small>Payment and order records</small></span><ArrowRight size={16}/></Link>
+        <Link to="/admin/categories"><Boxes size={20}/><span><strong>Edit categories</strong><small>Storefront organization</small></span><ArrowRight size={16}/></Link>
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsOverview() {
+  const [data, setData] = useState<AdminDashboard | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    void getAdminDashboard()
+      .then((summary) => { if (active) setData(summary); })
+      .catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : "Unable to load analytics."); });
+    return () => { active = false; };
+  }, []);
+  return <div>
+    <PageHeader title="Store Analytics" subtitle="Real totals from the secured store database. No invented charts or customer activity."/>
+    {error && <div className="admin-auth-error" role="alert">{error}</div>}
+    <div className="admin-stats-grid">
+      <StatCard label="Net paid revenue" value={data ? moneyPaise(data.netRevenuePaise) : "—"} Icon={BarChart3} tone="green"/>
+      <StatCard label="Orders" value={data?.orders ?? "—"} Icon={ClipboardList}/>
+      <StatCard label="Customers" value={data?.customers ?? "—"} Icon={UsersRound} tone="amber"/>
+      <StatCard label="Active products" value={data?.activeProducts ?? "—"} Icon={Package}/>
+    </div>
+    <section className="admin-panel jn-admin-analytics-note">
+      <h2>Overview</h2>
+      <p>These totals use existing server-side paid-order and catalog records. Date-range charts, traffic sources, conversion funnels, and customer-level insights are not available without additional verified event data.</p>
+      <Link className="admin-outline-button" to="/admin/orders">Inspect orders <ArrowRight size={16}/></Link>
+    </section>
+  </div>;
+}
+
+function AdminHelp() {
+  return <div>
+    <PageHeader title="Help & setup" subtitle="A practical checklist for safely launching the JoyNeeds commerce backend." />
+    <section className="admin-panel jn-admin-setup">
+      <p className="admin-eyebrow">BEFORE ACCEPTING ORDERS</p>
+      <h2>Activate your store in the right order.</h2>
+      <div className="jn-admin-setup-steps">
+        <article><span>01</span><div><h3>Database and backend</h3><p>Deploy the Node.js backend with a Neon PostgreSQL <code>DATABASE_URL</code>. Point the storefront at it with <code>VITE_API_URL</code>.</p></div></article>
+        <article><span>02</span><div><h3>Secure administrator access</h3><p>Configure <code>ADMIN_EMAIL</code> and a bcrypt <code>ADMIN_PASSWORD_HASH</code> on the backend. Never expose credentials in frontend code.</p></div></article>
+        <article><span>03</span><div><h3>Images and inventory</h3><p>Configure Cloudinary credentials, add real merchandise photos, and confirm categories, stock and product prices.</p></div></article>
+        <article><span>04</span><div><h3>Customer authentication</h3><p>Configure Clerk with a publishable key on the frontend and the matching server-side credentials when customer sign-in is needed.</p></div></article>
+        <article><span>05</span><div><h3>Payments and launch checks</h3><p>Verify the merchant's Paytm or Razorpay account, test payment status server-side, publish approved policies and only then enable checkout.</p></div></article>
+      </div>
+      <div className="jn-admin-module-actions">
+        <Link className="admin-primary-button" to="/admin/products">Product catalog <ArrowRight size={16}/></Link>
+        <Link className="admin-outline-button" to="/admin/settings">Store settings</Link>
+      </div>
+    </section>
+  </div>;
+}
+
+function AdminNotFound() {
+  return <div className="jn-admin-missing">
+    <span className="jn-admin-missing-number">404</span>
+    <h1>That admin page isn't here.</h1>
+    <p>The requested workspace could not be found. No store data was changed.</p>
+    <div className="jn-admin-module-actions">
+      <Link className="admin-primary-button" to="/admin">Dashboard <ArrowRight size={17}/></Link>
+      <Link className="admin-outline-button" to="/admin/help">Help & setup</Link>
+    </div>
+  </div>;
 }
 
 function SettingsPage() {
-  return <div><PageHeader title="Settings" subtitle="Security and integration architecture without exposing credentials." /><div className="admin-settings-grid"><section className="admin-panel admin-form-card"><h2>Authentication</h2><p className="admin-muted">Admin: separate email/password with a PostgreSQL-backed HttpOnly session cookie.</p><p className="admin-muted">Customers: optional Clerk authentication; guest shopping remains supported.</p></section><section className="admin-panel admin-form-card"><h2>Commerce Integrations</h2><p>Cloudinary → protected product image management</p><p>Razorpay → backend-authoritative checkout, webhooks and refunds</p><p>Brevo → deduplicated transactional order emails</p><p className="admin-muted">Provider credentials are configured only in the backend environment and are never displayed here.</p></section></div></div>;
+  const settings = [
+    ["Database", "Neon PostgreSQL", "Persistent store catalog, stock, orders and admin sessions."],
+    ["Administrator", "Protected server login", "Email and bcrypt password hash with an HttpOnly session."],
+    ["Customer accounts", "Clerk", "Customer sign-in is optional; it must be configured separately."],
+    ["Product images", "Cloudinary", "Secure uploads and managed product photographs."],
+    ["Payment gateway", "Paytm or Razorpay", "Enable only after a verified merchant account and server-side payment tests."],
+    ["Notifications", "Brevo", "Optional transactional email integration once sender details are verified."],
+  ];
+  return <div>
+    <PageHeader title="Store Settings" subtitle="Service architecture and integration requirements, without showing credentials." />
+    <section className="admin-panel jn-admin-settings-panel">
+      <div className="admin-panel-heading"><h2>Connected services</h2><span>Configuration overview</span></div>
+      <p className="admin-muted">This page documents the expected integrations. It does not claim that each provider is active, and never reveals private keys.</p>
+      <div className="jn-admin-settings-list">
+        {settings.map(([label, provider, details]) =>
+          <div key={label}><div><strong>{label}</strong><span>{provider}</span></div><p>{details}</p></div>)}
+      </div>
+      <Link className="admin-outline-button" to="/admin/help"><CircleHelp size={16}/> View setup checklist</Link>
+    </section>
+  </div>;
 }
