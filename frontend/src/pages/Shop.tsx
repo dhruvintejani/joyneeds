@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useParams, useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal, X, ArrowUpRight } from "lucide-react";
+import { Search, SlidersHorizontal, X, ArrowUpRight, RotateCcw } from "lucide-react";
 import PremiumSelect from "../components/common/PremiumSelect";
 import { useCatalogStore } from "../store/catalogStore";
 import { discount, selectProducts, sortOptions } from "../utils/catalog";
@@ -169,7 +169,9 @@ export default function Shop() {
         </fieldset>
       )}
 
-      <Button variant="ghost" onClick={() => setParams({})}>Clear all filters</Button>
+      <button type="button" className="jn-clear-all-filters" onClick={() => setParams({})}>
+        <RotateCcw size={15} aria-hidden="true"/> Clear all filters
+      </button>
     </div>
   );
 
@@ -199,7 +201,7 @@ export default function Shop() {
             <div className="reference-filter-title">
               <h2>Filters</h2>
               {active.length > 0 && (
-                <button className="reference-link" onClick={() => setParams({})}>Clear All</button>
+                <button type="button" className="jn-inline-clear" onClick={() => setParams({})}>Clear all</button>
               )}
             </div>
             {!drawer && filters}

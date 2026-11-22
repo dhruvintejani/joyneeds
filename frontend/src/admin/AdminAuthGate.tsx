@@ -1,6 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { LoaderCircle, LockKeyhole } from "lucide-react";
 import { getAdminSession, loginAdmin, type AdminSession } from "../api/admin";
+import { apiBaseUrl } from "../api/catalog";
+import { Link } from "react-router-dom";
+import { PackageOpen, ImagePlus, Boxes, ChartNoAxesCombined } from "lucide-react";
 import "./admin.css";
 import "./admin-phase5.css";
 
@@ -16,6 +19,10 @@ export default function AdminAuthGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
+    if (!apiBaseUrl) {
+      setStatus("unconfigured");
+      return () => { active = false; };
+    }
     getAdminSession()
       .then((data) => {
         if (!active) return;
@@ -43,12 +50,15 @@ export default function AdminAuthGate({ children }: { children: ReactNode }) {
       <div className="admin-auth-card">
         <img src="/brand/joyneeds-logo.png" alt="JoyNeeds" />
         <span className="admin-auth-icon"><LockKeyhole size={25} /></span>
-        <h1>Admin Sign In</h1>
-        <p>Secure access to the JoyNeeds administration panel.</p>
+        <h1>{status === "unconfigured" ? "Admin panel setup" : "Admin Sign In"}</h1>
+        <p>{status === "unconfigured" ? "Your management panel is built, but its secured server connection is not activated yet." : "Secure access to the JoyNeeds administration panel."}</p>
 
         {status === "unconfigured" ? (
           <div className="admin-auth-notice">
-            Admin authentication is not configured yet. Add <code>ADMIN_EMAIL</code> and a bcrypt <code>ADMIN_PASSWORD_HASH</code> to the backend environment.
+            The product manager connects to your PostgreSQL database through the protected backend.
+            Configure <code>VITE_API_URL</code> on the storefront and the backend database,
+            admin session and image-storage settings before editing real products.
+            No changes can be saved until that connection is active.
           </div>
         ) : (
           <form
@@ -74,7 +84,15 @@ export default function AdminAuthGate({ children }: { children: ReactNode }) {
           </form>
         )}
 
-        <a href="/">← Back to store</a>
+        {status === "unconfigured" && (
+          <div className="jn-admin-setup-features" aria-label="Admin features available after setup">
+            <span><PackageOpen size={17}/> Products & pricing</span>
+            <span><Boxes size={17}/> Categories & stock</span>
+            <span><ImagePlus size={17}/> Product photographs</span>
+            <span><ChartNoAxesCombined size={17}/> Orders & reporting</span>
+          </div>
+        )}
+        <Link to="/">← Back to store</Link>
       </div>
     </div>
   );

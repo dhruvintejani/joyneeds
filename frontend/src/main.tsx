@@ -8,6 +8,7 @@ import "./commerce.css";
 import "./auth/auth.css";
 import "./polished.css";
 import "./luxe.css";
+import "./ux-fixes.css";
 import App from "./App";
 import { CustomerAuthProvider } from "./auth/CustomerAuthProvider";
 
