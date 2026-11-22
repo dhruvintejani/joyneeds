@@ -1,11 +1,13 @@
 import type { Category, Product } from "../types/catalog";
 
 const configuredApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
-export const apiBaseUrl = configuredApiUrl
-  ? configuredApiUrl.replace(/\/+$/, "")
-  : import.meta.env.DEV
-    ? "http://localhost:4000"
-    : "";
+export const apiBaseUrl = configuredApiUrl === "same-origin"
+  ? typeof window !== "undefined" ? window.location.origin : ""
+  : configuredApiUrl
+    ? configuredApiUrl.replace(/\/+$/, "")
+    : import.meta.env.DEV
+      ? "http://localhost:4000"
+      : "";
 
 export class CatalogApiError extends Error {
   constructor(

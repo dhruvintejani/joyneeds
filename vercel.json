@@ -4,7 +4,11 @@
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
-      "source": "/((?!assets/|brand/|products/|robots.txt|sitemap.xml).*)",
+      "source": "/api/:path*",
+      "destination": "/api/proxy?path=:path*"
+    },
+    {
+      "source": "/((?!api/|assets/|brand/|products/|robots.txt|sitemap.xml).*)",
       "destination": "/index.html"
     }
   ],
