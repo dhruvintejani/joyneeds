@@ -81,7 +81,7 @@ export default function Header() {
         </div>
 
         <div className="reference-header-actions">
-          <Link className="reference-account-preview" to="/account" aria-label="Customer account">
+          <Link className="reference-account-preview" to={auth.isSignedIn ? "/account" : "/sign-in"} aria-label={auth.isSignedIn ? "Customer account" : "Customer sign in"}>
             <UserRound size={21} />
             <span>
               <b>{accountTitle}</b>
@@ -178,6 +178,8 @@ export default function Header() {
             <Link key={category.id} to={`/category/${category.slug}`}>{category.name}</Link>
           ))}
           <Link to="/account">Account</Link>
+          <Link to="/sign-in">Sign in</Link>
+          <Link to="/sign-up">Create account</Link>
           <Link to="/wishlist">Wishlist</Link>
           <Link to="/cart">Cart</Link>
           <Link to="/about">About us</Link>

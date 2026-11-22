@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { LogOut, ShieldCheck, ShoppingBag, UserRound } from "lucide-react";
 import { PageBanner } from "../components/common/ReferenceUI";
 import { useCustomerAuth } from "../auth/CustomerAuthProvider";
@@ -58,7 +59,11 @@ export default function Account() {
         <section className="account-panel account-empty">
           <UserRound size={34} />
           <h2>Customer accounts are not configured yet</h2>
-          <p>You can still browse, save your cart and wishlist, and use guest checkout.</p>
+          <p>You can still browse and save your cart and wishlist on this device. Registration is available once customer authentication is configured.</p>
+          <div className="account-actions">
+            <Link className="account-primary" to="/sign-in">Customer sign in</Link>
+            <Link className="account-secondary" to="/sign-up">Create account</Link>
+          </div>
         </section>
       </div>
     );
@@ -89,8 +94,8 @@ export default function Account() {
           <h2>Sign in or create an account</h2>
           <p>Use email/password or any social sign-in method enabled for the JoyNeeds Clerk application.</p>
           <div className="account-actions">
-            <button className="account-primary" type="button" onClick={auth.openSignIn}>Sign in</button>
-            <button className="account-secondary" type="button" onClick={auth.openSignUp}>Create account</button>
+            <Link className="account-primary" to="/sign-in">Sign in</Link>
+            <Link className="account-secondary" to="/sign-up">Create account</Link>
           </div>
         </section>
       </div>

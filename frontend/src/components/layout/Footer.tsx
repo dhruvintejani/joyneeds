@@ -58,7 +58,10 @@ export default function Footer() {
           <div className="reference-footer-column">
             <h2>About</h2>
             <Link to="/about">About us</Link>
-            <Link to="/faq">Why JoyNeeds</Link>
+            <Link to="/sign-in">Sign in</Link>
+            <Link to="/sign-up">Create account</Link>
+            <Link to="/account">My account</Link>
+            <Link to="/faq">FAQs</Link>
             <Link to="/contact">Need help?</Link>
             <Link to="/privacy-policy">Privacy policy</Link>
             <Link to="/terms">Terms & conditions</Link>

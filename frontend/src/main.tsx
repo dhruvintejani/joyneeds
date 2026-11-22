@@ -10,6 +10,7 @@ import "./polished.css";
 import "./luxe.css";
 import "./ux-fixes.css";
 import "./page-themes.css";
+import "./signature.css";
 import App from "./App";
 import { CustomerAuthProvider } from "./auth/CustomerAuthProvider";
 

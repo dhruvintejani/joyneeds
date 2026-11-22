@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowLeft, ArrowRight, Compass, Search, Sparkles } from "lucide-react";
 import ProductCard from "../components/product/ProductCard";
 import { useCatalogStore } from "../store/catalogStore";
 import { SectionHeading } from "../components/common/ReferenceUI";
@@ -9,44 +9,39 @@ export default function NotFound() {
   const recommendations = products.slice(0, 4);
 
   return (
-    <div className="container reference-not-found section-bottom">
-      <section className="reference-404-hero">
-        <div className="reference-404-copy">
-          <p className="reference-kicker">OOPS!</p>
-          <strong className="reference-404-number">404</strong>
-          <h1>Page Not Found</h1>
-          <p>The page you’re looking for doesn’t seem to exist or may have been moved.</p>
-          <div className="reference-404-actions">
-            <Link className="button primary" to="/">Go to Homepage <ArrowRight size={17} /></Link>
-            <Link className="button secondary" to="/shop">Browse All Products</Link>
+    <div className="container jn-404-page section-bottom">
+      <nav className="jn-auth-breadcrumb" aria-label="Page navigation">
+        <Link to="/"><ArrowLeft size={15}/> Home</Link><span>/</span><span>Page not found</span>
+      </nav>
+      <section className="jn-404-hero" aria-labelledby="not-found-title">
+        <div className="jn-404-copy">
+          <span className="jn-overline"><Sparkles size={15}/> A LITTLE DETOUR</span>
+          <strong className="jn-404-number" aria-hidden="true">404<span>.</span></strong>
+          <h1 id="not-found-title">This page has <em>wandered off.</em></h1>
+          <p>We couldn't find the page you're looking for. Your next useful find could be just around the corner.</p>
+          <div className="jn-404-actions">
+            <Link className="jn-button jn-button-dark" to="/">Back to the homepage <ArrowRight size={17}/></Link>
+            <Link className="jn-404-outline" to="/shop"><Compass size={17}/> Explore products</Link>
           </div>
+          <form action="/search" method="get" className="jn-404-search">
+            <Search size={19}/>
+            <input type="search" name="q" aria-label="Search the JoyNeeds collection" placeholder="Or search the collection…" />
+            <button type="submit" aria-label="Search products"><ArrowRight size={19}/></button>
+          </form>
         </div>
-        <div className="reference-404-art" aria-hidden="true">
-          <img src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=80" alt="" loading="lazy" onError={(event) => { event.currentTarget.src = "/reference/reference-home.webp"; }} />
-          <span className="reference-script">Good things are still ahead.</span>
+        <div className="jn-404-visual" aria-hidden="true">
+          <span className="jn-404-visual-note">LOST SOMETHING?</span>
+          <span className="jn-404-visual-label">There’s more joy to discover.</span>
         </div>
       </section>
-
       {recommendations.length > 0 && (
-        <section className="reference-section">
-          <SectionHeading title="You Might Like These" to="/shop" linkLabel="View all products" />
+        <section className="jn-404-recommendations">
+          <SectionHeading eyebrow="STILL EXPLORING?" title="Some everyday finds worth a look" to="/shop" linkLabel="Explore all products" />
           <div className="product-grid reference-related-grid">
             {recommendations.map((product) => <ProductCard key={product.id} product={product} />)}
           </div>
         </section>
       )}
-
-      <section className="reference-404-search">
-        <div>
-          <h2>Still can’t find what you’re looking for?</h2>
-          <p>Try a product search or explore the full collection.</p>
-        </div>
-        <form action="/search" className="reference-404-search-form">
-          <Search size={18} />
-          <input name="q" type="search" placeholder="Search products…" aria-label="Search products" />
-          <button className="button primary" type="submit">Search</button>
-        </form>
-      </section>
     </div>
   );
 }

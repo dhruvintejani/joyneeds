@@ -18,6 +18,7 @@ const Wishlist = lazy(() => import("./pages/Wishlist"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const PaymentStatus = lazy(() => import("./pages/PaymentStatus"));
 const Account = lazy(() => import("./pages/Account"));
+const AuthPage = lazy(() => import("./pages/AuthPage"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const FAQ = lazy(() => import("./pages/FAQ"));
@@ -38,6 +39,7 @@ export default function App() {
             <Toast />
             <Suspense fallback={<Skeleton />}>
               <Routes>
+                <Route path="/admin/login" element={<Navigate to="/admin" replace />} />
                 <Route path="/admin/orders" element={<AdminAuthGate><AdminOrderWorkspace /></AdminAuthGate>} />
                 <Route path="/admin/orders/:orderId" element={<AdminAuthGate><AdminOrderWorkspace /></AdminAuthGate>} />
                 <Route path="/admin/products/new" element={<AdminAuthGate><AdminProductEditorWorkspace /></AdminAuthGate>} />
@@ -54,6 +56,12 @@ export default function App() {
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/payment-status" element={<PaymentStatus />} />
                   <Route path="/account" element={<Account />} />
+                  <Route path="/sign-in/*" element={<AuthPage mode="sign-in" />} />
+                  <Route path="/sign-up/*" element={<AuthPage mode="sign-up" />} />
+                  <Route path="/login" element={<Navigate to="/sign-in" replace />} />
+                  <Route path="/signup" element={<Navigate to="/sign-up" replace />} />
+                  <Route path="/register" element={<Navigate to="/sign-up" replace />} />
+                  <Route path="/orders" element={<Navigate to="/account" replace />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/faq" element={<FAQ />} />
@@ -64,6 +72,7 @@ export default function App() {
                   <Route path="/return-refund-policy" element={<Navigate to="/return-policy" replace />} />
                   <Route path="/cancellation-policy" element={<Navigate to="/refund-cancellation" replace />} />
                   <Route path="/order-success" element={<Navigate to="/checkout" replace />} />
+                  <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>

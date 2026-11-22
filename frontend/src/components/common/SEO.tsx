@@ -10,6 +10,10 @@ const titles: Record<string, string> = {
   "/wishlist": "Your wishlist",
   "/cart": "Your shopping bag",
   "/checkout": "Checkout preview",
+  "/account": "Your account",
+  "/sign-in": "Customer sign in",
+  "/sign-up": "Create an account",
+  "/404": "Page not found",
   "/about": "Our story",
   "/contact": "Contact us",
   "/faq": "Frequently asked questions",
@@ -43,7 +47,8 @@ export default function SEO() {
   const noindex =
     !site.catalogVerified ||
     !site.policiesVerified ||
-    ["/search", "/cart", "/checkout", "/wishlist"].includes(pathname) ||
+    ["/search", "/cart", "/checkout", "/wishlist", "/account", "/sign-in", "/sign-up", "/404"].includes(pathname) ||
+    pathname.startsWith("/sign-in/") || pathname.startsWith("/sign-up/") ||
     (!titles[pathname] && !product && !category);
   const structured =
     product && site.catalogVerified
