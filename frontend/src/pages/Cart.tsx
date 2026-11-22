@@ -150,7 +150,7 @@ export default function Cart() {
             <div className="reference-summary-assurance">
               <span>{checkoutAvailable ? "Guest checkout" : "Preview collection"}</span>
               <span>Cart saved on this browser</span>
-              <span>Payment not enabled yet</span>
+              <span>{checkoutAvailable ? "Server-verified payment" : "Payment not enabled yet"}</span>
             </div>
           </aside>
         </div>

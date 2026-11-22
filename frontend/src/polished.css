@@ -265,3 +265,28 @@ h1,h2,h3{text-wrap:balance}
 /* Keep interactive controls legible on all page types. */
 .reference-cart-page input,.reference-checkout-page input,.reference-contact-page input,.reference-shop-page input,.reference-shop-page select{font-size:14px}
 @media(max-width:540px){.reference-catalog-toolbar{flex-wrap:wrap}.reference-inline-search{min-width:150px}.reference-header-actions{gap:8px}}
+
+/* Bring the existing admin workspace into the same restrained retail palette. */
+.admin-app{--admin-navy:#284d3a;--admin-navy-dark:#1c392c;--admin-blue:#406b50;--admin-bg:#f7f8f5;--admin-panel:#fff;--admin-border:#e1e8e0;--admin-text:#294034;--admin-muted:#748476;--admin-soft:#edf3ec}
+.admin-app h1,.admin-app h2,.admin-app h3{color:#263c30;font-family:Inter,ui-sans-serif,system-ui,sans-serif;letter-spacing:-.04em}
+.admin-app .admin-sidebar{background:#fff;border-right-color:#e4e9e2}
+.admin-app .admin-nav a{color:#506956;border-radius:7px}
+.admin-app .admin-nav a:hover{background:#f2f6f1}
+.admin-app .admin-nav a.active{background:linear-gradient(95deg,#e9f0e7,#f1f5ef);color:#274e37}
+.admin-app .admin-nav a.active svg{color:#376c49}
+.admin-app .admin-topbar{background:#ffffffef;border-bottom-color:#e2e9df}
+.admin-app .admin-panel,.admin-app .admin-stat-card,.admin-app .admin-form-card{border-color:#e2e8df;border-radius:10px;box-shadow:0 4px 16px #243d2d08}
+.admin-app .admin-primary-button{background:#284d39;border-color:#284d39;color:#fff;border-radius:7px}
+.admin-app .admin-primary-button:hover{background:#1c392c}
+.admin-app .admin-outline-button,.admin-app .admin-view-store{border-color:#cddbcf;color:#2d513d}
+.admin-app .admin-support-card{background:#f0f5ef;border-color:#e0eadd}
+.admin-app .admin-global-search{background:#f8faf7;border-color:#e1e8e1}
+.admin-app .admin-stats-grid .admin-stat-card strong{color:#284237}
+.admin-app .admin-stat-icon.blue{color:#376b4c;background:#e6efe7}
+.admin-app .admin-table th{color:#637566;background:#f8faf7}
+.admin-app .admin-eyebrow{color:#68836b}
+.admin-app .admin-preview-banner{background:#f3f4ea;color:#5d765e;border-color:#e2e8d9}
+.admin-auth-screen{background:#f5f7f2}
+.admin-auth-screen .admin-auth-card{border-color:#e2e8dd;box-shadow:0 20px 60px #263c301a}
+.admin-auth-screen .admin-auth-card h1{color:#243c2e;font-family:Inter,ui-sans-serif,system-ui,sans-serif;letter-spacing:-.04em}
+.admin-auth-screen .admin-auth-icon{color:#315944;background:#e9f1e7}

@@ -43,7 +43,7 @@ export default function Home() {
           <div className="jn-hero-image">
             <img src={editorialHome} alt="Warm, naturally lit home kitchen with wood countertops" fetchPriority="high" decoding="async" onError={(event) => { event.currentTarget.src = "/reference/reference-home.webp"; }} />
             <div className="jn-photo-label"><span className="jn-label-circle"><Sparkles size={16}/></span><span>Made for the moments<br />in between.</span></div>
-            <span className="jn-hero-image-index">01 / 03 — EVERYDAY EDIT</span>
+            <span className="jn-hero-image-index">THE EVERYDAY EDIT</span>
           </div>
         </div>
       </section>
