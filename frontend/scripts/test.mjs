@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createServer } from 'vite';
 
 // Vite transforms the actual TypeScript source; no duplicate test implementation.
@@ -75,6 +76,36 @@ try {
   assert.equal(await checkoutSchema.isValid({}),false);
   assert.equal(await checkoutSchema.isValid({fullName:'Test Shopper',email:'test@example.com',phone:'9000000000',address:'Test address for validation',city:'Test City',state:'Gujarat',pin:'380001'}),true);
   assert.equal(await checkoutSchema.isValid({fullName:'  ',email:'wrong',phone:'123',address:'short',city:'',state:'',pin:'000000'}),false);
+  // Navigation route smoke checks: prevent accidental removal of customer,
+  // policy, error or secured-admin screens during future redesigns.
+  const appRoutes = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
+  const adminRoutes = readFileSync(new URL('../src/admin/AdminPhase5Router.tsx', import.meta.url), 'utf8');
+  const authPage = readFileSync(new URL('../src/pages/AuthPage.tsx', import.meta.url), 'utf8');
+  const notFound = readFileSync(new URL('../src/pages/NotFound.tsx', import.meta.url), 'utf8');
+  const style = readFileSync(new URL('../src/signature.css', import.meta.url), 'utf8');
+  for (const path of [
+    '/', '/shop', '/search', '/category/:category', '/product/:slug',
+    '/cart', '/wishlist', '/checkout', '/payment-status', '/account',
+    '/sign-in/*', '/sign-up/*', '/about', '/contact', '/faq', '/404',
+    '/admin/*', '/admin/orders', '/admin/products/new',
+    '/admin/products/:productId/edit',
+  ]) {
+    assert.ok(appRoutes.includes('path="' + path + '"'), 'Missing storefront or protected route: ' + path);
+  }
+  for (const path of [
+    'products', 'categories', 'customers', 'analytics', 'coupons',
+    'content', 'settings', 'help',
+  ]) {
+    assert.ok(adminRoutes.includes('path="' + path + '"'), 'Missing admin workspace: ' + path);
+  }
+  assert.match(appRoutes, /<Route path="\*" element={<NotFound \/>} \/>/);
+  assert.match(adminRoutes, /<Route path="\*" element={<AdminNotFound \/>} \/>/);
+  assert.ok(authPage.includes('SignIn') && authPage.includes('SignUp'));
+  assert.ok(authPage.includes('auth.enabled'), 'Disabled identity provider must have a safe fallback');
+  assert.ok(notFound.includes('jn-404-hero'), 'Missing designed 404 presentation');
+  assert.ok(style.includes('--jn-font-ui') && style.includes('--jn-font-display'));
+  console.log('PASS: customer and admin route inventory, authentication fallbacks, 404 handling, and premium font system.');
+
   console.log('PASS: seed preservation, API-backed filtering model, cart reconciliation, wishlist migration, recently viewed, storage safety, and checkout validation.');
 } finally {
   await server.close();
