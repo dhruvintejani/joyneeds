@@ -114,6 +114,18 @@ try {
   assert.ok(api.includes('configuredApiUrl === "same-origin"'), 'Missing first-party API option');
   assert.ok(proxy.includes('BACKEND_ORIGIN') && proxy.includes('namespaces') && proxy.includes('set-cookie'), 'Missing secure API relay protections');
   assert.ok(vercel.rewrites.some((entry) => entry.source === '/api/:path*'), 'Missing API relay rewrite');
+  const contactPage = readFileSync(new URL('../src/pages/Contact.tsx', import.meta.url), 'utf8');
+  const referenceUi = readFileSync(new URL('../src/components/common/ReferenceUI.tsx', import.meta.url), 'utf8');
+  const alignment = readFileSync(new URL('../src/alignment-polish.css', import.meta.url), 'utf8');
+  const mainEntry = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
+  assert.ok(authPage.includes('<span>Account access is managed by our secure authentication provider when enabled.</span>'), 'Security note text needs its own flex child.');
+  assert.ok(authPage.includes('<ShieldCheck size={16} aria-hidden="true" />'), 'Security note icon must be decorative.');
+  assert.match(alignment, /\.jn-auth-footnote\s*\{[\s\S]*?align-items:flex-start/);
+  assert.match(alignment, /\.jn-auth-footnote>svg\s*\{[\s\S]*?flex:0 0 16px/);
+  assert.ok(contactPage.includes('className="jn-icon-row"'), 'Contact checklist rows need consistent alignment.');
+  assert.ok(referenceUi.includes('className="reference-link jn-icon-link"'), 'Shared link arrow alignment regressed.');
+  assert.ok(mainEntry.includes('import "./alignment-polish.css"'), 'Shared alignment stylesheet is missing.');
+  console.log('PASS: responsive icon/text alignment regression checks.');
   console.log('PASS: customer and admin route inventory, authentication fallbacks, 404 handling, and premium font system.');
 
   console.log('PASS: seed preservation, API-backed filtering model, cart reconciliation, wishlist migration, recently viewed, storage safety, and checkout validation.');
