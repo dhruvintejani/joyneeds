@@ -64,7 +64,7 @@ export default function About() {
           </Link>
         </div>
         <div className="reference-about-image" aria-hidden="true">
-          <img src="/reference/reference-home.webp" alt="" />
+          <img src="https://images.unsplash.com/photo-1763690822336-5403829a3858?auto=format&fit=crop&w=1000&q=80" alt="" loading="lazy" onError={(event) => { event.currentTarget.src = "/reference/reference-home.webp"; }} />
           <span className="reference-script">Small essentials. Better everyday.</span>
         </div>
       </section>

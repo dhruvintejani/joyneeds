@@ -37,7 +37,7 @@ export default function ProductCard({ product }: { product: Product; index?: num
         >
           <Heart size={17} fill={saved ? "currentColor" : "none"} />
         </button>
-        {(product.newArrival || off > 0 || (site.catalogVerified && product.bestseller)) && (
+        {site.catalogVerified && (product.newArrival || off > 0 || product.bestseller) && (
           <div className="reference-product-badges" aria-label="Product highlights">
             {product.newArrival && <span className="reference-badge green">New</span>}
             {off > 0 && <span className="reference-badge green">{off}% off</span>}

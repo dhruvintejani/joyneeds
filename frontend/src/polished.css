@@ -258,3 +258,10 @@ h1,h2,h3{text-wrap:balance}
 .jn-preview-checkout span{font-size:12px;color:#6b7c6b;line-height:1.55}
 .jn-preview-checkout .button{text-align:center;margin-top:6px}
 .jn-preview-note{font-size:12px;color:#667e6d;background:#f3f5ed;border:1px solid #e5ecde;padding:13px 15px;line-height:1.6;border-radius:5px}
+
+/* Editorial serif accents replace the legacy handwritten script. */
+.reference-script{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:400;letter-spacing:-.035em}
+.reference-footer .reference-script{color:#5a7c64}
+/* Keep interactive controls legible on all page types. */
+.reference-cart-page input,.reference-checkout-page input,.reference-contact-page input,.reference-shop-page input,.reference-shop-page select{font-size:14px}
+@media(max-width:540px){.reference-catalog-toolbar{flex-wrap:wrap}.reference-inline-search{min-width:150px}.reference-header-actions{gap:8px}}
