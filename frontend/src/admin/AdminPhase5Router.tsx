@@ -2,7 +2,6 @@ import { useEffect, useState, type ReactNode } from "react";
 import {
   Routes,
   Route,
-  Navigate,
   NavLink,
   Link,
   Outlet,
