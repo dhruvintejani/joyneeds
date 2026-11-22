@@ -27,6 +27,17 @@ app.set("trust proxy", 1);
 if (clerkConfigured && clerkRequestMiddleware) app.use(clerkRequestMiddleware);
 
 app.use(helmet());
+// Paytm may POST a browser form from an external origin. This callback does not
+// trust callback payloads; the handler always checks Paytm's signed status API.
+// Register before storefront CORS, with a strict body and request limit.
+app.post(
+  "/api/payments/paytm/callback",
+  rateLimit({ windowMs: 15 * 60 * 1000, limit: 60, standardHeaders: true, legacyHeaders: false }),
+  express.urlencoded({ extended: false, limit: "64kb" }),
+  express.json({ limit: "64kb" }),
+  paytmCallbackController,
+);
+
 app.use(
   cors({
     credentials: true,
@@ -58,8 +69,6 @@ app.post(
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: false, limit: "1mb" }));
-
-app.post("/api/payments/paytm/callback", paytmCallbackController);
 
 app.use("/api/health", healthRouter);
 app.use("/api/products", productRouter);
