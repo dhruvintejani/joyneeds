@@ -50,3 +50,7 @@ services:
         value: JoyNeeds
       - key: BREVO_REPLY_TO_EMAIL
         sync: false
+
+# Paytm is optional. Add PAYMENT_PROVIDER, PAYTM_ENV, PAYTM_MID,
+# PAYTM_MERCHANT_KEY, PAYTM_WEBSITE_NAME, PAYTM_CALLBACK_URL privately
+# to the backend host after merchant test credentials are available.

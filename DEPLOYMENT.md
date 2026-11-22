@@ -249,3 +249,16 @@ Application code can be rolled back, but database migrations are forward changes
 ## Storefront safety gate
 
 Without `VITE_API_URL`, the public storefront shows a clearly identified browse-only preview of the bundled catalog. `VITE_CHECKOUT_ENABLED` defaults to false and must not be enabled until the backend and merchant payment integration are fully tested. A preview catalog can never submit a payment. The existing backend uses Prisma and Neon PostgreSQL; it retains the Razorpay implementation, disabled by default. Paytm UPI is a separate provider integration and is not activated by changing a label or API key.
+
+## Paytm (preferred UPI provider)
+
+The new Paytm option supports a server-generated transaction token, CheckoutJS, signed provider API responses and server-side status reconciliation. Paytm Checkout may offer Google Pay, PhonePe and other compatible UPI apps based on the merchant account and device. It does not guarantee zero transaction fees.
+
+1. Complete Paytm merchant onboarding and obtain staging MID and merchant key.
+2. Configure the backend only: PAYMENT_PROVIDER=PAYTM, PAYTM_ENV=staging, PAYTM_MID, PAYTM_MERCHANT_KEY, PAYTM_WEBSITE_NAME and PAYTM_CALLBACK_URL=https://<backend-host>/api/payments/paytm/callback.
+3. Keep ORDER_CREATION_ENABLED=false until Neon migrations, staging API connectivity, payment verification, inventory and webhook/callback tests all pass.
+4. Set frontend VITE_PAYMENT_PROVIDER=PAYTM, VITE_API_URL and only then VITE_CHECKOUT_ENABLED=true. A server-side order gate remains independently enforced.
+5. Test success, failure, pending payment, duplicate callbacks, concurrent verification, mismatched totals and low-stock outcomes using official Paytm staging credentials before switching to production.
+6. Merchant terms determine fees. Never promise 0% fees for all UPI or card transactions.
+
+Existing Razorpay support is retained for optional future use by setting PAYMENT_PROVIDER=RAZORPAY and the corresponding private credentials. Paytm refund handling remains an operational/manual step until a verified refund API integration is added; do not use Razorpay refund actions for Paytm orders.

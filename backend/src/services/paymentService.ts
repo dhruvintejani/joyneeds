@@ -123,7 +123,7 @@ export async function createRazorpayOrder(body: CreateRazorpayOrderBody, clerkUs
   };
 }
 
-async function commitInventoryAndConfirm(orderId: string) {
+export async function commitInventoryAndConfirm(orderId: string) {
   return prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
       where: { id: orderId },

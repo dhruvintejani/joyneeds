@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { razorpayConfigured } from "../config/env.js";
+import { configuredPaymentProvider } from "../config/env.js";
 import { createPendingOrder, getCustomerOrder, listCustomerOrders } from "../services/orderService.js";
 import type { CreateOrderBody, CustomerOrderParams } from "../validators/orderValidators.js";
 
@@ -9,7 +9,7 @@ export const createOrderController: RequestHandler = async (_req, res) => {
   res.status(201).json({
     data: {
       ...order,
-      paymentReady: razorpayConfigured,
+      paymentReady: configuredPaymentProvider,
       inventoryReserved: false,
       note: "Payment must be verified server-side before the order is confirmed and inventory is committed.",
     },

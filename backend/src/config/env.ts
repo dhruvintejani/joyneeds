@@ -19,6 +19,12 @@ const envSchema = z
     CLOUDINARY_API_KEY: optionalSecret,
     CLOUDINARY_API_SECRET: optionalSecret,
     CLOUDINARY_FOLDER: z.string().trim().min(1).max(120).default("joyneeds/products"),
+    PAYMENT_PROVIDER: z.enum(["PAYTM", "RAZORPAY"]).default("PAYTM"),
+    PAYTM_MID: optionalSecret,
+    PAYTM_MERCHANT_KEY: optionalSecret,
+    PAYTM_WEBSITE_NAME: optionalSecret,
+    PAYTM_CALLBACK_URL: z.string().url().optional(),
+    PAYTM_ENV: z.enum(["staging", "production"]).default("staging"),
     RAZORPAY_KEY_ID: optionalSecret,
     RAZORPAY_KEY_SECRET: optionalSecret,
     RAZORPAY_WEBHOOK_SECRET: optionalSecret,
@@ -60,6 +66,15 @@ const envSchema = z
         path: ["CLOUDINARY_CLOUD_NAME"],
         message: "Cloudinary cloud name, API key and API secret must be configured together.",
       });
+    }
+
+    const paytmValues = [value.PAYTM_MID, value.PAYTM_MERCHANT_KEY, value.PAYTM_WEBSITE_NAME, value.PAYTM_CALLBACK_URL];
+    const paytmConfiguredCount = paytmValues.filter(Boolean).length;
+    if (paytmConfiguredCount > 0 && paytmConfiguredCount < paytmValues.length) {
+      ctx.addIssue({ code: "custom", path: ["PAYTM_MID"], message: "Paytm MID, merchant key, website name and callback URL must be configured together." });
+    }
+    if (value.PAYTM_ENV === "production" && value.PAYTM_CALLBACK_URL && !value.PAYTM_CALLBACK_URL.startsWith("https://")) {
+      ctx.addIssue({ code: "custom", path: ["PAYTM_CALLBACK_URL"], message: "Production Paytm callbacks require HTTPS." });
     }
 
     const razorpayValues = [
@@ -105,3 +120,6 @@ export const razorpayConfigured = Boolean(
   env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET && env.RAZORPAY_WEBHOOK_SECRET,
 );
 export const brevoConfigured = Boolean(env.BREVO_API_KEY && env.BREVO_SENDER_EMAIL);
+
+export const paytmConfigured = Boolean(env.PAYTM_MID && env.PAYTM_MERCHANT_KEY && env.PAYTM_WEBSITE_NAME && env.PAYTM_CALLBACK_URL);
+export const configuredPaymentProvider = env.PAYMENT_PROVIDER === "PAYTM" ? paytmConfigured : razorpayConfigured;

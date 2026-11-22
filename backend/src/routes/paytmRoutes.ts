@@ -1,0 +1,10 @@
+import { Router } from "express";
+import rateLimit from "express-rate-limit";
+import { z } from "zod";
+import { optionalCustomer } from "../middleware/auth.js";
+import { validateBody } from "../middleware/validateRequest.js";
+import { paytmCheckoutController, paytmStatusController } from "../controllers/paytmController.js";
+export const paytmRouter = Router();
+paytmRouter.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 25, standardHeaders: true, legacyHeaders: false }));
+paytmRouter.post("/paytm/order", optionalCustomer, validateBody(z.object({ orderId: z.string().trim().min(8).max(100) })), paytmCheckoutController);
+paytmRouter.post("/paytm/status", validateBody(z.object({ orderNumber: z.string().regex(/^JN-[0-9]{8}-[A-F0-9]{8}$/) })), paytmStatusController);

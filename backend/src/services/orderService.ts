@@ -151,7 +151,7 @@ export async function createPendingOrder(body: CreateOrderBody, clerkUserId: str
     ...order,
     paymentReady: true,
     inventoryReserved: false,
-    note: "The order is ready for Razorpay payment. Inventory is committed only after captured payment verification.",
+    note: "The order is ready for payment verification. Inventory is committed only after the payment provider confirms success.",
   };
 }
 

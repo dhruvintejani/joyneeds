@@ -1,7 +1,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { createOrderController } from "../controllers/orderController.js";
-import { orderCreationEnabled, razorpayConfigured } from "../config/env.js";
+import { orderCreationEnabled, configuredPaymentProvider, env } from "../config/env.js";
 import { optionalCustomer } from "../middleware/auth.js";
 import { validateBody } from "../middleware/validateRequest.js";
 import { createOrderSchema } from "../validators/orderValidators.js";
@@ -31,12 +31,12 @@ orderRouter.post(
       );
       return;
     }
-    if (!razorpayConfigured) {
+    if (!configuredPaymentProvider) {
       next(
         new AppError(
           503,
-          "RAZORPAY_NOT_CONFIGURED",
-          "Razorpay must be configured before live orders can be created.",
+          "PAYMENT_PROVIDER_NOT_CONFIGURED",
+          `${env.PAYMENT_PROVIDER} must be configured before orders can be created.`,
         ),
       );
       return;

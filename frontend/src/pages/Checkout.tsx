@@ -18,6 +18,7 @@ import {
   verifyRazorpayCheckout,
 } from "../api/payments";
 import { useCartStore } from "../store/cartStore";
+import { preparePaytmOrder, openPaytmCheckout } from "../api/paytm";
 import { useCatalogStore } from "../store/catalogStore";
 import { money, maxQuantity } from "../utils/catalog";
 import { site } from "../config/site";
@@ -43,6 +44,8 @@ export default function Checkout() {
   const auth = useCustomerAuth();
   const catalogStatus = useCatalogStore((state) => state.status);
   const canCheckout = site.checkoutEnabled && catalogStatus === "ready";
+  const paytmMode = import.meta.env.VITE_PAYMENT_PROVIDER !== "RAZORPAY";
+  const [paytmOrderNumber, setPaytmOrderNumber] = useState<string | null>(null);
   const [completed, setCompleted] = useState<{ orderNumber: string; fulfillmentReady: boolean } | null>(null);
 
   if (completed) {
@@ -92,18 +95,18 @@ export default function Checkout() {
       <PageBanner
         eyebrow="SECURE CHECKOUT"
         title="Complete your details"
-        subtitle="JoyNeeds creates the order and payment amount on the backend, then verifies Razorpay before confirming fulfillment."
+        subtitle="Your payment amount is calculated by the server and verified before order confirmation."
         compact
       />
 
       <ol className="reference-checkout-steps" aria-label="Checkout progress">
         <li className="complete"><span>1</span><div><strong>Cart</strong><small>Reviewed</small></div></li>
         <li className="current" aria-current="step"><span>2</span><div><strong>Details</strong><small>Current step</small></div></li>
-        <li><span>3</span><div><strong>Payment</strong><small>Razorpay</small></div></li>
+        <li><span>3</span><div><strong>Payment</strong><small>{paytmMode ? "UPI / Paytm" : "Razorpay"}</small></div></li>
       </ol>
 
       <p className="notice reference-checkout-notice">
-        Payment is enabled only when the backend has Razorpay credentials, webhook verification and live order creation explicitly configured. Client-side prices are never used as the payment authority.
+        Payment is enabled only after the merchant has configured secure payment verification and activated order creation. Client-side prices never determine the amount charged.
       </p>
 
       <div className="reference-checkout-layout">
@@ -129,7 +132,14 @@ export default function Checkout() {
                 },
                 token,
               );
-              if (!order.paymentReady) throw new Error("Razorpay is not ready for this order.");
+              if (!order.paymentReady) throw new Error("The payment provider is not ready for this order.");
+              if (paytmMode) {
+                const paytm = await preparePaytmOrder(order.id, token);
+                setPaytmOrderNumber(paytm.orderNumber);
+                await openPaytmCheckout(paytm);
+                setStatus("Paytm checkout opened. Confirm your payment status before your order is processed.");
+                return;
+              }
 
               const prepared = await prepareRazorpayOrder(order.id, token);
               await loadRazorpayCheckout();
@@ -201,13 +211,13 @@ export default function Checkout() {
               <section className="reference-checkout-card">
                 <div className="reference-checkout-card-heading">
                   <span><CreditCard size={20} /></span>
-                  <div><h2>Payment Method</h2><p>Secure online payment through Razorpay Checkout.</p></div>
+                  <div><h2>Payment Method</h2><p>{paytmMode ? "UPI and other methods enabled by the merchant through Paytm." : "Secure online payment through Razorpay Checkout."}</p></div>
                 </div>
                 <div className="reference-payment-preview">
                   <ShieldCheck size={24} />
                   <div>
-                    <strong>Razorpay secure checkout</strong>
-                    <p>The backend creates the Razorpay order from the server total and verifies the returned signature and captured payment before fulfillment.</p>
+                    <strong>{paytmMode ? "Paytm secure checkout" : "Razorpay secure checkout"}</strong>
+                    <p>The backend calculates the payment amount and verifies the provider transaction before confirming your order.</p>
                   </div>
                 </div>
                 <Button className="full-width" type="submit" disabled={isSubmitting || !canCheckout}>
@@ -215,6 +225,7 @@ export default function Checkout() {
                   <CreditCard size={17} />
                 </Button>
                 {status && <p className="notice" role="status">{status}</p>}
+                {paytmOrderNumber && <Link className="button secondary full-width" to={`/payment-status?order=${encodeURIComponent(paytmOrderNumber)}`}>Check payment status</Link>}
               </section>
             </Form>
           )}

@@ -4,6 +4,7 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { clerkConfigured, env } from "./config/env.js";
 import { razorpayWebhookController } from "./controllers/paymentController.js";
+import { paytmCallbackController } from "./controllers/paytmController.js";
 import { clerkRequestMiddleware } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { accountRouter } from "./routes/accountRoutes.js";
@@ -12,6 +13,7 @@ import { categoryRouter } from "./routes/categoryRoutes.js";
 import { healthRouter } from "./routes/healthRoutes.js";
 import { orderRouter } from "./routes/orderRoutes.js";
 import { paymentRouter } from "./routes/paymentRoutes.js";
+import { paytmRouter } from "./routes/paytmRoutes.js";
 import { productRouter } from "./routes/productRoutes.js";
 import { AppError } from "./utils/AppError.js";
 
@@ -57,11 +59,14 @@ app.post(
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: false, limit: "1mb" }));
 
+app.post("/api/payments/paytm/callback", paytmCallbackController);
+
 app.use("/api/health", healthRouter);
 app.use("/api/products", productRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/payments", paymentRouter);
+app.use("/api/payments", paytmRouter);
 app.use("/api/account", accountRouter);
 app.use("/api/admin", adminRouter);
 
