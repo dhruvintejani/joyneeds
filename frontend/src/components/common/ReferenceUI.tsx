@@ -21,7 +21,7 @@ export function NewsletterBand() {
   // Replace an inert email subscription form with a real, working contact CTA.
   return <section className="jn-contact-band"><div className="container jn-contact-band-inner">
     <div><p className="jn-overline">STAY CURIOUS</p><h2>Have something in mind?</h2><p>Need help finding a product or have a question about JoyNeeds?</p></div>
-    <Link to="/contact" className="jn-button jn-button-light">Get in touch <ArrowUpRight size={19}/></Link>
+    <Link to="/contact" className="jn-button jn-button-light jn-icon-link">Get in touch <ArrowUpRight size={19} aria-hidden="true"/></Link>
   </div></section>;
 }
 export type BannerTheme =
@@ -50,5 +50,5 @@ export function PageBanner({
 }
 export function SectionHeading({ eyebrow, title, to, linkLabel = "View all" }: { eyebrow?: string; title: string; to?: string; linkLabel?: string }) {
   return <div className="reference-section-heading"><div>{eyebrow && <p className="jn-overline">{eyebrow}</p>}<h2>{title}</h2></div>
-    {to && <Link to={to} className="reference-link">{linkLabel} <ArrowRight size={17}/></Link>}</div>;
+    {to && <Link to={to} className="reference-link jn-icon-link">{linkLabel} <ArrowRight size={17} aria-hidden="true"/></Link>}</div>;
 }

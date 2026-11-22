@@ -1,0 +1,172 @@
+/* JoyNeeds / icon, typography and narrow-viewport alignment audit.
+   Last stylesheet so inherited layouts can't break shared icon-text rows. */
+
+/* Text is a separate flex item so a wrapping note never leaves its shield
+   vertically centered between two lines. */
+.jn-auth-footnote{
+  width:100%;
+  max-width:430px;
+  display:flex;
+  flex-direction:row;
+  flex-wrap:nowrap;
+  align-items:flex-start;
+  justify-content:center;
+  gap:9px;
+  margin:20px 0 0;
+  padding:0 2px;
+  text-align:left;
+  font-size:11px;
+  line-height:1.55;
+  color:#718374;
+}
+.jn-auth-footnote>svg{
+  display:block;
+  width:16px;
+  height:16px;
+  flex:0 0 16px;
+  margin-top:1px;
+  color:#6c9074;
+}
+.jn-auth-footnote>span{
+  min-width:0;
+  flex:0 1 auto;
+  overflow-wrap:break-word;
+}
+
+/* Shared links and call-to-action controls containing text + an SVG. */
+.jn-icon-link,
+.reference-section-heading .reference-link,
+.reference-product-card .reference-add-button,
+.reference-purchase-controls .button,
+.jn-auth-continue,
+.jn-404-outline{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  text-align:center;
+  line-height:1.4;
+}
+.jn-icon-link>svg,
+.reference-section-heading .reference-link>svg,
+.reference-product-card .reference-add-button>svg,
+.reference-purchase-controls .button>svg,
+.jn-auth-continue>svg,
+.jn-404-outline>svg{
+  display:block;
+  flex:0 0 auto;
+}
+.reference-section-heading .reference-link{
+  max-width:100%;
+  min-width:0;
+  white-space:normal;
+  text-decoration:none;
+  text-wrap:balance;
+}
+.reference-section-heading .reference-link:hover{
+  color:#294b36;
+  text-decoration:underline;
+  text-underline-offset:4px;
+}
+/* Fix text + image/icon checklist blocks from drifting if a line wraps. */
+.reference-contact-aside-copy .jn-icon-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
+  gap:9px;
+  line-height:1.5;
+  min-width:0;
+  margin-block:11px;
+}
+.reference-contact-aside-copy .jn-icon-row>svg{
+  display:block;
+  flex:0 0 18px;
+  margin-top:1px;
+}
+.reference-contact-aside-copy .jn-icon-row>span{
+  min-width:0;
+  flex:1;
+  overflow-wrap:break-word;
+}
+
+/* FAQ and header search: the icon should not squeeze the input on phones. */
+.reference-faq-search{min-width:0;max-width:100%;gap:10px}
+.reference-faq-search>svg{display:block;flex:0 0 19px}
+.reference-faq-search>input{width:100%;min-width:0;flex:1}
+.reference-header .reference-search-box,
+.reference-header .reference-search-box form,
+.reference-header .reference-search-box input{min-width:0}
+.reference-header .reference-search-submit>svg{display:block}
+.reference-header .reference-category-trigger>svg,
+.reference-header .jn-mega-link>svg,
+.reference-header .reference-nav-message>svg,
+.reference-header .reference-utility-inner>a>svg{
+  display:block;
+  flex-shrink:0;
+}
+.reference-header .reference-account-preview{
+  align-items:center;
+  gap:9px;
+}
+.reference-header .reference-account-preview>svg{
+  display:block;
+  flex-shrink:0;
+}
+.reference-header .reference-account-preview>span{
+  min-width:0;
+  line-height:1.3;
+}
+.reference-header .reference-nav-message{
+  align-items:center;
+  gap:8px;
+}
+/* The nav label must never wrap at tablet-sized desktop widths. */
+.reference-nav-wrap .reference-desktop-nav a{white-space:nowrap}
+/* Align icon labels and keep controls tappable in product grids. */
+.reference-product-card .reference-add-button{
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  padding-inline:10px;
+  overflow-wrap:anywhere;
+}
+.reference-product-card .reference-add-button>svg{flex:0 0 17px}
+
+/* Small-screen polish: prevent email and CTA text overflow and prevent the
+   FAQ/section heading action from overlapping its title. */
+@media(max-width:780px){
+  .reference-section-heading{align-items:flex-start;flex-wrap:wrap;gap:10px 16px}
+  .reference-section-heading>.reference-link{flex:0 0 auto}
+}
+@media(max-width:540px){
+  .jn-auth-footnote{
+    max-width:100%;
+    align-items:flex-start;
+    justify-content:flex-start;
+    gap:8px;
+    font-size:10.5px;
+    line-height:1.55;
+  }
+  .reference-utility-inner>a{
+    min-width:0;
+    max-width:100%;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    line-height:1.4;
+    text-align:left;
+  }
+  .reference-utility-inner>a>svg{flex:0 0 14px}
+  .reference-section-heading .reference-link{
+    max-width:100%;
+    text-align:left;
+    justify-content:flex-start;
+  }
+  .reference-contact-aside-copy .jn-icon-row{font-size:12px}
+}
+/* Keep keyboard focus visible but consistent with the warm premium palette. */
+.jn-icon-link:focus-visible,
+.jn-auth-footnote a:focus-visible,
+.reference-faq-search:focus-within{
+  outline:2px solid #b7a184!important;
+  outline-offset:3px;
+}

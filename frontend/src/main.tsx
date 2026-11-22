@@ -11,6 +11,7 @@ import "./luxe.css";
 import "./ux-fixes.css";
 import "./page-themes.css";
 import "./signature.css";
+import "./alignment-polish.css";
 import App from "./App";
 import { CustomerAuthProvider } from "./auth/CustomerAuthProvider";
 

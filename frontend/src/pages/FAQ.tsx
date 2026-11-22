@@ -27,7 +27,7 @@ export default function FAQ() {
       />
 
       <label className="reference-faq-search">
-        <Search size={19} />
+        <Search size={19} aria-hidden="true" />
         <span className="sr-only">Search frequently asked questions</span>
         <input
           type="search"

@@ -100,9 +100,9 @@ export default function Contact() {
               needing to contact us.
             </p>
             <ul>
-              <li><ShieldCheck size={18} /> No payment details requested here</li>
-              <li><FileText size={18} /> Policies are linked throughout the store</li>
-              <li><MessageCircle size={18} /> Direct email support remains available</li>
+              <li className="jn-icon-row"><ShieldCheck size={18} aria-hidden="true" /><span>No payment details requested here</span></li>
+              <li className="jn-icon-row"><FileText size={18} aria-hidden="true" /><span>Policies are linked throughout the store</span></li>
+              <li className="jn-icon-row"><MessageCircle size={18} aria-hidden="true" /><span>Direct email support remains available</span></li>
             </ul>
           </div>
         </aside>
