@@ -47,6 +47,12 @@ export type AdminProduct = {
   description: string;
   pricePaise: number;
   originalPricePaise: number | null;
+  subcategory: string | null;
+  features: string[];
+  specifications: Record<string, string>;
+  tags: string[];
+  shippingInfo: string | null;
+  returnInfo: string | null;
   sku: string;
   stockQuantity: number | null;
   stockStatus: "IN_STOCK" | "OUT_OF_STOCK";
@@ -68,6 +74,12 @@ export type AdminProductInput = {
   description: string;
   pricePaise: number;
   originalPricePaise?: number | null;
+  subcategory?: string | null;
+  features?: string[];
+  specifications?: Record<string, string>;
+  tags?: string[];
+  shippingInfo?: string | null;
+  returnInfo?: string | null;
   sku: string;
   stockQuantity?: number | null;
   stockStatus?: "IN_STOCK" | "OUT_OF_STOCK";
@@ -199,6 +211,9 @@ export async function listAdminProducts() {
   }>("/api/admin/products?status=all&limit=100");
   return data.items;
 }
+
+export const getAdminProduct = (id: string) =>
+  adminRequest<AdminProduct>(`/api/admin/products/${encodeURIComponent(id)}`);
 
 export const createAdminProduct = (input: AdminProductInput) =>
   adminRequest<AdminProduct>("/api/admin/products", {

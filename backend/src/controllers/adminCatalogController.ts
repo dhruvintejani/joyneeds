@@ -5,6 +5,7 @@ import {
   createAdminCategory,
   createAdminProduct,
   getAdminDashboard,
+  getAdminProduct,
   listAdminCategories,
   listAdminProducts,
   updateAdminCategory,
@@ -25,6 +26,11 @@ export const adminDashboardController: RequestHandler = async (_req, res) => {
 
 export const adminListProductsController: RequestHandler = async (_req, res) => {
   res.json({ data: await listAdminProducts(res.locals.validatedQuery as AdminProductListQuery) });
+};
+
+export const adminGetProductController: RequestHandler = async (_req, res) => {
+  const { id } = res.locals.validatedParams as AdminIdParams;
+  res.json({ data: await getAdminProduct(id) });
 };
 
 export const adminCreateProductController: RequestHandler = async (_req, res) => {

@@ -118,6 +118,12 @@ export async function getAdminDashboard() {
   return { totalProducts, activeProducts, outOfStockProducts, categories, orders, customers, netRevenuePaise };
 }
 
+export async function getAdminProduct(id: string) {
+  const product = await prisma.product.findUnique({ where: { id }, select: adminProductSelect });
+  if (!product) throw new AppError(404, "PRODUCT_NOT_FOUND", "Product not found.");
+  return product;
+}
+
 export async function listAdminProducts(query: AdminProductListQuery) {
   const where: Prisma.ProductWhereInput = {};
   if (query.q) {

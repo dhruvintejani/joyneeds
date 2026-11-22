@@ -5,6 +5,7 @@ import {
   adminArchiveProductController,
   adminCreateCategoryController,
   adminCreateProductController,
+  adminGetProductController,
   adminDashboardController,
   adminListCategoriesController,
   adminListProductsController,
@@ -104,6 +105,7 @@ adminRouter.post(
 );
 
 adminRouter.get("/products", validateQuery(adminProductListQuerySchema), adminListProductsController);
+adminRouter.get("/products/:id", validateParams(adminIdParamsSchema), adminGetProductController);
 adminRouter.post(
   "/products",
   requireAdminWriteOrigin,
