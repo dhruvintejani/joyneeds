@@ -280,3 +280,111 @@ button,input,select,textarea{font-family:var(--jn-font-ui)}
 @media(prefers-reduced-motion:reduce){
  .jn-auth-continue,.jn-404-outline{transition:none}
 }
+
+
+/* ADMIN: genuine, discoverable workspaces with explicit integration status */
+.jn-admin-module .admin-page-header,
+.jn-admin-setup .admin-page-header{margin-bottom:26px}
+.jn-admin-module-intro{
+ position:relative;overflow:hidden;min-height:270px;
+ padding:34px clamp(25px,4vw,50px)!important;
+ background:linear-gradient(115deg,#f9faf5,#e9efe7)!important;
+ border:1px solid #e1e9dc!important;
+}
+.jn-admin-module-icon{
+ width:60px;height:60px;
+ display:grid;place-items:center;
+ border-radius:17px;color:#52735b;background:#fff;
+ box-shadow:0 8px 20px #294c3210;margin-bottom:18px
+}
+.jn-admin-module-intro>.admin-eyebrow{color:#9a7850!important;font-weight:850;letter-spacing:.17em;font-size:10px}
+.jn-admin-module-intro h2{
+ color:#214532;font-size:clamp(35px,4vw,55px);
+ line-height:1.02;margin:7px 0 15px
+}
+.jn-admin-module-intro>p:not(.admin-eyebrow){
+ color:#728171;max-width:670px;font-size:14px;line-height:1.75
+}
+.jn-admin-module-features{
+ display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+ margin:24px 0 28px
+}
+.jn-admin-module-features span{
+ display:inline-flex;gap:7px;align-items:center;
+ padding:8px 11px;border-radius:999px;
+ border:1px solid #d9e4d8;background:#fff9;
+ color:#486955;font-size:11px;font-weight:700
+}
+.jn-admin-module-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.jn-admin-module-actions a{
+ text-decoration:none;display:inline-flex;align-items:center;
+ justify-content:center;gap:8px;min-height:42px
+}
+.jn-admin-module-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+.jn-admin-module-links a{
+ text-decoration:none;border-radius:15px;border:1px solid #e5e9de;
+ background:#fffdfa;padding:18px;display:flex;align-items:center;gap:13px;color:#365a43;
+ transition:transform .2s,border-color .2s,box-shadow .2s
+}
+.jn-admin-module-links a:hover{
+ transform:translateY(-2px);
+ box-shadow:0 10px 22px #1a392a12;border-color:#c6d6c7
+}
+.jn-admin-module-links a>span{display:grid;gap:3px;flex:1;min-width:0}
+.jn-admin-module-links strong{font-size:12px;color:#294a36}
+.jn-admin-module-links small{color:#83918a;font-size:11px}
+.jn-admin-setup{padding:34px clamp(24px,4vw,45px)!important}
+.jn-admin-setup .admin-eyebrow{font-size:10px;letter-spacing:.17em;color:#b28d58}
+.jn-admin-setup>h2{font-size:clamp(36px,4vw,54px);line-height:1.04;margin:8px 0 30px}
+.jn-admin-setup-steps{display:grid;gap:0;margin:0 0 30px}
+.jn-admin-setup-steps article{
+ display:grid;grid-template-columns:55px minmax(0,1fr);gap:18px;
+ border-bottom:1px solid #e5eae2;padding:19px 0
+}
+.jn-admin-setup-steps article>span{
+ font-family:var(--jn-font-display);font-size:31px;color:#bc9a6c;line-height:1
+}
+.jn-admin-setup-steps h3{font:700 15px/1.3 var(--jn-font-ui)!important;margin:0 0 7px;color:#294735}
+.jn-admin-setup-steps p{margin:0;color:#6a7d70;line-height:1.7;font-size:12px}
+.jn-admin-setup-steps code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#315b41;font-size:11px;background:#edf3e9;border-radius:4px;padding:2px 4px;overflow-wrap:anywhere}
+.jn-admin-analytics-note{margin-top:22px;padding:27px 30px!important}
+.jn-admin-analytics-note h2{font-size:36px;margin:0 0 10px}
+.jn-admin-analytics-note p{max-width:790px;line-height:1.8;color:#6c7d70;margin-bottom:20px;font-size:13px}
+.jn-admin-analytics-note a{display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.jn-admin-settings-panel{padding:29px clamp(22px,3vw,40px)!important}
+.jn-admin-settings-panel>.admin-muted{line-height:1.7;font-size:12px;margin-bottom:24px}
+.jn-admin-settings-list{border-top:1px solid #e5eae3;margin-bottom:27px}
+.jn-admin-settings-list>div{
+ display:grid;grid-template-columns:minmax(200px,.65fr) minmax(0,1.35fr);
+ align-items:center;gap:24px;padding:17px 0;border-bottom:1px solid #e5eae3
+}
+.jn-admin-settings-list>div>div{display:grid;gap:4px}
+.jn-admin-settings-list strong{font-size:13px;color:#284735}
+.jn-admin-settings-list span{font-size:11px;color:#a08765}
+.jn-admin-settings-list p{font-size:12px;line-height:1.6;color:#6d7c70;margin:0}
+.jn-admin-missing{
+ padding:65px clamp(27px,5vw,80px);
+ background:linear-gradient(110deg,#f8f8f2,#edf3e9);
+ border:1px solid #e0e9de;border-radius:19px;
+ display:flex;flex-direction:column;align-items:flex-start;
+ min-height:490px;justify-content:center
+}
+.jn-admin-missing-number{
+ font-family:var(--jn-font-display);font-size:clamp(105px,12vw,170px);
+ line-height:.8;letter-spacing:-.08em;color:#315741
+}
+.jn-admin-missing h1{font-size:clamp(40px,5vw,65px);margin:22px 0 11px;color:#254232}
+.jn-admin-missing>p{color:#728776;max-width:520px;line-height:1.7;font-size:14px;margin:0 0 25px}
+@media(max-width:960px){
+ .jn-admin-module-links{grid-template-columns:1fr 1fr}
+}
+@media(max-width:650px){
+ .jn-admin-module-links{grid-template-columns:1fr}
+ .jn-admin-module-intro{padding:25px 20px!important}
+ .jn-admin-module-intro h2{font-size:37px}
+ .jn-admin-setup{padding:24px 19px!important}
+ .jn-admin-setup-steps article{grid-template-columns:36px minmax(0,1fr);gap:10px}
+ .jn-admin-settings-list>div{grid-template-columns:1fr;gap:8px}
+ .jn-admin-missing{min-height:400px;padding:37px 23px}
+ .jn-admin-missing-number{font-size:114px}
+}
