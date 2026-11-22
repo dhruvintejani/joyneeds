@@ -38,28 +38,34 @@ managed in the provider consoles. These are not simply environment variables.
 
 Settings → Environment Variables → Production:
 
-\`\`\`env
+```env
 VITE_CLERK_PUBLISHABLE_KEY=
-VITE_API_URL=
+VITE_API_URL=same-origin
 VITE_CHECKOUT_ENABLED=false
-\`\`\`
 
-- \`VITE_CLERK_PUBLISHABLE_KEY\`: publishable key from Clerk; safe for the browser.
-- \`VITE_API_URL\`: deployed backend origin, e.g. the HTTPS Render web service.
-  Do **not** append \`/api\`. Storefront API helpers append it.
+# Additionally set BACKEND_ORIGIN in Vercel's server-side environment to
+# the HTTPS origin of your deployed Render API (no /api suffix).
+# BACKEND_ORIGIN=https://<your-render-service>
+```
+
+- `VITE_CLERK_PUBLISHABLE_KEY`: publishable key from Clerk; safe for the browser.
+- `VITE_API_URL`: use `same-origin`. The browser calls the JoyNeeds
+  Vercel domain, which securely relays API requests to your Render backend.
+- `BACKEND_ORIGIN`: set this **server-side** in the Vercel project to the
+  HTTPS Render origin. Do **not** use a `VITE_` prefix. Do not append `/api`.
 - Checkout remains disabled until merchant onboarding and payment verification.
 
 Vercel environment variables are embedded at build time. **Redeploy after
 changing them.**
 
-**Never** add \`CLERK_SECRET_KEY\`, \`DATABASE_URL\`,
-\`ADMIN_PASSWORD_HASH\`, or payment secrets to \`VITE_*\` variables.
+**Never** add `CLERK_SECRET_KEY`, `DATABASE_URL`,
+`ADMIN_PASSWORD_HASH`, or payment secrets to `VITE_*` variables.
 
 ## 3. Set backend variables in Render
 
 Render service → Environment. Use the same Clerk instance as the frontend.
 
-\`\`\`env
+```env
 NODE_ENV=production
 FRONTEND_URL=https://joyneeds.vercel.app
 DATABASE_URL=
@@ -70,48 +76,58 @@ ADMIN_EMAIL=
 ADMIN_PASSWORD_HASH=
 ADMIN_SESSION_TTL_HOURS=12
 ORDER_CREATION_ENABLED=false
-\`\`\`
+```
 
-- \`DATABASE_URL\`: Neon pooled runtime connection.
-- \`DIRECT_URL\`: Neon direct URL for migrations if used by the migration config.
-- \`FRONTEND_URL\`: exact **origin** (scheme/host, no trailing slash) of the browser
+- `DATABASE_URL`: Neon pooled runtime connection.
+- `DIRECT_URL`: Neon direct URL for migrations if used by the migration config.
+- `FRONTEND_URL`: exact **origin** (scheme/host, no trailing slash) of the browser
   storefront. It is used for CORS and origin verification for admin writes.
-- \`ADMIN_EMAIL\`: the single authorized administrator's email address.
-- \`ADMIN_PASSWORD_HASH\`: an ordinary **bcrypt hash**, never a plaintext password.
+- `ADMIN_EMAIL`: the single authorized administrator's email address.
+- `ADMIN_PASSWORD_HASH`: an ordinary **bcrypt hash**, never a plaintext password.
   Generate locally or with a trusted password-manager/script:
-  \`node -e "const b=require('bcryptjs');b.hash(process.argv[1],12).then(console.log)"\`
-  and supply the password as an argument in a private terminal session
-  (avoid recording the password in shell history).
-  Better: use a local interactive Node prompt or password manager.
+  Generate a bcrypt hash with cost 12 locally using the existing
+  `bcryptjs` dependency (or a trusted password manager). Avoid placing
+  plaintext passwords into shell history, source code, or project env files.
 
 The backend also needs migration and seed setup before it can persist records:
 
-\`\`\`bash
+```bash
 npm run db:migrate:deploy
 npm run db:seed
-\`\`\`
+```
 
 Only seed a new/empty production catalog intentionally. Do not run the seed
 against a catalog edited by administrators.
 
-## 4. Browser and domain setup for admin login
+## 4. First-party admin cookies and backend hosting
 
-Admin uses a secure HttpOnly cookie with CSRF Origin checks. A Vercel origin
-and a completely separate Render origin can be treated as **cross-site** by
-browsers, which may block cookie-based admin login.
+JoyNeeds uses an HttpOnly Secure admin cookie and strictly checks the browser
+Origin before accepting admin writes.
 
-Use a same-site custom domain or a tested **same-origin API reverse proxy**
-before treating admin authentication as production-ready for all browsers.
-Merely setting cross-origin URLs does not guarantee cookie persistence.
-Do not disable HttpOnly/Secure cookies or Origin validation to bypass this.
+The Vercel API relay at `/api/*` forwards only known store API endpoints to the
+fixed `BACKEND_ORIGIN`. When `VITE_API_URL=same-origin`, login, session checking,
+product edits and logout use the JoyNeeds origin. That avoids third-party cookie
+blocking for a separately hosted Render backend. No browser-visible API secret
+or static admin password is required.
+
+**Important:** configure `BACKEND_ORIGIN` in the Vercel project's environment
+and redeploy. The relay returns a safe HTTP 503 JSON error until configured.
+
+Use `FRONTEND_URL=https://joyneeds.vercel.app` on Render (without trailing slash).
+After moving to a custom domain, set `FRONTEND_URL` to that exact frontend origin.
+
+For provider webhooks, use the direct Render endpoint rather than the Vercel
+relay. For large product photo uploads, check Vercel Function request size
+limits and test with real image sizes before launch. Never disable cookie
+security or CSRF origin checks to work around configuration errors.
 
 ## 5. Test sign-in and admin access after connecting
 
-- Visit \`/sign-in\` and sign in via email.
-- Visit \`/sign-up\` and create a new account with Google OAuth.
-- Verify redirect to \`/account\`, customer identity and backend user sync.
-- Verify \`/api/account\` rejects missing or invalid bearer tokens.
-- Open \`/admin\`: an unauthorized customer must **not** be able to access it.
+- Visit `/sign-in` and sign in via email.
+- Visit `/sign-up` and create a new account with Google OAuth.
+- Verify redirect to `/account`, customer identity and backend user sync.
+- Verify `/api/account` rejects missing or invalid bearer tokens.
+- Open `/admin`: an unauthorized customer must **not** be able to access it.
 - Log in using the configured admin email/password; refresh the page and confirm
   the session persists without exposing the token in JavaScript.
 - Sign out and verify the session is revoked and protected admin requests fail.
@@ -124,3 +140,14 @@ You must create the actual Clerk and Google provider applications, enter
 environment values, deploy the backend, run migrations, and verify domain
 and session behavior. Code in this repo cannot create merchant or OAuth
 credentials on your behalf.
+
+## 6. Important production readiness limits
+
+- Customer OAuth credentials and Google production consent must be created in
+  the provider dashboards; adding keys alone does not publish the Google app.
+- Render must be running, Neon migrations must be applied, and the domain/CORS
+  configuration must be tested after the environment values are supplied.
+- Payment capture, transactional email and image storage are separate services
+  with their own credentials; the code does not activate them automatically.
+- Clerk billing and Auth0 limits differ. Check the current pricing and expected
+  user volume before committing to either provider.

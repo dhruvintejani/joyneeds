@@ -120,11 +120,17 @@ The root `vercel.json` installs dependencies and builds only the frontend worksp
 Set:
 
 ```env
-VITE_API_URL=https://<render-service>
-VITE_CLERK_PUBLISHABLE_KEY=<optional Clerk browser key>
+VITE_API_URL=same-origin
+VITE_CLERK_PUBLISHABLE_KEY=<Clerk browser key>
+VITE_CHECKOUT_ENABLED=false
+BACKEND_ORIGIN=https://<render-service>
 ```
 
 Do not add backend secrets to Vercel frontend environment variables.
+`BACKEND_ORIGIN` is not a `VITE_` browser variable. The same-origin API
+relay in `api/proxy.ts` routes only JoyNeeds API requests to Render.
+This avoids relying on third-party admin cookies. Provider callbacks and
+webhooks still use direct Render endpoints.
 
 After deploy, verify:
 
@@ -151,7 +157,12 @@ Frontend:
 VITE_CLERK_PUBLISHABLE_KEY=
 ```
 
-Enable the desired email/password and Google sign-in methods in Clerk. Guest storefront and checkout remain supported.
+Enable the desired email/password and Google sign-in methods in Clerk.
+Use the same Clerk instance for frontend and backend. Google OAuth production
+requires published, authorized callback settings in Google's and Clerk's
+dashboards, not just an environment key. See `AUTH_SETUP.md`.
+
+Guest catalog browsing remains available; payment checkout stays disabled until verified.
 
 ## 6. Configure Cloudinary
 

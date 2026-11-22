@@ -85,12 +85,19 @@ DIRECT_URL=<Neon direct PostgreSQL URL>
 
 Optional integrations are documented in `backend/.env.example`. Do not paste secrets into source files or commit `.env` files.
 
-Frontend production requires:
+Frontend production (Vercel) requires:
 
 ```env
-VITE_API_URL=https://<your-render-backend>
-VITE_CLERK_PUBLISHABLE_KEY=<optional Clerk public key>
+VITE_API_URL=same-origin
+VITE_CLERK_PUBLISHABLE_KEY=<Clerk public key>
+VITE_CHECKOUT_ENABLED=false
+BACKEND_ORIGIN=https://<your-render-backend>
 ```
+
+`BACKEND_ORIGIN` is server-side (no `VITE_` prefix). Vercel's restricted
+API relay forwards browser requests to Render from the JoyNeeds origin,
+avoiding cross-site admin cookie restrictions. The relay remains disabled
+until that variable is configured.
 
 The Razorpay public checkout key is returned by the backend for a prepared payment; no Razorpay secret belongs in the frontend env.
 
