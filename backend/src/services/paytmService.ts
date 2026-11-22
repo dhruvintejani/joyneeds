@@ -27,15 +27,22 @@ export async function createPaytmCheckout(orderId: string, clerkUserId: string |
     select: { id: true },
   });
   if (paid) throw new AppError(409, "ORDER_ALREADY_PAID", "This order is already paid.");
-  const prepared = await initiatePaytmTransaction({
-    orderId: order.orderNumber, amountPaise: order.totalPaise, customerId: order.id,
-  });
+  const existing = await prisma.payment.findUnique({ where: { providerOrderId: order.orderNumber } });
+  if (existing && (existing.provider !== "PAYTM" || existing.orderId !== order.id || existing.amountPaise !== order.totalPaise)) {
+    throw new AppError(409, "PAYMENT_ORDER_MISMATCH", "Payment record does not match the order.");
+  }
+  if (existing) {
+    // Reconcile first so a repeated checkout cannot charge an already paid order.
+    const latest = await reconcilePaytmStatus(order.orderNumber);
+    if (latest.paid) throw new AppError(409, "ORDER_ALREADY_PAID", "This order is already paid.");
+    if (latest.pending) throw new AppError(409, "PAYTM_PENDING", "Your previous payment is still pending. Check its status before trying again.");
+  }
   await prisma.payment.upsert({
     where: { providerOrderId: order.orderNumber },
     create: { orderId: order.id, provider: "PAYTM", providerOrderId: order.orderNumber, amountPaise: order.totalPaise, currency: "INR", status: "PENDING" },
     update: { status: "PENDING" },
   });
-  return prepared;
+  return initiatePaytmTransaction({ orderId: order.orderNumber, amountPaise: order.totalPaise, customerId: order.id });
 }
 export async function reconcilePaytmStatus(orderNumber: string) {
   ensureEnabled();
@@ -66,7 +73,7 @@ export async function reconcilePaytmStatus(orderNumber: string) {
     if (fulfillmentReady) await notifyOrderStatusSafely(payment.orderId, "CONFIRMED");
     return { paid: true, pending: false, fulfillmentReady, orderNumber };
   }
-  if (status.resultInfo?.resultStatus === "TXN_FAILURE") {
+  if (status.resultInfo?.resultStatus === "TXN_FAILURE" && status.mid === env.PAYTM_MID && status.orderId === payment.providerOrderId) {
     await prisma.payment.updateMany({
       where: { id: payment.id, status: { notIn: ["PAID", "PARTIALLY_REFUNDED", "REFUNDED"] } },
       data: { status: "FAILED", verifiedAt: new Date() },
