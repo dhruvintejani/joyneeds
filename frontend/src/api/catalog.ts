@@ -103,7 +103,7 @@ export function normalizeProduct(product: ApiProduct): Product {
       originalPrice && originalPrice > price
         ? Math.round((1 - price / originalPrice) * 100)
         : 0,
-    image: images[0] || "/brand/joyneeds-icon.png",
+    image: images[0] || "", // Render a truthful placeholder until the real product photo is supplied.
     images,
     shortDescription: product.shortDescription,
     fullDescription: product.description,
