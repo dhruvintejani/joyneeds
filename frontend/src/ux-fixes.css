@@ -329,3 +329,20 @@
 .admin-form-grid :is(input,select,textarea):focus-visible {outline:2px solid #ad9b79!important;outline-offset:2px;}
 .admin-product-editor-main{min-width:0;}
 @media(max-width:800px){.jn-admin-product-preview{padding:14px}}
+
+/* Database-backed product management with real pagination and pricing details. */
+.jn-admin-product-filters{display:flex;gap:14px;align-items:center;justify-content:space-between;}
+.jn-admin-product-filters .admin-search-field{max-width:600px;flex:1;}
+.jn-admin-product-filters .admin-outline-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;}
+.jn-admin-price-old{display:block;margin-top:3px;color:#87958a;text-decoration:line-through;font-size:11px;}
+.jn-admin-page-controls{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.jn-admin-page-controls>div{display:flex;align-items:center;gap:9px;}
+.jn-admin-page-controls>div>span{font-size:12px;color:#65786c;}
+.jn-admin-page-controls button{min-height:36px;display:inline-flex;justify-content:center;align-items:center;padding:8px 13px;font-size:12px;}
+.jn-admin-page-controls button:disabled{opacity:.4;cursor:not-allowed;}
+@media(max-width:740px){
+.jn-admin-product-filters{flex-wrap:wrap;}
+.jn-admin-product-filters .admin-search-field{width:100%;max-width:none;flex:1 1 100%;}
+.jn-admin-page-controls{justify-content:center;text-align:center;}
+.jn-admin-page-controls>div{justify-content:center;flex-wrap:wrap;}
+}

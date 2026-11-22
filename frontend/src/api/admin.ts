@@ -204,12 +204,22 @@ export const loginAdmin = (email: string, password: string) =>
 export const logoutAdmin = () => adminRequest<void>("/api/admin/auth/logout", { method: "POST" });
 export const getAdminDashboard = () => adminRequest<AdminDashboard>("/api/admin/dashboard");
 
+export type AdminProductsPage = {
+  items: AdminProduct[];
+  pagination: { page: number; limit: number; total: number; pages: number };
+};
+export async function listAdminProductsPage({
+  page = 1, limit = 20, q = "", status = "all",
+}: { page?: number; limit?: number; q?: string; status?: "active" | "inactive" | "all" } = {}): Promise<AdminProductsPage> {
+  const params = new URLSearchParams({
+    status, page: String(Math.max(1, Math.floor(page))),
+    limit: String(Math.min(100, Math.max(1, Math.floor(limit)))),
+  });
+  if (q.trim()) params.set("q", q.trim().slice(0, 100));
+  return adminRequest<AdminProductsPage>(`/api/admin/products?${params.toString()}`);
+}
 export async function listAdminProducts() {
-  const data = await adminRequest<{
-    items: AdminProduct[];
-    pagination: { page: number; limit: number; total: number; pages: number };
-  }>("/api/admin/products?status=all&limit=100");
-  return data.items;
+  return (await listAdminProductsPage({ limit: 100 })).items;
 }
 
 export const getAdminProduct = (id: string) =>

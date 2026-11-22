@@ -41,6 +41,7 @@ import {
   getAdminDashboard,
   listAdminCategories,
   listAdminProducts,
+  listAdminProductsPage,
   logoutAdmin,
   updateAdminCategory,
   updateAdminProduct,
@@ -144,11 +145,116 @@ function Dashboard() {
 function Products() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [query, setQuery] = useState(new URLSearchParams(window.location.search).get("q") || "");
+  const [debouncedQuery, setDebouncedQuery] = useState(query.trim());
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 1 });
+  const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
   const [loading, setLoading] = useState(true);
-  const refresh = async () => { setLoading(true); try { setProducts(await listAdminProducts()); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to load products."); } finally { setLoading(false); } };
-  useEffect(() => { void refresh(); }, []);
-  const filtered = useMemo(() => { const q = query.trim().toLowerCase(); return q ? products.filter((product) => `${product.name} ${product.sku} ${product.category.name}`.toLowerCase().includes(q)) : products; }, [products, query]);
-  return <div><PageHeader title="Products" subtitle="Manage the live catalog stored in PostgreSQL." action={<Link className="admin-primary-button" to="/admin/products/new"><Plus size={18} /> Add Product</Link>} /><div className="admin-stats-grid"><StatCard label="Total Products" value={products.length} Icon={Package} /><StatCard label="Active" value={products.filter((p) => p.active).length} Icon={Activity} tone="green" /><StatCard label="Out of Stock" value={products.filter((p) => p.stockStatus === "OUT_OF_STOCK").length} Icon={Boxes} tone="red" /><StatCard label="Featured" value={products.filter((p) => p.featured).length} Icon={ShoppingBag} tone="amber" /></div><section className="admin-panel admin-table-panel"><div className="admin-filter-row"><label className="admin-search-field"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products..." /></label></div><div className="admin-table-scroll"><table className="admin-table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead><tbody>{filtered.map((product) => <tr key={product.id}><td><div className="admin-product-cell"><ProductImage src={product.images[0]?.secureUrl || product.images[0]?.sourceUrl || ""} alt={product.name} /><div><strong>{product.name}</strong><small>SKU: {product.sku}</small></div></div></td><td>{product.category.name}</td><td><strong>{moneyPaise(product.pricePaise)}</strong></td><td>{product.stockQuantity ?? "—"}</td><td><span className={`admin-status-pill ${product.active && product.stockStatus === "IN_STOCK" ? "green" : "red"}`}>{product.active && product.stockStatus === "IN_STOCK" ? "Active" : "Unavailable"}</span></td><td><div className="admin-row-actions"><Link className="admin-icon-button" to={`/admin/products/${product.id}/edit`}><Pencil size={17} /></Link><button className="admin-danger-button" onClick={async () => { if (!window.confirm(`Archive ${product.name}?`)) return; try { await archiveAdminProduct(product.id); await refresh(); await useCatalogStore.getState().loadCatalog(true); toast.success("Product archived."); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to archive product."); } }}>Archive</button></div></td></tr>)}{!loading && !filtered.length && <tr><td colSpan={6}>No products found.</td></tr>}</tbody></table></div><div className="admin-table-footer">{loading ? "Loading…" : `Showing ${filtered.length} of ${products.length} products`}</div></section></div>;
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const id = window.setTimeout(() => { setDebouncedQuery(query.trim()); setPage(1); }, 250);
+    return () => window.clearTimeout(id);
+  }, [query]);
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError("");
+    void Promise.all([
+      listAdminProductsPage({ q: debouncedQuery, page, limit: 20 }),
+      getAdminDashboard(),
+    ]).then(([result, summary]) => {
+      if (!active) return;
+      setProducts(result.items);
+      setPagination(result.pagination);
+      setDashboard(summary);
+    }).catch((cause) => {
+      if (active) setError(cause instanceof Error ? cause.message : "Unable to load products.");
+    }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [debouncedQuery, page]);
+  const refresh = async () => {
+    setLoading(true);
+    try {
+      const [result, summary] = await Promise.all([
+        listAdminProductsPage({ q: debouncedQuery, page, limit: 20 }),
+        getAdminDashboard(),
+      ]);
+      setProducts(result.items);
+      setPagination(result.pagination);
+      setDashboard(summary);
+      setError("");
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : "Unable to refresh products.");
+    } finally { setLoading(false); }
+  };
+  return (
+    <div className="jn-admin-products-workspace">
+      <PageHeader title="Products" subtitle="Edit your catalog, pricing, inventory, and images securely."
+        action={<Link className="admin-primary-button" to="/admin/products/new"><Plus size={18}/> Add Product</Link>}/>
+      <div className="admin-stats-grid">
+        <StatCard label="Total Products" value={dashboard?.totalProducts ?? "—"} Icon={Package}/>
+        <StatCard label="Published" value={dashboard?.activeProducts ?? "—"} Icon={Activity} tone="green"/>
+        <StatCard label="Out of Stock" value={dashboard?.outOfStockProducts ?? "—"} Icon={Boxes} tone="red"/>
+        <StatCard label="Categories" value={dashboard?.categories ?? "—"} Icon={ShoppingBag} tone="amber"/>
+      </div>
+      <section className="admin-panel admin-table-panel">
+        <div className="admin-filter-row jn-admin-product-filters">
+          <label className="admin-search-field">
+            <Search size={18}/>
+            <input value={query} onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search products by name, SKU, or slug" aria-label="Search products"/>
+          </label>
+          <Link className="admin-outline-button" to="/admin/categories"><Boxes size={17}/> Categories</Link>
+        </div>
+        {error && <div className="admin-auth-error" role="alert">{error}</div>}
+        <div className="admin-table-scroll">
+          <table className="admin-table">
+            <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              {products.map((product) => (
+                <tr key={product.id}>
+                  <td><div className="admin-product-cell">
+                    <ProductImage src={product.images[0]?.secureUrl || product.images[0]?.sourceUrl || ""} alt={product.name}/>
+                    <div><strong>{product.name}</strong><small>SKU: {product.sku}</small></div>
+                  </div></td>
+                  <td>{product.category.name}</td>
+                  <td><strong>{moneyPaise(product.pricePaise)}</strong>
+                    {product.originalPricePaise !== null && product.originalPricePaise > product.pricePaise && <small className="jn-admin-price-old">{moneyPaise(product.originalPricePaise)}</small>}
+                  </td>
+                  <td>{product.stockQuantity ?? "—"}</td>
+                  <td><span className={`admin-status-pill ${product.active && product.stockStatus === "IN_STOCK" ? "green" : "red"}`}>
+                    {product.active && product.stockStatus === "IN_STOCK" ? "Active" : "Unavailable"}
+                  </span></td>
+                  <td><div className="admin-row-actions">
+                    <Link className="admin-icon-button" to={`/admin/products/${product.id}/edit`} aria-label={`Edit ${product.name}`} title="Edit product"><Pencil size={17}/></Link>
+                    <button className="admin-danger-button" type="button" onClick={async () => {
+                      if (!window.confirm(`Archive ${product.name}?`)) return;
+                      try {
+                        await archiveAdminProduct(product.id);
+                        await refresh();
+                        await useCatalogStore.getState().loadCatalog(true);
+                        toast.success("Product archived.");
+                      } catch (cause) { toast.error(cause instanceof Error ? cause.message : "Unable to archive product."); }
+                    }}>Archive</button>
+                  </div></td>
+                </tr>
+              ))}
+              {!loading && !products.length && <tr><td colSpan={6}>{debouncedQuery ? "No matching products." : "No products yet. Add your first product to get started."}</td></tr>}
+              {loading && <tr><td colSpan={6}>Loading products…</td></tr>}
+            </tbody>
+          </table>
+        </div>
+        <div className="admin-table-footer jn-admin-page-controls">
+          <span>{loading ? "Loading…" : `Showing ${products.length} of ${pagination.total} matching products`}</span>
+          <div>
+            <button type="button" className="admin-outline-button" disabled={loading || page <= 1} onClick={() => setPage((value) => Math.max(1,value-1))}>Previous</button>
+            <span>Page {pagination.page} of {pagination.pages}</span>
+            <button type="button" className="admin-outline-button" disabled={loading || page >= pagination.pages} onClick={() => setPage((value) => value+1)}>Next</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }
 
 function ProductEditor() {
