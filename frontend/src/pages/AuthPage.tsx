@@ -51,8 +51,8 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
             <div className="jn-auth-provider" aria-label={creating ? "Secure account registration" : "Secure account sign-in"}>
               {auth.isLoaded ? (
                 creating
-                  ? <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" />
-                  : <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" />
+                  ? <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" fallbackRedirectUrl="/account" />
+                  : <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" fallbackRedirectUrl="/account" />
               ) : <p className="jn-auth-loading" role="status">Loading secure account access…</p>}
             </div>
           ) : (

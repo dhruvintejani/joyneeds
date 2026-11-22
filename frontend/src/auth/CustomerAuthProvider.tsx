@@ -63,7 +63,13 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ClerkProvider publishableKey={publishableKey}>
+    <ClerkProvider
+      publishableKey={publishableKey}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      signInFallbackRedirectUrl="/account"
+      signUpFallbackRedirectUrl="/account"
+    >
       <ClerkBridge>{children}</ClerkBridge>
     </ClerkProvider>
   );

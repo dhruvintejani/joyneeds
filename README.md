@@ -150,7 +150,9 @@ The storefront catalog is API-backed. If the backend/database is not running and
 
 ### Customers
 
-Clerk is optional. Configure both backend Clerk variables plus the frontend publishable key to enable customer sign-in. Without Clerk configuration, JoyNeeds continues in guest mode.
+Clerk is optional. Configure both backend Clerk variables plus the frontend publishable key to enable customer sign-in (including Google OAuth when enabled in the Clerk dashboard). Without Clerk configuration, JoyNeeds continues in guest mode.
+
+See [AUTH_SETUP.md](./AUTH_SETUP.md) for the exact key mapping, Google OAuth steps, safe bcrypt hash generation, domain requirements, and smoke tests.
 
 ### Admin
 

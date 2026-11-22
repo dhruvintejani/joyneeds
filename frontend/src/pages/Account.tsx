@@ -4,6 +4,7 @@ import { LogOut, ShieldCheck, ShoppingBag, UserRound } from "lucide-react";
 import { PageBanner } from "../components/common/ReferenceUI";
 import { useCustomerAuth } from "../auth/CustomerAuthProvider";
 import { getCustomerOrders, type CustomerOrder } from "../api/orders";
+import { apiBaseUrl } from "../api/catalog";
 
 const moneyPaise = (value: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -19,8 +20,10 @@ export default function Account() {
   const [ordersError, setOrdersError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!auth.enabled || !auth.isLoaded || !auth.isSignedIn) {
+    if (!auth.enabled || !auth.isLoaded || !auth.isSignedIn || !apiBaseUrl) {
       setOrders([]);
+      setOrdersLoading(false);
+      setOrdersError(null);
       return;
     }
     let active = true;
@@ -92,7 +95,7 @@ export default function Account() {
         <section className="account-panel account-empty">
           <ShieldCheck size={36} />
           <h2>Sign in or create an account</h2>
-          <p>Use email/password or any social sign-in method enabled for the JoyNeeds Clerk application.</p>
+          <p>Choose email sign-in or an enabled provider such as Google. Account access is protected by Clerk.</p>
           <div className="account-actions">
             <Link className="account-primary" to="/sign-in">Sign in</Link>
             <Link className="account-secondary" to="/sign-up">Create account</Link>
@@ -134,6 +137,7 @@ export default function Account() {
           <div style={{ width: "100%" }}>
             <small>Orders</small>
             <h2>Order history</h2>
+            {!apiBaseUrl && <p role="status">Your sign-in is active. Order history will appear after the secured store API and Neon database are connected.</p>}
             {ordersLoading && <p>Loading your orders…</p>}
             {ordersError && <p role="alert">{ordersError}</p>}
             {!ordersLoading && !ordersError && !orders.length && (
