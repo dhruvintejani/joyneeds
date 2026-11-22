@@ -273,7 +273,7 @@ export default function Shop() {
                     <ProductCard product={product} key={product.id} />
                   ))}
                 </div>
-                <nav className="pagination reference-pagination" aria-label="Product pages">
+                {pages > 1 && <nav className="pagination reference-pagination" aria-label="Product pages">
                   {Array.from({ length: pages }, (_, index) => (
                     <button
                       key={index}
@@ -289,7 +289,7 @@ export default function Shop() {
                       {index + 1}
                     </button>
                   ))}
-                </nav>
+                </nav>}
               </>
             ) : (
               <EmptyState title="No products match just yet">

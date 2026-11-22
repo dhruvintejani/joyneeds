@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useCatalogStore } from "../store/catalogStore";
 import { ArrowLeft, ArrowRight, Heart, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCartStore } from "../store/cartStore";
@@ -22,6 +23,8 @@ export default function Cart() {
   const [confirm, setConfirm] = useState(false);
   const total = getCartTotal();
   const blocked = items.some((item) => !maxQuantity(item.product));
+  const catalogStatus = useCatalogStore((state) => state.status);
+  const checkoutAvailable = site.checkoutEnabled && catalogStatus === "ready";
   const savings = site.catalogVerified
     ? items.reduce(
         (sum, item) =>
@@ -133,13 +136,19 @@ export default function Cart() {
             </p>
             {blocked ? (
               <p role="status" className="notice">Remove unavailable items to continue.</p>
-            ) : (
+            ) : checkoutAvailable ? (
               <Link className="button primary full-width" to="/checkout">
                 Proceed to Checkout <ArrowRight size={17} />
               </Link>
+            ) : (
+              <div className="jn-preview-checkout" role="status">
+                <strong>Browsing-only collection</strong>
+                <span>Checkout is not open while pricing, inventory and payments are being confirmed.</span>
+                <Link to="/shop" className="button secondary full-width">Keep exploring <ArrowRight size={17}/></Link>
+              </div>
             )}
             <div className="reference-summary-assurance">
-              <span>Guest checkout</span>
+              <span>{checkoutAvailable ? "Guest checkout" : "Preview collection"}</span>
               <span>Cart saved on this browser</span>
               <span>Payment not enabled yet</span>
             </div>

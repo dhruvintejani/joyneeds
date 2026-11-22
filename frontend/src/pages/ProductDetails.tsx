@@ -73,6 +73,8 @@ function ProductView({
   const view = useDiscoveryStore((state) => state.view);
   const toggle = useDiscoveryStore((state) => state.toggleWishlist);
   const navigate = useNavigate();
+  const catalogStatus = useCatalogStore((state) => state.status);
+  const checkoutAvailable = site.checkoutEnabled && catalogStatus === "ready";
 
   useEffect(() => {
     view(product.id);
@@ -192,14 +194,16 @@ function ProductView({
             </button>
           </div>
 
-          <Button
-            className="full-width reference-buy-button"
-            variant="secondary"
-            disabled={remaining < quantity}
-            onClick={() => addItem(true)}
-          >
-            Review checkout <ArrowRight size={17} />
-          </Button>
+          {checkoutAvailable ? (
+            <Button
+              className="full-width reference-buy-button"
+              variant="secondary"
+              disabled={remaining < quantity}
+              onClick={() => addItem(true)}
+            >
+              Review checkout <ArrowRight size={17} />
+            </Button>
+          ) : <p className="jn-preview-note">Preview only · Checkout is not open yet. You can still save this product to your bag.</p>}
 
           <div className="reference-detail-trust">
             <Link to="/shipping-policy">

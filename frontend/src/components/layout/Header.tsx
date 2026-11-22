@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   ChevronDown,
   Headphones,
@@ -20,6 +20,24 @@ import { Drawer } from "../common/UI";
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const categoryMenuRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  useEffect(() => { setCategoriesOpen(false); setOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    if (!categoriesOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!categoryMenuRef.current?.contains(event.target as Node)) setCategoriesOpen(false);
+    };
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setCategoriesOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onEscape);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onEscape);
+    };
+  }, [categoriesOpen]);
   const count = useCartStore((state) => state.getCartCount());
   const saved = useDiscoveryStore((state) => state.wishlist.length);
   const categories = useCatalogStore((state) => state.categories);
@@ -90,7 +108,7 @@ export default function Header() {
 
       <div className="reference-nav-wrap">
         <div className="container reference-nav-row">
-          <div className="reference-category-menu">
+          <div className="reference-category-menu" ref={categoryMenuRef}>
             <button
               type="button"
               className="reference-category-trigger"

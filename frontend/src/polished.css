@@ -252,3 +252,9 @@ h1,h2,h3{text-wrap:balance}
 .jn-page-banner .reference-page-banner-copy h1{font-size:30px}
 }
 @media(prefers-reduced-motion:reduce){.jn-category-tile,.jn-button,.reference-product-card{transition:none}}
+
+.jn-preview-checkout{display:flex;flex-direction:column;align-items:stretch;gap:9px;background:#f4f5ee;border:1px solid #dee5d8;padding:16px;border-radius:6px}
+.jn-preview-checkout strong{font-size:13px;color:#284534}
+.jn-preview-checkout span{font-size:12px;color:#6b7c6b;line-height:1.55}
+.jn-preview-checkout .button{text-align:center;margin-top:6px}
+.jn-preview-note{font-size:12px;color:#667e6d;background:#f3f5ed;border:1px solid #e5ecde;padding:13px 15px;line-height:1.6;border-radius:5px}
