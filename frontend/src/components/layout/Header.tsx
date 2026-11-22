@@ -2,6 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   ChevronDown,
+  ArrowUpRight,
+  CookingPot,
+  House,
+  Laptop,
+  CarFront,
+  Sparkles,
+  PawPrint,
   Headphones,
   Heart,
   Leaf,
@@ -115,16 +122,28 @@ export default function Header() {
               aria-expanded={categoriesOpen}
               onClick={() => setCategoriesOpen((value) => !value)}
             >
-              <Menu size={18} /> All Categories <ChevronDown size={16} />
+              <Menu size={18} /> Explore categories <ChevronDown className={categoriesOpen ? "jn-chevron-open" : ""} size={16} />
             </button>
             {categoriesOpen && (
-              <div className="reference-category-dropdown">
-                <Link to="/shop" onClick={() => setCategoriesOpen(false)}>All products</Link>
-                {categories.map((category) => (
-                  <Link key={category.id} to={`/category/${category.slug}`} onClick={() => setCategoriesOpen(false)}>
-                    {category.name}
-                  </Link>
-                ))}
+              <div className="reference-category-dropdown jn-mega-menu">
+                <div className="jn-mega-content">
+                  <div className="jn-mega-heading"><span>SHOP BY CATEGORY</span><Link to="/shop" onClick={() => setCategoriesOpen(false)}>View everything <ArrowUpRight size={15}/></Link></div>
+                  <div className="jn-mega-list">
+                    {categories.map((category, index) => {
+                      const icons = [CookingPot, House, Laptop, CarFront, Sparkles, PawPrint];
+                      const Icon = icons[index % icons.length];
+                      return <Link className="jn-mega-link" key={category.id} to={`/category/${category.slug}`} onClick={() => setCategoriesOpen(false)}>
+                        <span className="jn-mega-icon"><Icon size={20} strokeWidth={1.6}/></span>
+                        <span><strong>{category.name}</strong><small>{category.description || "Discover the collection"}</small></span><ArrowUpRight size={16}/>
+                      </Link>;
+                    })}
+                  </div>
+                </div>
+                <div className="jn-mega-feature">
+                  <span>THE EVERYDAY EDIT</span>
+                  <strong>Find a little more joy in the details.</strong>
+                  <Link to="/shop" onClick={() => setCategoriesOpen(false)}>Explore all finds <ArrowUpRight size={17}/></Link>
+                </div>
               </div>
             )}
           </div>

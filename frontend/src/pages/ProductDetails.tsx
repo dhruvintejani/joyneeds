@@ -150,7 +150,7 @@ function ProductView({
 
           <div className="reference-detail-price">
             <strong>{money(product.price)}</strong>
-            {off > 0 && product.originalPrice && (
+            {site.catalogVerified && off > 0 && product.originalPrice && (
               <>
                 <del>{money(product.originalPrice)}</del>
                 <span className="reference-badge green">{off}% off</span>

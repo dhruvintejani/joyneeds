@@ -105,6 +105,14 @@ export default function Home() {
           </div>
         </section>
       </Reveal>
+      <div className="jn-background-feature">
+        <div className="container jn-background-feature-inner">
+          <span className="jn-background-eyebrow">DISCOVER YOUR EVERYDAY</span>
+          <h2>Life’s better in <em>the little details.</em></h2>
+          <p>Useful finds and considered essentials for every corner of your day.</p>
+          <Link className="jn-button jn-button-ivory" to="/shop">Explore the edit <ArrowUpRight size={18}/></Link>
+        </div>
+      </div>
       <div className="container">
         {moreProducts.length > 0 && <Reveal>
           <section className="jn-section jn-more-section">

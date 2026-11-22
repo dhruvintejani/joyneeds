@@ -7,6 +7,7 @@ import "./reference-polish.css";
 import "./commerce.css";
 import "./auth/auth.css";
 import "./polished.css";
+import "./luxe.css";
 import App from "./App";
 import { CustomerAuthProvider } from "./auth/CustomerAuthProvider";
 

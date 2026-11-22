@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, ShoppingCart } from "lucide-react";
+import { ArrowUpRight, Heart, ShoppingCart } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCartStore } from "../../store/cartStore";
 import { useDiscoveryStore } from "../../store/discoveryStore";
@@ -37,6 +37,7 @@ export default function ProductCard({ product }: { product: Product; index?: num
         >
           <Heart size={17} fill={saved ? "currentColor" : "none"} />
         </button>
+        <Link className="jn-card-quickview" to={`/product/${product.slug}`} aria-label={`Explore ${product.name}`}>View details <ArrowUpRight size={15}/></Link>
         {site.catalogVerified && (product.newArrival || off > 0 || product.bestseller) && (
           <div className="reference-product-badges" aria-label="Product highlights">
             {product.newArrival && <span className="reference-badge green">New</span>}
@@ -62,7 +63,7 @@ export default function ProductCard({ product }: { product: Product; index?: num
         )}
         <div className="reference-product-price">
           <strong>{money(product.price)}</strong>
-          {off > 0 && product.originalPrice && <del>{money(product.originalPrice)}</del>}
+          {site.catalogVerified && off > 0 && product.originalPrice && <del>{money(product.originalPrice)}</del>}
         </div>
         <button
           className="reference-add-button"

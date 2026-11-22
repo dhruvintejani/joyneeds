@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, useParams, useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X, ArrowUpRight } from "lucide-react";
+import PremiumSelect from "../components/common/PremiumSelect";
 import { useCatalogStore } from "../store/catalogStore";
 import { discount, selectProducts, sortOptions } from "../utils/catalog";
 import { site } from "../config/site";
@@ -81,31 +82,16 @@ export default function Shop() {
       {!category && (
         <fieldset>
           <legend>Category</legend>
-          <select
-            id={drawer ? "category-mobile" : "category-desktop"}
-            value={params.get("category") || ""}
-            onChange={(event) => update("category", event.target.value)}
-          >
-            <option value="">All categories</option>
-            {categories.map((item) => (
-              <option key={item.id} value={item.name}>{item.name}</option>
-            ))}
-          </select>
+          <PremiumSelect label="Category" value={params.get("category") || ""} onChange={(value) => update("category", value)}
+            options={[{ value: "", label: "All categories" }, ...categories.map((item) => ({value: item.name, label: item.name}))]} />
         </fieldset>
       )}
 
       {subcategories.length > 0 && (
         <fieldset>
           <legend>Subcategory</legend>
-          <select
-            value={params.get("subcategory") || ""}
-            onChange={(event) => update("subcategory", event.target.value)}
-          >
-            <option value="">All subcategories</option>
-            {subcategories.map((subcategory) => (
-              <option key={subcategory}>{subcategory}</option>
-            ))}
-          </select>
+          <PremiumSelect label="Subcategory" value={params.get("subcategory") || ""} onChange={(value) => update("subcategory", value)}
+            options={[{value: "", label: "All subcategories"}, ...subcategories.map((name) => ({ value: name, label: name }))]} />
         </fieldset>
       )}
 
@@ -170,23 +156,16 @@ export default function Shop() {
       {hasVerifiedRatings && (
         <fieldset>
           <legend>Minimum rating</legend>
-          <select value={params.get("rating") || ""} onChange={(event) => update("rating", event.target.value)}>
-            <option value="">All ratings</option>
-            <option value="4">4 stars & up</option>
-            <option value="3">3 stars & up</option>
-          </select>
+          <PremiumSelect label="Minimum rating" value={params.get("rating") || ""} onChange={(value) => update("rating", value)}
+            options={[{value:"", label:"All ratings"},{value:"4",label:"4 stars & up"},{value:"3",label:"3 stars & up"}]} />
         </fieldset>
       )}
 
       {hasVerifiedDiscounts && (
         <fieldset>
           <legend>Discount</legend>
-          <select value={params.get("discount") || ""} onChange={(event) => update("discount", event.target.value)}>
-            <option value="">All products</option>
-            <option value="10">10% or more</option>
-            <option value="25">25% or more</option>
-            <option value="50">50% or more</option>
-          </select>
+          <PremiumSelect label="Discount" value={params.get("discount") || ""} onChange={(value) => update("discount", value)}
+            options={[{value:"",label:"All products"},{value:"10",label:"10% or more"},{value:"25",label:"25% or more"},{value:"50",label:"50% or more"}]} />
         </fieldset>
       )}
 
@@ -210,7 +189,12 @@ export default function Shop() {
         <Breadcrumb items={[{ label: title }]} />
         <PageBanner eyebrow={category ? "SHOP BY CATEGORY" : isSearch ? "SEARCH" : "JOYNEEDS COLLECTION"} title={title} subtitle={subtitle} compact />
 
-        <div className="reference-catalog-layout">
+        <div className="jn-shop-intro">
+          <span>CURATED FOR YOUR ROUTINE</span>
+          <p>Explore the things you'll reach for every day. Find your favorites, your way.</p>
+          <a href="#products" aria-label="Browse products below">Discover the edit <ArrowUpRight size={17} /></a>
+        </div>
+        <div className="reference-catalog-layout" id="products">
           <aside className="reference-filter-sidebar" aria-label="Product filters">
             <div className="reference-filter-title">
               <h2>Filters</h2>
@@ -239,14 +223,12 @@ export default function Shop() {
               <button className="button secondary mobile-filter-button" onClick={() => setDrawer(true)}>
                 <SlidersHorizontal size={17} /> Filters
               </button>
-              <label className="reference-sort-label">
-                <span>Sort by:</span>
-                <select value={selectedSort} onChange={(event) => update("sort", event.target.value)}>
-                  {availableSortOptions.map(([value, label]) => (
-                    <option key={value} value={value}>{label}</option>
-                  ))}
-                </select>
-              </label>
+              <div className="reference-sort-label">
+                <span>Sort by</span>
+                <PremiumSelect label="Sort products" className="jn-sort-select" value={selectedSort}
+                  onChange={(value) => update("sort", value)}
+                  options={availableSortOptions.map(([value, label]) => ({value, label}))}/>
+              </div>
             </div>
 
             {active.length > 0 && (
