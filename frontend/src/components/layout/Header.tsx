@@ -122,7 +122,7 @@ export default function Header() {
               aria-expanded={categoriesOpen}
               onClick={() => setCategoriesOpen((value) => !value)}
             >
-              <Menu size={18} /> Explore categories <ChevronDown className={categoriesOpen ? "jn-chevron-open" : ""} size={16} />
+              <Menu size={18} /><span>Explore categories</span><ChevronDown className={categoriesOpen ? "jn-chevron-open" : ""} size={16} />
             </button>
             {categoriesOpen && (
               <div className="reference-category-dropdown jn-mega-menu">

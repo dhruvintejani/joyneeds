@@ -8,6 +8,7 @@ export default function About() {
     <div className="container reference-about-page section-bottom">
       <Breadcrumb items={[{ label: "About us" }]} />
       <PageBanner
+        theme="about"
         eyebrow="ABOUT JOYNEEDS"
         title="Everyday essentials, thoughtfully presented."
         subtitle="JoyNeeds is being built around a simple idea: make useful products easier to discover without making shopping feel noisy or complicated."

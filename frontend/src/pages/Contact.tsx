@@ -22,6 +22,7 @@ export default function Contact() {
     <div className="container reference-contact-page section-bottom">
       <Breadcrumb items={[{ label: "Contact us" }]} />
       <PageBanner
+        theme="contact"
         eyebrow="CONTACT JOYNEEDS"
         title="We’re here to help."
         subtitle="Have a product question, need help finding a policy, or just want to say hello? Reach out using the confirmed contact details below."

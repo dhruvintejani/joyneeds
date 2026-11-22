@@ -3,12 +3,19 @@ import { FileText, Headphones, ShieldCheck } from "lucide-react";
 import { policies } from "../data/policies";
 import { site } from "../config/site";
 import { Breadcrumb } from "../components/common/UI";
-import { PageBanner } from "../components/common/ReferenceUI";
+import { PageBanner, type BannerTheme } from "../components/common/ReferenceUI";
 
 export default function Policy({ policyKey }: { policyKey?: string }) {
   const location = useLocation();
   const activeKey = policyKey || location.pathname.slice(1);
   const policy = policies[activeKey] || policies.terms;
+  const themes: Record<string, BannerTheme> = {
+    "privacy-policy": "privacy",
+    "terms": "terms",
+    "shipping-policy": "shipping",
+    "return-policy": "returns",
+    "refund-cancellation": "refund",
+  };
 
   return (
     <div className="container reference-policy-page section-bottom">
@@ -17,6 +24,7 @@ export default function Policy({ policyKey }: { policyKey?: string }) {
         eyebrow="JOYNEEDS POLICIES"
         title={policy.title}
         subtitle={policy.intro}
+        theme={themes[activeKey] || "terms"}
         compact
       />
 

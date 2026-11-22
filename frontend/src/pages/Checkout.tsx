@@ -52,7 +52,7 @@ export default function Checkout() {
     return (
       <div className="container section-bottom">
         <Breadcrumb items={[{ label: "Home", to: "/" }, { label: "Order confirmed" }]} />
-        <PageBanner eyebrow="PAYMENT VERIFIED" title="Thank you for your order" subtitle={`Order ${completed.orderNumber} has a verified Razorpay payment.`} compact />
+        <PageBanner theme="confirmation" eyebrow="PAYMENT VERIFIED" title="Thank you for your order" subtitle={`Order ${completed.orderNumber} has a verified Razorpay payment.`} compact />
         <section className="reference-checkout-card">
           <div className="reference-checkout-card-heading">
             <span><Check size={22} /></span>
@@ -93,6 +93,7 @@ export default function Checkout() {
     <div className="container reference-checkout-page section-bottom">
       <Breadcrumb items={[{ label: "Cart", to: "/cart" }, { label: "Checkout" }]} />
       <PageBanner
+        theme="checkout"
         eyebrow="SECURE CHECKOUT"
         title="Complete your details"
         subtitle="Your payment amount is calculated by the server and verified before order confirmation."

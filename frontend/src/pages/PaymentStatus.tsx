@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { CheckCircle2, Clock3, ShieldCheck, XCircle } from "lucide-react";
 import { confirmPaytmOrder, type PaytmStatus } from "../api/paytm";
 import { useCartStore } from "../store/cartStore";
+import { PageBanner } from "../components/common/ReferenceUI";
 export default function PaymentStatus() {
   const [query] = useSearchParams();
   const order = query.get("order") || "";
@@ -23,10 +24,11 @@ export default function PaymentStatus() {
   useEffect(() => { void check(); }, [order]);
   const paid = status?.paid;
   return (
-    <div className="container section-bottom" style={{ maxWidth: 700, paddingBlock: 72 }}>
+    <div className="container section-bottom jn-payment-status-page">
+      <PageBanner theme="payment" eyebrow="PAYMENT STATUS" title={paid ? "Payment verified" : status?.pending || pending ? "Checking payment" : "Payment status"} subtitle="Securely check the confirmation for your order." compact />
       <div className="reference-checkout-card" style={{ padding: 32, textAlign: "center" }}>
         {paid ? <CheckCircle2 size={44} color="#276f56" /> : status?.pending || pending ? <Clock3 size={44} /> : <XCircle size={44} />}
-        <h1>{paid ? "Payment verified" : status?.pending || pending ? "Checking payment" : "Payment not confirmed"}</h1>
+        <h2>{paid ? "Your payment is confirmed" : status?.pending || pending ? "Please check again shortly" : "Payment not confirmed"}</h2>
         <p>{paid ? status?.fulfillmentReady ? "Your payment has been verified and your order is confirmed." : "Payment received. Your order requires stock review before fulfillment." : "Only a verified payment can confirm an order. If you paid, use Check again."}</p>
         {order && <p>Reference: <strong>{order}</strong></p>}
         {error && <p role="alert">{error}</p>}

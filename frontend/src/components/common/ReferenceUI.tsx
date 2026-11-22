@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ArrowUpRight, FileCheck2, Headphones, Heart, PackageCheck, ShoppingBag } from "lucide-react";
+import { ArrowRight, ArrowUpRight, FileCheck2, Headphones, Heart, ShoppingBag } from "lucide-react";
 
 export function TrustStrip() {
   const items = [
@@ -24,10 +24,28 @@ export function NewsletterBand() {
     <Link to="/contact" className="jn-button jn-button-light">Get in touch <ArrowUpRight size={19}/></Link>
   </div></section>;
 }
-export function PageBanner({ eyebrow, title, subtitle, compact = false }: { eyebrow?: string; title: string; subtitle?: string; compact?: boolean }) {
-  return <section className={"reference-page-banner jn-page-banner" + (compact ? " compact" : "")}>
-    <div className="reference-page-banner-copy">{eyebrow && <p className="jn-overline">{eyebrow}</p>}<h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</div>
-    <div className="jn-page-banner-art" aria-hidden="true"><span className="jn-page-banner-disc"/><PackageCheck size={92} strokeWidth={.8}/><span>JOYNEEDS / EVERYDAY EDIT</span></div>
+export type BannerTheme =
+  | "shop" | "search" | "kitchen" | "storage" | "desk" | "vehicle" | "care" | "pets"
+  | "about" | "contact" | "faq" | "privacy" | "terms" | "shipping" | "returns"
+  | "refund" | "account" | "wishlist" | "checkout" | "confirmation" | "cart"
+  | "payment" | "not-found";
+
+/** A semantic page banner with background art chosen by each route. */
+export function PageBanner({
+  eyebrow, title, subtitle, compact = false, theme = "shop",
+}: {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  compact?: boolean;
+  theme?: BannerTheme;
+}) {
+  return <section className={`reference-page-banner jn-page-banner jn-banner--${theme}${compact ? " compact" : ""}`}>
+    <div className="reference-page-banner-copy">
+      {eyebrow && <p className="jn-overline">{eyebrow}</p>}
+      <h1>{title}</h1>
+      {subtitle && <p>{subtitle}</p>}
+    </div>
   </section>;
 }
 export function SectionHeading({ eyebrow, title, to, linkLabel = "View all" }: { eyebrow?: string; title: string; to?: string; linkLabel?: string }) {

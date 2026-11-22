@@ -8,6 +8,7 @@ import { useDiscoveryStore } from "../store/discoveryStore";
 import { maxQuantity, money } from "../utils/catalog";
 import { site } from "../config/site";
 import ProductImage from "../components/common/ProductImage";
+import { PageBanner } from "../components/common/ReferenceUI";
 import {
   Breadcrumb,
   EmptyState,
@@ -40,15 +41,13 @@ export default function Cart() {
   return (
     <div className="container reference-cart-page section-bottom">
       <Breadcrumb items={[{ label: "Cart" }]} />
-
-      <div className="reference-cart-heading">
-        <div>
-          <p className="reference-kicker">YOUR BAG</p>
-          <h1>Your Cart</h1>
-          <p>{items.length} item{items.length !== 1 ? "s" : ""} in your cart</p>
-        </div>
-        <span className="reference-script">Good choices. Brighter days.</span>
-      </div>
+      <PageBanner
+        theme="cart"
+        eyebrow="YOUR SHOPPING BAG"
+        title="Your Cart"
+        subtitle={`${items.length} item${items.length !== 1 ? "s" : ""} in your bag. The little things add up.`}
+        compact
+      />
 
       {!items.length ? (
         <EmptyState title="Your cart is waiting">

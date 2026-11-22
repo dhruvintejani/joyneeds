@@ -49,6 +49,7 @@ export default function Account() {
     return (
       <div className="container account-page">
         <PageBanner
+          theme="account"
           eyebrow="Your account"
           title="Guest shopping is ready"
           subtitle="Customer sign-in is optional and will appear here once Clerk keys are configured."
@@ -77,6 +78,7 @@ export default function Account() {
     return (
       <div className="container account-page">
         <PageBanner
+          theme="account"
           eyebrow="Your account"
           title="Welcome to JoyNeeds"
           subtitle="Sign in when you want an account. Guest checkout always remains available."
@@ -100,7 +102,8 @@ export default function Account() {
   return (
     <div className="container account-page">
       <PageBanner
-        eyebrow="Your account"
+        theme="account"
+          eyebrow="Your account"
         title={`Hello, ${auth.user?.firstName || "there"}`}
         subtitle="Your customer profile is connected securely through Clerk."
         compact

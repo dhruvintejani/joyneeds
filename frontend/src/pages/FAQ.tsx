@@ -19,6 +19,7 @@ export default function FAQ() {
     <div className="container reference-faq-page section-bottom">
       <Breadcrumb items={[{ label: "FAQ" }]} />
       <PageBanner
+        theme="faq"
         eyebrow="HELP CENTER"
         title="Frequently Asked Questions"
         subtitle="Find quick answers about browsing, checkout, policies and the current JoyNeeds preview."

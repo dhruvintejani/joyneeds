@@ -22,6 +22,7 @@ export default function Wishlist() {
     <div className="container reference-wishlist-page section-bottom">
       <Breadcrumb items={[{ label: "Wishlist" }]} />
       <PageBanner
+        theme="wishlist"
         eyebrow="SAVED FOR LATER"
         title="My Wishlist"
         subtitle="Keep useful finds together and move them to your cart whenever you’re ready."

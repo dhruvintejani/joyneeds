@@ -7,7 +7,7 @@ import { discount, selectProducts, sortOptions } from "../utils/catalog";
 import { site } from "../config/site";
 import ProductCard from "../components/product/ProductCard";
 import { Breadcrumb, Drawer, EmptyState, Button, Skeleton } from "../components/common/UI";
-import { PageBanner } from "../components/common/ReferenceUI";
+import { PageBanner, type BannerTheme } from "../components/common/ReferenceUI";
 import NotFound from "./NotFound";
 
 export default function Shop() {
@@ -181,6 +181,15 @@ export default function Shop() {
   const subtitle = isSearch && searchTerm
     ? `Showing results for “${searchTerm}”`
     : category?.description || "Explore useful everyday products across the JoyNeeds collection.";
+  const categoryThemes: Record<string, BannerTheme> = {
+    "Home & Kitchen": "kitchen",
+    "Storage & Organization": "storage",
+    "Mobile & Desk": "desk",
+    "Car & Bike": "vehicle",
+    "Personal Care Accessories": "care",
+    "Pet & Everyday": "pets",
+  };
+  const bannerTheme: BannerTheme = category ? categoryThemes[category.name] || "shop" : isSearch ? "search" : "shop";
   const selectedSort = availableSortOptions.some(([value]) => value === params.get("sort"))
     ? params.get("sort")!
     : "featured";
@@ -189,7 +198,7 @@ export default function Shop() {
     <div className="reference-shop-page">
       <div className="container">
         <Breadcrumb items={[{ label: title }]} />
-        <PageBanner eyebrow={category ? "SHOP BY CATEGORY" : isSearch ? "SEARCH" : "JOYNEEDS COLLECTION"} title={title} subtitle={subtitle} compact />
+        <PageBanner eyebrow={category ? "SHOP BY CATEGORY" : isSearch ? "SEARCH" : "JOYNEEDS COLLECTION"} title={title} subtitle={subtitle} theme={bannerTheme} compact />
 
         <div className="jn-shop-intro">
           <span>CURATED FOR YOUR ROUTINE</span>

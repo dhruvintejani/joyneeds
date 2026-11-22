@@ -22,7 +22,7 @@ export default function NotFound() {
           </div>
         </div>
         <div className="reference-404-art" aria-hidden="true">
-          <img src="/reference/reference-home.webp" alt="" />
+          <img src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=80" alt="" loading="lazy" onError={(event) => { event.currentTarget.src = "/reference/reference-home.webp"; }} />
           <span className="reference-script">Good things are still ahead.</span>
         </div>
       </section>
