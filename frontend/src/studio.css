@@ -12,6 +12,9 @@
  --jn-shadow:0 18px 52px rgba(17,36,50,.075);
  --jn-ease:cubic-bezier(.22,1,.36,1);
  --blue:var(--jn-navy);--blue-dark:var(--jn-deep);--ink:var(--jn-ink);
+ --navy:var(--jn-navy);--border:var(--jn-border);
+ --jn-blue:var(--jn-accent);--jn-soft:var(--jn-cream);
+ --jn-text:var(--jn-ink);--jn-muted:var(--jn-slate);
  --muted:var(--jn-slate);
  color-scheme:light;
 }
