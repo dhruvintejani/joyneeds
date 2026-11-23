@@ -120,10 +120,10 @@ try {
   const alignment = style;
   const mainEntry = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
   assert.ok(!mainEntry.includes('import "./luxe.css"') && !mainEntry.includes('import "./signature.css"'), 'Conflicting legacy themes should not be imported.');
-  assert.ok(authPage.includes('<span>Account access is managed by our secure authentication provider when enabled.</span>'), 'Security note text needs its own flex child.');
-  assert.ok(authPage.includes('<ShieldCheck size={16} aria-hidden="true" />'), 'Security note icon must be decorative.');
-  assert.match(alignment, /\.jn-auth-footnote\s*\{[\s\S]*?align-items:flex-start/);
-  assert.match(alignment, /\.jn-auth-footnote svg\s*\{[\s\S]*?flex:0 0 16px/);
+  assert.ok(authPage.includes('className="jn-auth-inline-note"') && authPage.includes('Account access is managed by our secure authentication provider when enabled.'), 'Authentication security note must render as natural inline prose.');
+  assert.ok(authPage.includes('<ShieldCheck className="jn-auth-inline-icon" size={16} aria-hidden="true" />'), 'Security shield should be inline and decorative.');
+  assert.match(alignment, /\.jn-auth-inline-note\s*\{[\s\S]*?display:block!important/);
+  assert.match(alignment, /\.jn-auth-inline-note \.jn-auth-inline-icon\s*\{[\s\S]*?display:inline-block!important/);
   assert.ok(contactPage.includes('className="jn-icon-row"'), 'Contact checklist rows need consistent alignment.');
   assert.ok(referenceUi.includes('className="reference-link jn-icon-link"'), 'Shared link arrow alignment regressed.');
   assert.ok(mainEntry.includes('import "./studio.css"'), 'Unified design stylesheet is missing.');
@@ -133,7 +133,8 @@ try {
   const header = readFileSync(new URL('../src/components/layout/Header.tsx', import.meta.url), 'utf8');
   assert.ok(header.includes('className="jn-header-signup" to="/sign-up"'), 'Signup must be visible from the site header.');
   assert.ok(header.includes('to={auth.isSignedIn ? "/account" : "/sign-in"}'), 'Account icon should navigate to sign-in when signed out.');
-  assert.ok(style.includes('.jn-auth-surface > .jn-auth-footnote') && style.includes('grid-template-columns:16px minmax(0,1fr)'), 'Security note must align icon with the start of its text.');
+  assert.ok(!style.includes('.jn-auth-surface > .jn-auth-footnote'), 'Detached grid-based shield alignment must not return.');
+  assert.ok(style.includes('vertical-align:-3px!important'), 'Shield needs typographic baseline alignment.');
   assert.ok(style.includes('.reference-header .reference-account-preview'), 'Mobile/tablet account navigation should remain visible.');
   console.log('PASS: accessible login/signup navigation and security icon alignment.');
   console.log('PASS: responsive icon/text alignment regression checks.');

@@ -83,9 +83,8 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
             {creating ? <>Already have an account? <Link to="/sign-in">Sign in</Link></>
               : <>New to JoyNeeds? <Link to="/sign-up">Create an account</Link></>}
           </div>
-          <p className="jn-auth-footnote">
-            <ShieldCheck size={16} aria-hidden="true" />
-            <span>Account access is managed by our secure authentication provider when enabled.</span>
+          <p className="jn-auth-inline-note">
+            <ShieldCheck className="jn-auth-inline-icon" size={16} aria-hidden="true" />{"\u00a0"}Account access is managed by our secure authentication provider when enabled.
           </p>
         </section>
       </div>
