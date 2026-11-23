@@ -51,10 +51,8 @@ export default function Header() {
   const auth = useCustomerAuth();
   const accountTitle = auth.enabled && auth.isSignedIn
     ? auth.user?.firstName || "Account"
-    : auth.enabled
-      ? "Sign in"
-      : "Account";
-  const accountSubtitle = auth.enabled && auth.isSignedIn ? "Signed in" : "Guest";
+    : "Sign in";
+  const accountSubtitle = auth.enabled && auth.isSignedIn ? "Signed in" : auth.enabled ? "Customer access" : "Coming soon";
 
   return (
     <header className="site-header reference-header">
@@ -88,6 +86,9 @@ export default function Header() {
               <small>{accountSubtitle}</small>
             </span>
           </Link>
+          {!auth.isSignedIn && (
+            <Link className="jn-header-signup" to="/sign-up">Create account</Link>
+          )}
           <Link className="reference-action-link" to="/wishlist" aria-label={`Wishlist, ${saved} items`}>
             <span className="reference-action-icon">
               <Heart size={21} />

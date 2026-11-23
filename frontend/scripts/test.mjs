@@ -127,6 +127,15 @@ try {
   assert.ok(contactPage.includes('className="jn-icon-row"'), 'Contact checklist rows need consistent alignment.');
   assert.ok(referenceUi.includes('className="reference-link jn-icon-link"'), 'Shared link arrow alignment regressed.');
   assert.ok(mainEntry.includes('import "./studio.css"'), 'Unified design stylesheet is missing.');
+  assert.ok(authPage.includes('className="jn-auth-mode-nav"'), 'Sign-in and signup must expose direct route navigation.');
+  assert.ok(authPage.includes('aria-current={creating ? undefined : "page"}'), 'Auth navigation must identify the active route.');
+  assert.ok(authPage.includes('Account registration is not active yet') && authPage.includes('Customer sign-in is not active yet'), 'Unconfigured auth must distinguish login from signup.');
+  const header = readFileSync(new URL('../src/components/layout/Header.tsx', import.meta.url), 'utf8');
+  assert.ok(header.includes('className="jn-header-signup" to="/sign-up"'), 'Signup must be visible from the site header.');
+  assert.ok(header.includes('to={auth.isSignedIn ? "/account" : "/sign-in"}'), 'Account icon should navigate to sign-in when signed out.');
+  assert.ok(style.includes('.jn-auth-surface > .jn-auth-footnote') && style.includes('grid-template-columns:16px minmax(0,1fr)'), 'Security note must align icon with the start of its text.');
+  assert.ok(style.includes('.reference-header .reference-account-preview'), 'Mobile/tablet account navigation should remain visible.');
+  console.log('PASS: accessible login/signup navigation and security icon alignment.');
   console.log('PASS: responsive icon/text alignment regression checks.');
   console.log('PASS: customer and admin route inventory, authentication fallbacks, 404 handling, and premium font system.');
 

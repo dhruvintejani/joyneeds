@@ -47,6 +47,19 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
               : "Your saved favorites and shopping bag are just a moment away."}</p>
           </div>
 
+          <nav className="jn-auth-mode-nav" aria-label="Customer account pages">
+            <Link
+              to="/sign-in"
+              className={creating ? "jn-auth-mode-link" : "jn-auth-mode-link is-active"}
+              aria-current={creating ? undefined : "page"}
+            >Sign in</Link>
+            <Link
+              to="/sign-up"
+              className={creating ? "jn-auth-mode-link is-active" : "jn-auth-mode-link"}
+              aria-current={creating ? "page" : undefined}
+            >Create account</Link>
+          </nav>
+
           {auth.enabled ? (
             <div className="jn-auth-provider" aria-label={creating ? "Secure account registration" : "Secure account sign-in"}>
               {auth.isLoaded ? (
@@ -58,8 +71,10 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
           ) : (
             <div className="jn-auth-disabled" role="status">
               <span><LockKeyhole size={25}/></span>
-              <strong>Customer accounts are being prepared</strong>
-              <p>Sign-in and registration will become available after the secure authentication service is configured. You can explore the collection and save favorites on this device in the meantime.</p>
+              <strong>{creating ? "Account registration is not active yet" : "Customer sign-in is not active yet"}</strong>
+              <p>{creating
+                ? "This is the signup page. New accounts can be created once secure Clerk authentication is connected. Until then, you can browse products and save favorites on this device."
+                : "This is the login page. Signing in requires the secure Clerk connection to be configured. Until then, you can browse products and save favorites on this device."}</p>
               <Link className="jn-auth-continue" to="/shop">Explore products <ArrowRight size={17}/></Link>
             </div>
           )}

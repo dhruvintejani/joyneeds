@@ -1194,3 +1194,143 @@ input,textarea,select{color:var(--jn-ink)}
  .jn-category-bottom strong{font-size:22px}
  .reference-product-card .reference-add-button{font-size:9px}
 }
+
+
+/* AUTH & NAVIGATION ACCESSIBILITY FINISH — strict single-row icon/copy
+   alignment. Kept at end of Studio so responsive legacy rules cannot win. */
+.jn-auth-surface > .jn-auth-footnote{
+  display:grid;
+  grid-template-columns:16px minmax(0,1fr);
+  align-items:start;
+  justify-content:stretch;
+  column-gap:10px;
+  width:min(100%,420px);
+  max-width:420px;
+  margin:22px auto 0;
+  padding:0;
+  text-align:left;
+  font-size:11px;
+  line-height:1.65;
+  color:#798791;
+}
+.jn-auth-surface > .jn-auth-footnote > svg{
+  flex:0 0 16px;
+  width:16px;
+  height:16px;
+  margin:2px 0 0;
+  display:block;
+  color:var(--jn-accent);
+  vertical-align:top;
+}
+.jn-auth-surface > .jn-auth-footnote > span{
+  display:block;
+  min-width:0;
+  margin:0;
+  text-align:left!important;
+  overflow-wrap:normal;
+  hyphens:none;
+}
+.jn-auth-mode-nav{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:5px;
+  width:100%;
+  max-width:450px;
+  margin:0 0 21px;
+  padding:5px;
+  border:1px solid var(--jn-border);
+  border-radius:13px;
+  background:var(--jn-cream);
+}
+.jn-auth-mode-link{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:43px;
+  padding:10px 12px;
+  border-radius:9px;
+  color:#697b86;
+  text-align:center;
+  font-size:12px;
+  font-weight:800;
+  text-decoration:none;
+  transition:color .2s var(--jn-ease), background .2s var(--jn-ease), box-shadow .2s var(--jn-ease);
+}
+.jn-auth-mode-link:hover{
+  color:var(--jn-accent);
+  background:#fff9f6;
+}
+.jn-auth-mode-link.is-active,.jn-auth-mode-link[aria-current="page"]{
+  background:white;
+  color:var(--jn-navy);
+  box-shadow:0 3px 11px #162f3c0d;
+}
+.jn-auth-mode-link:focus-visible{outline:2px solid var(--jn-accent)!important;outline-offset:2px}
+.reference-header-actions .jn-header-signup{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  min-height:39px;
+  padding:10px 14px;
+  border:1px solid var(--jn-accent);
+  border-radius:10px;
+  background:var(--jn-accent);
+  color:#fff;
+  text-decoration:none;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.2;
+  white-space:nowrap;
+  transition:background .2s var(--jn-ease), border-color .2s var(--jn-ease);
+}
+.reference-header-actions .jn-header-signup:hover{
+  color:white;
+  background:#ad3c29;
+  border-color:#ad3c29;
+}
+@media(max-width:1180px){
+  .reference-header-main{gap:clamp(12px,2vw,27px)}
+  .reference-header-actions{gap:12px}
+}
+@media(max-width:1050px){
+  /* The old CSS hid all login entry points while the desktop nav was still
+     visible. Always keep a linked account icon on tablets. */
+  .reference-header .reference-account-preview{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 36px;
+    width:36px;
+    height:40px;
+    color:var(--jn-navy);
+  }
+  .reference-header .reference-account-preview > span{display:none}
+  .reference-header .reference-account-preview > svg{display:block;flex:0 0 21px}
+  .reference-header-actions .jn-header-signup{min-height:37px;padding-inline:10px;font-size:10px}
+}
+@media(max-width:860px){
+  .reference-header-actions .jn-header-signup{display:none}
+  .reference-header .reference-account-preview{
+    display:inline-flex;
+    flex:0 0 34px;
+    width:34px;
+  }
+}
+@media(max-width:650px){
+  .jn-auth-mode-nav{margin-bottom:18px}
+  .jn-auth-mode-link{font-size:11px;min-height:42px}
+  .jn-auth-surface > .jn-auth-footnote{
+    width:100%;
+    max-width:420px;
+    grid-template-columns:16px minmax(0,1fr);
+    column-gap:8px;
+    justify-content:stretch;
+    font-size:10px;
+  }
+  .reference-header .reference-account-preview{
+    width:30px;
+    flex-basis:30px;
+  }
+  .reference-header-actions{gap:8px}
+}
