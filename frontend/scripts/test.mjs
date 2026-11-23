@@ -82,7 +82,7 @@ try {
   const adminRoutes = readFileSync(new URL('../src/admin/AdminPhase5Router.tsx', import.meta.url), 'utf8');
   const authPage = readFileSync(new URL('../src/pages/AuthPage.tsx', import.meta.url), 'utf8');
   const notFound = readFileSync(new URL('../src/pages/NotFound.tsx', import.meta.url), 'utf8');
-  const style = readFileSync(new URL('../src/signature.css', import.meta.url), 'utf8');
+  const style = readFileSync(new URL('../src/studio.css', import.meta.url), 'utf8');
   for (const path of [
     '/', '/shop', '/search', '/category/:category', '/product/:slug',
     '/cart', '/wishlist', '/checkout', '/payment-status', '/account',
@@ -104,6 +104,8 @@ try {
   assert.ok(authPage.includes('auth.enabled'), 'Disabled identity provider must have a safe fallback');
   assert.ok(notFound.includes('jn-404-hero'), 'Missing designed 404 presentation');
   assert.ok(style.includes('--jn-font-ui') && style.includes('--jn-font-display'));
+  assert.ok(style.includes('--jn-accent:#c94b33') && style.includes('--jn-cream:#f7f5ef'), 'The three-color design system must remain consistent.');
+  assert.ok(!mainEntry.includes('import "./luxe.css"') && !mainEntry.includes('import "./signature.css"'), 'Conflicting legacy themes should not be imported.');
   const provider = readFileSync(new URL('../src/auth/CustomerAuthProvider.tsx', import.meta.url), 'utf8');
   const authPageSetup = readFileSync(new URL('../src/pages/AuthPage.tsx', import.meta.url), 'utf8');
   const api = readFileSync(new URL('../src/api/catalog.ts', import.meta.url), 'utf8');
@@ -116,7 +118,7 @@ try {
   assert.ok(vercel.rewrites.some((entry) => entry.source === '/api/:path*'), 'Missing API relay rewrite');
   const contactPage = readFileSync(new URL('../src/pages/Contact.tsx', import.meta.url), 'utf8');
   const referenceUi = readFileSync(new URL('../src/components/common/ReferenceUI.tsx', import.meta.url), 'utf8');
-  const alignment = readFileSync(new URL('../src/alignment-polish.css', import.meta.url), 'utf8');
+  const alignment = style;
   const mainEntry = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
   assert.ok(authPage.includes('<span>Account access is managed by our secure authentication provider when enabled.</span>'), 'Security note text needs its own flex child.');
   assert.ok(authPage.includes('<ShieldCheck size={16} aria-hidden="true" />'), 'Security note icon must be decorative.');
@@ -124,7 +126,7 @@ try {
   assert.match(alignment, /\.jn-auth-footnote>svg\s*\{[\s\S]*?flex:0 0 16px/);
   assert.ok(contactPage.includes('className="jn-icon-row"'), 'Contact checklist rows need consistent alignment.');
   assert.ok(referenceUi.includes('className="reference-link jn-icon-link"'), 'Shared link arrow alignment regressed.');
-  assert.ok(mainEntry.includes('import "./alignment-polish.css"'), 'Shared alignment stylesheet is missing.');
+  assert.ok(mainEntry.includes('import "./studio.css"'), 'Unified design stylesheet is missing.');
   console.log('PASS: responsive icon/text alignment regression checks.');
   console.log('PASS: customer and admin route inventory, authentication fallbacks, 404 handling, and premium font system.');
 
