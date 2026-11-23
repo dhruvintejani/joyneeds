@@ -5,6 +5,7 @@ import "./index.css";
 import "./reference.css";
 import "./auth/auth.css";
 import "./studio.css";
+import "./auth/auth-preview.css";
 import App from "./App";
 import { CustomerAuthProvider } from "./auth/CustomerAuthProvider";
 

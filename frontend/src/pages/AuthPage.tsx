@@ -1,7 +1,8 @@
 import { SignIn, SignUp } from "@clerk/react";
-import { ArrowLeft, ArrowRight, Heart, LockKeyhole, PackageCheck, ShieldCheck, Sparkles, UserRound } from "lucide-react";
+import { ArrowLeft, Heart, PackageCheck, ShieldCheck, Sparkles, UserRound } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
 import { useCustomerAuth } from "../auth/CustomerAuthProvider";
+import AuthPreviewForm from "../auth/AuthPreviewForm";
 
 /**
  * Dedicated customer authentication pages. Clerk owns credentials and MFA,
@@ -69,14 +70,7 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
               ) : <p className="jn-auth-loading" role="status">Loading secure account access…</p>}
             </div>
           ) : (
-            <div className="jn-auth-disabled" role="status">
-              <span><LockKeyhole size={25}/></span>
-              <strong>{creating ? "Account registration is not active yet" : "Customer sign-in is not active yet"}</strong>
-              <p>{creating
-                ? "This is the signup page. New accounts can be created once secure Clerk authentication is connected. Until then, you can browse products and save favorites on this device."
-                : "This is the login page. Signing in requires the secure Clerk connection to be configured. Until then, you can browse products and save favorites on this device."}</p>
-              <Link className="jn-auth-continue" to="/shop">Explore products <ArrowRight size={17}/></Link>
-            </div>
+            <AuthPreviewForm key={mode} mode={mode} />
           )}
 
           <div className="jn-auth-switch">
