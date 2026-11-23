@@ -31,8 +31,11 @@ export default function AuthPreviewForm({ mode }: { mode: AuthMode }) {
     setTried(true);
     setNotice(null);
     if (Object.keys(validatePreview(values, mode)).length) return;
-    // Clear sensitive input after client-only validation.
+    // Clear transient password state, and clear the validation display so
+    // the successful preview message does not coexist with 'required' errors.
     setValues(old => ({ ...old, password: "", confirmPassword: "" }));
+    setTouched({});
+    setTried(false);
     setNotice("validated");
   };
 
