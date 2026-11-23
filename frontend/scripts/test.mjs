@@ -11,6 +11,7 @@ try {
   const { useDiscoveryStore } = await server.ssrLoadModule('/src/store/discoveryStore.ts');
   const { checkoutSchema } = await server.ssrLoadModule('/src/pages/Checkout.tsx');
   const { safeStorage } = await server.ssrLoadModule('/src/utils/storage.ts');
+  const { validatePreview, passwordCriteria, emptyFields } = await server.ssrLoadModule('/src/auth/authPreviewValidation.ts');
 
   assert.equal(seedProducts.length, 30, 'Preserve the exact 30-product database seed source');
   assert.equal(new Set(seedProducts.map(p => p.id)).size, seedProducts.length);
@@ -76,6 +77,29 @@ try {
   assert.equal(await checkoutSchema.isValid({}),false);
   assert.equal(await checkoutSchema.isValid({fullName:'Test Shopper',email:'test@example.com',phone:'9000000000',address:'Test address for validation',city:'Test City',state:'Gujarat',pin:'380001'}),true);
   assert.equal(await checkoutSchema.isValid({fullName:'  ',email:'wrong',phone:'123',address:'short',city:'',state:'',pin:'000000'}),false);
+  // Preview form validation must not imply that an account was created.
+  assert.deepEqual(validatePreview(emptyFields, 'sign-in'), {
+    email: 'Email address is required.',
+    password: 'Password is required.',
+  });
+  const validSignup = {
+    fullName: 'Sample Customer',
+    email: 'shopper@example.com',
+    password: 'StrongPass123!',
+    confirmPassword: 'StrongPass123!',
+    accepted: true,
+  };
+  assert.deepEqual(validatePreview(validSignup, 'sign-up'), {});
+  assert.deepEqual(validatePreview({ ...validSignup, email: 'not-an-email' }, 'sign-up').email, 'Enter a valid email address.');
+  assert.ok(validatePreview({ ...validSignup, password: 'abc123' }, 'sign-up').password);
+  assert.ok(validatePreview({ ...validSignup, confirmPassword: 'Different123!' }, 'sign-up').confirmPassword);
+  assert.ok(validatePreview({ ...validSignup, accepted: false }, 'sign-up').accepted);
+  assert.ok(validatePreview({ ...validSignup, fullName: ' ' }, 'sign-up').fullName);
+  assert.deepEqual(Object.values(passwordCriteria('StrongPass123!')).every(Boolean), true);
+  assert.deepEqual(Object.values(passwordCriteria('password')).every(Boolean), false);
+  assert.deepEqual(validatePreview({ ...validSignup, email: 'buyer@example.com', accepted: false }, 'sign-in'), {});
+  console.log('PASS: preview login and signup field validation, terms, password strength and matching.');
+
   // Navigation route smoke checks: prevent accidental removal of customer,
   // policy, error or secured-admin screens during future redesigns.
   const appRoutes = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
@@ -129,7 +153,10 @@ try {
   assert.ok(mainEntry.includes('import "./studio.css"'), 'Unified design stylesheet is missing.');
   assert.ok(authPage.includes('className="jn-auth-mode-nav"'), 'Sign-in and signup must expose direct route navigation.');
   assert.ok(authPage.includes('aria-current={creating ? undefined : "page"}'), 'Auth navigation must identify the active route.');
-  assert.ok(authPage.includes('Account registration is not active yet') && authPage.includes('Customer sign-in is not active yet'), 'Unconfigured auth must distinguish login from signup.');
+  assert.ok(authPage.includes('<AuthPreviewForm key={mode} mode={mode} />'), 'Unconfigured auth must render complete interactive forms.');
+  const previewForm = readFileSync(new URL('../src/auth/AuthPreviewForm.tsx', import.meta.url), 'utf8');
+  assert.ok(previewForm.includes('aria-invalid={invalid(') && previewForm.includes('noValidate'), 'Preview fields must validate accessibly.');
+  assert.ok(previewForm.includes('type="checkbox"') && previewForm.includes('autocomplete') === false, 'Signup must require terms and use real input elements.');
   const header = readFileSync(new URL('../src/components/layout/Header.tsx', import.meta.url), 'utf8');
   assert.ok(header.includes('className="jn-header-signup" to="/sign-up"'), 'Signup must be visible from the site header.');
   assert.ok(header.includes('to={auth.isSignedIn ? "/account" : "/sign-in"}'), 'Account icon should navigate to sign-in when signed out.');
