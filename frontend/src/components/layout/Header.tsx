@@ -61,12 +61,12 @@ export default function Header() {
       <div className="reference-utility-bar">
         <div className="container reference-utility-inner">
           <div className="reference-utility-points" aria-label="Store information">
-            <span>Clear product details</span>
-            <span>Guest shopping</span>
-            <span>Saved cart & wishlist</span>
+            <span>Considered finds for everyday living</span>
+            <span>Save the things you love</span>
+            <span>Made for simple shopping</span>
           </div>
           <a href={"mailto:" + site.supportEmail}>
-            <Headphones size={14} /> Need help? {site.supportEmail}
+            <Headphones size={14} aria-hidden="true" /> <span>Here to help: {site.supportEmail}</span>
           </a>
         </div>
       </div>
@@ -122,7 +122,7 @@ export default function Header() {
               aria-expanded={categoriesOpen}
               onClick={() => setCategoriesOpen((value) => !value)}
             >
-              <Menu size={18} /><span>Explore categories</span><ChevronDown className={categoriesOpen ? "jn-chevron-open" : ""} size={16} />
+              <Menu size={18} aria-hidden="true" /><span>Explore categories</span><ChevronDown className={categoriesOpen ? "jn-chevron-open" : ""} size={16} aria-hidden="true" />
             </button>
             {categoriesOpen && (
               <div className="reference-category-dropdown jn-mega-menu">
@@ -149,17 +149,15 @@ export default function Header() {
           </div>
 
           <nav className="reference-desktop-nav" aria-label="Main navigation">
-            <NavLink to="/">Home</NavLink>
-            <NavLink to="/shop">All Products</NavLink>
-            {categories.slice(0, 3).map((category) => (
-              <NavLink key={category.id} to={`/category/${category.slug}`}>{category.name}</NavLink>
-            ))}
-            <NavLink to="/about">About Us</NavLink>
+            <NavLink to="/" end>Home</NavLink>
+            <NavLink to="/shop">Shop all</NavLink>
+            <NavLink to="/about">Our story</NavLink>
             <NavLink to="/contact">Contact</NavLink>
+            <NavLink to="/faq">Help center</NavLink>
           </nav>
 
           <div className="reference-nav-message">
-            <Leaf size={20} /> <span>A little more joy in every day</span>
+            <Leaf size={18} aria-hidden="true" /> <span>Good things, thoughtfully chosen.</span>
           </div>
         </div>
       </div>

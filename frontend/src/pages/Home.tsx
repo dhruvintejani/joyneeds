@@ -31,18 +31,18 @@ export default function Home() {
       <section className="jn-hero" aria-label="Discover JoyNeeds">
         <div className="container jn-hero-inner">
           <div className="jn-hero-copy">
-            <p className="jn-overline"><span className="jn-overline-line" /> THE JOY OF EVERYDAY LIVING</p>
-            <h1>Little things.<br /><em>Better days.</em></h1>
-            <p className="jn-hero-lead">Discover the practical finds that make home, work and life in between feel a little easier.</p>
+            <p className="jn-overline"><span className="jn-overline-line" /> GOOD FINDS. BETTER EVERYDAYS.</p>
+            <h1>Make room for<br /><em>better everyday.</em></h1>
+            <p className="jn-hero-lead">Beautifully practical essentials for the spaces you live in and the moments that matter.</p>
             <div className="jn-hero-actions">
-              <Link to="/shop" className="jn-button jn-button-dark">Explore the collection <ArrowUpRight size={18} /></Link>
+              <Link to="/shop" className="jn-button jn-button-dark">Shop the collection <ArrowUpRight size={18} aria-hidden="true" /></Link>
               <a className="jn-text-link" href="#collections">Browse categories <ArrowRight size={17} /></a>
             </div>
-            <div className="jn-hero-meta"><span className="jn-hero-metadata-line" /><span>Useful by design.</span><span>Simple by nature.</span></div>
+            <div className="jn-hero-meta"><span className="jn-hero-metadata-line" /><span>Intentional design.</span><span>Everyday ease.</span></div>
           </div>
           <div className="jn-hero-image">
             <img src={editorialHome} alt="Warm, naturally lit home kitchen with wood countertops" fetchPriority="high" decoding="async" onError={(event) => { event.currentTarget.src = "/reference/reference-home.webp"; }} />
-            <div className="jn-photo-label"><span className="jn-label-circle"><Sparkles size={16}/></span><span>Made for the moments<br />in between.</span></div>
+            <div className="jn-photo-label"><span className="jn-label-circle"><Sparkles size={16}/></span><span>The everyday edit,<br />beautifully considered.</span></div>
             <span className="jn-hero-image-index">THE EVERYDAY EDIT</span>
           </div>
         </div>
@@ -56,7 +56,7 @@ export default function Home() {
         <Reveal>
           <section className="jn-section jn-collection-section" id="collections">
             <div className="jn-section-heading">
-              <div><p className="jn-overline">01 / EXPLORE</p><h2>Find your kind of <em>everyday.</em></h2></div>
+              <div><p className="jn-overline">01 / COLLECTIONS</p><h2>Thoughtful by <em>category.</em></h2></div>
               <Link className="jn-view-link" to="/shop">View the whole collection <ArrowUpRight size={18}/></Link>
             </div>
             <div className="jn-category-grid">
@@ -77,7 +77,7 @@ export default function Home() {
         <Reveal>
           <section className="jn-section jn-featured-section">
             <div className="jn-section-heading">
-              <div><p className="jn-overline">02 / THE EDIT</p><h2>Thoughtful finds for <em>real life.</em></h2></div>
+              <div><p className="jn-overline">02 / CURRENT FAVORITES</p><h2>Everyday, but <em>better.</em></h2></div>
               <Link className="jn-view-link" to="/shop">Shop all products <ArrowUpRight size={18}/></Link>
             </div>
             {featuredProducts.length ? (
@@ -117,7 +117,7 @@ export default function Home() {
         {moreProducts.length > 0 && <Reveal>
           <section className="jn-section jn-more-section">
             <div className="jn-section-heading">
-              <div><p className="jn-overline">03 / KEEP EXPLORING</p><h2>There’s more to <em>discover.</em></h2></div>
+              <div><p className="jn-overline">03 / THE DISCOVERY EDIT</p><h2>More to <em>love.</em></h2></div>
               <Link className="jn-view-link" to="/shop">See everything <ArrowUpRight size={18}/></Link>
             </div>
             <div className="product-grid jn-product-grid">

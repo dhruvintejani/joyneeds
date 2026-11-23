@@ -1,17 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+// Structural foundation + one authored visual system. No conflicting legacy theme layers.
 import "./index.css";
-import "./premium.css";
 import "./reference.css";
-import "./reference-polish.css";
-import "./commerce.css";
 import "./auth/auth.css";
-import "./polished.css";
-import "./luxe.css";
-import "./ux-fixes.css";
-import "./page-themes.css";
-import "./signature.css";
-import "./alignment-polish.css";
+import "./studio.css";
 import App from "./App";
 import { CustomerAuthProvider } from "./auth/CustomerAuthProvider";
 

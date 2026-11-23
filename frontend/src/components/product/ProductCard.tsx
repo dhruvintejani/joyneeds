@@ -74,8 +74,8 @@ export default function ProductCard({ product }: { product: Product; index?: num
             else toast.error("Quantity limit reached");
           }}
         >
-          <ShoppingCart size={17} />
-          {available ? "Add to Cart" : "Unavailable"}
+          <ShoppingCart size={17} aria-hidden="true" />
+          {available ? "Add to bag" : "Unavailable"}
         </button>
       </div>
     </motion.article>

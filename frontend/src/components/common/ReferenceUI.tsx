@@ -20,7 +20,7 @@ export function TrustStrip() {
 export function NewsletterBand() {
   // Replace an inert email subscription form with a real, working contact CTA.
   return <section className="jn-contact-band"><div className="container jn-contact-band-inner">
-    <div><p className="jn-overline">STAY CURIOUS</p><h2>Have something in mind?</h2><p>Need help finding a product or have a question about JoyNeeds?</p></div>
+    <div><p className="jn-overline">STAY CURIOUS</p><h2>Something we can help with?</h2><p>Need help finding a product or have a question about JoyNeeds?</p></div>
     <Link to="/contact" className="jn-button jn-button-light jn-icon-link">Get in touch <ArrowUpRight size={19} aria-hidden="true"/></Link>
   </div></section>;
 }
