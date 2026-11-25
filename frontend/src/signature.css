@@ -388,3 +388,8 @@ button,input,select,textarea{font-family:var(--jn-font-ui)}
  .jn-admin-missing{min-height:400px;padding:37px 23px}
  .jn-admin-missing-number{font-size:114px}
 }
+
+/* Subtle circular outline from the reference category cards. */
+.jn-category-tile::after{content:"";position:absolute;left:-30%;bottom:-65%;height:230px;width:230px;border:1px solid #ffffff24;border-radius:50%;pointer-events:none;transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.jn-category-tile:hover::after{transform:scale(1.65)}
+@media(prefers-reduced-motion:reduce){.jn-category-tile::after{transition:none}.jn-category-tile:hover::after{transform:none}}
