@@ -1,19 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
-  Boxes,
-  ClipboardList,
-  ExternalLink,
   ImagePlus,
-  LayoutDashboard,
-  Package,
   RefreshCw,
   Save,
   Trash2,
   UploadCloud,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useConfirm } from "../components/common/ConfirmDialog";
 import {
   createAdminProduct,
   deleteAdminProductImage,
@@ -300,6 +296,7 @@ function ProductImageManager({
   onPendingImagesChange: (files: File[]) => void;
   onImagesChange: (images: AdminProductImage[]) => void;
 }) {
+  const confirm = useConfirm();
   const [uploading, setUploading] = useState(false);
   const images = product?.images ?? [];
   const remainingSlots = MAX_IMAGES - images.length;
@@ -406,7 +403,7 @@ function ProductImageManager({
                   className="admin-danger-button admin-small-button"
                   disabled={uploading}
                   onClick={async () => {
-                    if (!window.confirm("Delete this product image?")) return;
+                    if (!await confirm({ title: "Delete product image?", message: "This permanently removes the selected image from the product. This action cannot be undone.", confirmLabel: "Delete image" })) return;
                     setUploading(true);
                     try {
                       const next = await deleteAdminProductImage(product.id, image.id);
@@ -439,24 +436,4 @@ function validateSingleImage(file: File) {
   return null;
 }
 
-function EditorShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="admin-app">
-      <aside className="admin-sidebar">
-        <div className="admin-brand-row"><Link to="/admin"><img src="/brand/joyneeds-logo.png" alt="JoyNeeds" /></Link></div>
-        <nav className="admin-nav" aria-label="Admin navigation">
-          <NavLink to="/admin" end><LayoutDashboard size={20} /> Dashboard</NavLink>
-          <NavLink to="/admin/orders"><ClipboardList size={20} /> Orders</NavLink>
-          <NavLink to="/admin/products" className="active"><Package size={20} /> Products</NavLink>
-          <NavLink to="/admin/categories"><Boxes size={20} /> Categories</NavLink>
-        </nav>
-        <div className="admin-sidebar-spacer" />
-        <Link className="admin-view-store" to="/"><ExternalLink size={18} /> View Store</Link>
-      </aside>
-      <div className="admin-shell">
-        <header className="admin-topbar"><div className="admin-global-search"><Package size={18} /><span>Catalog management</span></div><div className="admin-user-copy"><strong>Admin</strong><small>Secure session</small></div></header>
-        <main className="admin-content">{children}</main>
-      </div>
-    </div>
-  );
-}
+function EditorShell({ children }: { children: React.ReactNode }) { return <>{children}</>; }

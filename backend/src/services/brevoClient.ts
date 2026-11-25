@@ -9,6 +9,7 @@ export type BrevoMessage = {
   htmlContent: string;
   textContent: string;
   idempotencyKey: string;
+  replyTo?: { email: string };
 };
 
 export function isBrevoConfigured() {
@@ -42,7 +43,7 @@ export async function sendBrevoTransactionalEmail(message: BrevoMessage) {
       name: env.BREVO_SENDER_NAME,
     },
     to: [message.to],
-    ...(env.BREVO_REPLY_TO_EMAIL ? { replyTo: { email: env.BREVO_REPLY_TO_EMAIL } } : {}),
+    ...(message.replyTo ? { replyTo: message.replyTo } : env.BREVO_REPLY_TO_EMAIL ? { replyTo: { email: env.BREVO_REPLY_TO_EMAIL } } : {}),
     subject: message.subject,
     htmlContent: message.htmlContent,
     textContent: message.textContent,

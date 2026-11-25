@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { apiBaseUrl } from "../api/catalog";
 import { Link } from "react-router-dom";
 import {
   ArrowRight, ArrowUpRight, BadgeCheck, CarFront, CookingPot, Heart,
@@ -19,6 +21,8 @@ const editorialHome = "https://images.unsplash.com/photo-1759239572496-4ec13e764
 const editorialLiving = "https://images.unsplash.com/photo-1585128792020-803d29415281?auto=format&fit=crop&w=1300&q=80";
 
 export default function Home() {
+  const [content,setContent]=useState<{heroEyebrow:string;heroTitle:string;heroAccent:string;heroDescription:string;announcement:string|null}|null>(null);
+  useEffect(()=>{if(!apiBaseUrl)return;let active=true;void fetch(apiBaseUrl+"/api/content",{headers:{Accept:"application/json"}}).then(response=>response.ok?response.json():null).then(result=>{if(active&&result?.data&&typeof result.data.heroTitle==="string")setContent(result.data);}).catch(()=>undefined);return()=>{active=false};},[]);
   const products = useCatalogStore((state) => state.products);
   const categories = useCatalogStore((state) => state.categories);
   const status = useCatalogStore((state) => state.status);
@@ -28,12 +32,13 @@ export default function Home() {
   const moreProducts = products.filter((product) => !featuredProducts.some((item) => item.id === product.id)).slice(0, 4);
   return (
     <div className="jn-storefront">
+      {content?.announcement && <div className="jn-store-announcement" role="status">{content.announcement}</div>}
       <section className="jn-hero" aria-label="Discover JoyNeeds">
         <div className="container jn-hero-inner">
           <div className="jn-hero-copy">
-            <p className="jn-overline"><span className="jn-overline-line" /> GOOD FINDS. BETTER EVERYDAYS.</p>
-            <h1>Make room for<br /><em>better everyday.</em></h1>
-            <p className="jn-hero-lead">Beautifully practical essentials for the spaces you live in and the moments that matter.</p>
+            <p className="jn-overline"><span className="jn-overline-line" /> {content?.heroEyebrow || "GOOD FINDS. BETTER EVERYDAYS."}</p>
+            <h1>{content?.heroTitle || "Make room for"}<br /><em>{content?.heroAccent || "better everyday."}</em></h1>
+            <p className="jn-hero-lead">{content?.heroDescription || "Beautifully practical essentials for the spaces you live in and the moments that matter."}</p>
             <div className="jn-hero-actions">
               <Link to="/shop" className="jn-button jn-button-dark">Shop the collection <ArrowUpRight size={18} aria-hidden="true" /></Link>
               <a className="jn-text-link" href="#collections">Browse categories <ArrowRight size={17} /></a>

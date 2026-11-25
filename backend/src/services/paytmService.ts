@@ -6,8 +6,9 @@ import { notifyOrderStatusSafely } from "./emailService.js";
 import { commitInventoryAndConfirm } from "./paymentService.js";
 import { fetchPaytmTransaction, initiatePaytmTransaction, paymentMatchesOrder } from "./paytmClient.js";
 
-function ensureEnabled() {
-  if (env.PAYMENT_PROVIDER !== "PAYTM" || !orderCreationEnabled || !paytmConfigured) {
+function ensureEnabled(forNewOrder = true) {
+  // Disabling new payments must not prevent reconciliation of an existing Paytm transaction.
+  if (!paytmConfigured || (forNewOrder && (env.PAYMENT_PROVIDER !== "PAYTM" || !orderCreationEnabled))) {
     throw new AppError(503, "PAYTM_DISABLED", "Paytm payments are not enabled for this store.");
   }
 }
@@ -27,6 +28,8 @@ export async function createPaytmCheckout(orderId: string, clerkUserId: string |
     select: { id: true },
   });
   if (paid) throw new AppError(409, "ORDER_ALREADY_PAID", "This order is already paid.");
+  const otherPayment = await prisma.payment.findFirst({ where: { orderId, provider: { not: "PAYTM" }, status: { not: "FAILED" } }, select: { id: true } });
+  if (otherPayment) throw new AppError(409, "PAYMENT_PROVIDER_CONFLICT", "An existing payment must be resolved before using a different provider.");
   const existing = await prisma.payment.findUnique({ where: { providerOrderId: order.orderNumber } });
   if (existing && (existing.provider !== "PAYTM" || existing.orderId !== order.id || existing.amountPaise !== order.totalPaise)) {
     throw new AppError(409, "PAYMENT_ORDER_MISMATCH", "Payment record does not match the order.");
@@ -45,7 +48,7 @@ export async function createPaytmCheckout(orderId: string, clerkUserId: string |
   return initiatePaytmTransaction({ orderId: order.orderNumber, amountPaise: order.totalPaise, customerId: order.id });
 }
 export async function reconcilePaytmStatus(orderNumber: string) {
-  ensureEnabled();
+  ensureEnabled(false);
   const payment = await prisma.payment.findUnique({
     where: { providerOrderId: orderNumber },
     select: { id: true, orderId: true, provider: true, providerOrderId: true, amountPaise: true, currency: true, status: true },

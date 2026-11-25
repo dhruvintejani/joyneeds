@@ -1,4 +1,6 @@
-import { Formik, Form } from "formik";
+import { useEffect, useState } from "react";
+import { Formik, Form, Field } from "formik";
+import { contactEnabled, sendContactMessage } from "../api/contact";
 import * as Yup from "yup";
 import { Link } from "react-router-dom";
 import { FileText, Mail, MessageCircle, Phone, ShieldCheck } from "lucide-react";
@@ -18,6 +20,8 @@ const schema = Yup.object({
 });
 
 export default function Contact() {
+  const [enabled, setEnabled] = useState(false);
+  useEffect(() => { let active = true; void contactEnabled().then(value => { if (active) setEnabled(value); }).catch(() => undefined); return () => { active = false; }; }, []);
   return (
     <div className="container reference-contact-page section-bottom">
       <Breadcrumb items={[{ label: "Contact us" }]} />
@@ -54,12 +58,19 @@ export default function Contact() {
         <section className="reference-contact-form-card">
           <p className="reference-kicker">SEND US A MESSAGE</p>
           <h2>We’d love to hear from you.</h2>
-          <p className="muted">This form opens a draft in your email app. It does not send automatically.</p>
+          <p className="muted">{enabled ? "Send your message directly to our support inbox." : "This form opens a draft in your email app. It does not send automatically."}</p>
 
           <Formik
-            initialValues={{ name: "", email: "", message: "" }}
+            initialValues={{ name: "", email: "", message: "", website: "" }}
             validationSchema={schema}
-            onSubmit={(values, { setStatus, setSubmitting }) => {
+            onSubmit={async (values, { setStatus, setSubmitting, resetForm }) => {
+              if (enabled) {
+                setStatus(undefined);
+                try { await sendContactMessage(values); resetForm(); setStatus("Your message was accepted for delivery. Thank you for contacting JoyNeeds."); }
+                catch (error) { setStatus(error instanceof Error ? error.message : "Unable to send your message. Please use the support email."); }
+                finally { setSubmitting(false); }
+                return;
+              }
               window.location.href =
                 `mailto:${site.supportEmail}?subject=${encodeURIComponent(`JoyNeeds enquiry from ${values.name}`)}` +
                 `&body=${encodeURIComponent(`${values.message}\n\nName: ${values.name}\nReply email: ${values.email}`)}`;
@@ -71,6 +82,7 @@ export default function Contact() {
           >
             {({ isSubmitting, status }) => (
               <Form noValidate>
+                <div hidden aria-hidden="true"><label>Leave this field empty<Field name="website" tabIndex={-1} autoComplete="off" /></label></div>
                 <div className="form-grid">
                   <FormField label="Your name" name="name" autoComplete="name" required maxLength={80} />
                   <FormField label="Your email" name="email" type="email" autoComplete="email" required />
@@ -80,7 +92,7 @@ export default function Contact() {
                   Please do not include passwords, card details, or other sensitive information.
                 </p>
                 <Button type="submit" disabled={isSubmitting}>
-                  Open email draft
+                  {isSubmitting ? "Sending…" : enabled ? "Send message" : "Open email draft"}
                 </Button>
                 {status && <p role="status" className="notice">{status}</p>}
               </Form>

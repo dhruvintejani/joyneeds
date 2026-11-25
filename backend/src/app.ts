@@ -7,6 +7,8 @@ import { razorpayWebhookController } from "./controllers/paymentController.js";
 import { paytmCallbackController } from "./controllers/paytmController.js";
 import { clerkRequestMiddleware } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
+import { getStoreContent } from "./controllers/adminStoreController.js";
+import { contactRouter } from "./routes/contactRoutes.js";
 import { accountRouter } from "./routes/accountRoutes.js";
 import { adminRouter } from "./routes/adminRoutes.js";
 import { categoryRouter } from "./routes/categoryRoutes.js";
@@ -77,6 +79,8 @@ app.use("/api/orders", orderRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/payments", paytmRouter);
 app.use("/api/account", accountRouter);
+app.use("/api/contact", contactRouter);
+app.get("/api/content", getStoreContent);
 app.use("/api/admin", adminRouter);
 
 app.use(notFoundHandler);

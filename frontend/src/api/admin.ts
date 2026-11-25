@@ -133,6 +133,7 @@ export type AdminOrder = AdminOrderListItem & {
   subtotalPaise: number;
   shippingPaise: number;
   discountPaise: number;
+  couponCode?: string | null;
   courier: string | null;
   trackingNumber: string | null;
   trackingUrl: string | null;
@@ -284,15 +285,16 @@ export const archiveAdminCategory = (id: string) =>
     method: "DELETE",
   });
 
-export async function listAdminOrders(status: AdminOrderStatus | "ALL" = "ALL", q = "") {
-  const params = new URLSearchParams({ status, limit: "100" });
-  if (q.trim()) params.set("q", q.trim());
+export async function listAdminOrdersPage(status: AdminOrderStatus | "ALL" = "ALL", q = "", page = 1) {
+  const params = new URLSearchParams({ status, limit: "25", page: String(page) });
+  if (q.trim()) params.set("q", q.trim().slice(0,120));
   const data = await adminRequest<{
     items: AdminOrderListItem[];
     pagination: { page: number; limit: number; total: number; pages: number };
   }>(`/api/admin/orders?${params.toString()}`);
-  return data.items;
+  return data;
 }
+export async function listAdminOrders(status: AdminOrderStatus | "ALL" = "ALL", q = "") { return (await listAdminOrdersPage(status,q)).items; }
 
 export const getAdminOrder = (id: string) =>
   adminRequest<AdminOrder>(`/api/admin/orders/${encodeURIComponent(id)}`);
@@ -310,3 +312,21 @@ export const updateAdminOrder = (
     method: "PATCH",
     body: JSON.stringify(input),
   });
+
+export type AdminCustomer = { id: string; firstName: string | null; lastName: string | null; email: string | null; createdAt: string; _count: { orders: number } };
+export type AdminCustomerDetail = AdminCustomer & { orders: Array<{ id: string; orderNumber: string; status: AdminOrderStatus; totalPaise: number; createdAt: string }> };
+export const listAdminCustomers = (q: string, page: number) => adminRequest<{ items: AdminCustomer[]; pagination: { page: number; limit: number; total: number; pages: number } }>("/api/admin/customers?" + new URLSearchParams({ q, page: String(page), limit: "20" }));
+export const getAdminCustomer = (id: string) => adminRequest<AdminCustomerDetail>("/api/admin/customers/" + encodeURIComponent(id));
+
+export type AdminPaymentRecord = { id: string; provider: string; status: string; amountPaise: number; refundedAmountPaise: number; currency: string; providerPaymentId: string | null; createdAt: string; order: { id: string; orderNumber: string } };
+export type AdminPaymentsPage = { items: AdminPaymentRecord[]; pagination: { page: number; pages: number; total: number; limit: number }; summary: { paidPaise: number; refundedPaise: number; pendingCount: number }; configuration: { provider: string; checkoutEnabled: boolean; paytmConfigured: boolean; razorpayConfigured: boolean } };
+export const listAdminPayments = (filters: { q: string; provider: string; status: string; page: number }) => adminRequest<AdminPaymentsPage>("/api/admin/payments?" + new URLSearchParams({ q: filters.q, provider: filters.provider, status: filters.status, page: String(filters.page) }));
+
+export type AdminCoupon={id:string;code:string;percentOff:number;minSubtotalPaise:number;active:boolean;expiresAt:string|null;createdAt:string;updatedAt:string};
+export type CouponInput=Pick<AdminCoupon,"code"|"percentOff"|"minSubtotalPaise"|"active"|"expiresAt">;
+export const listAdminCoupons=(q:string,page:number)=>adminRequest<{items:AdminCoupon[];total:number;pages:number;page:number}>("/api/admin/coupons?"+new URLSearchParams({q,page:String(page)}));
+export const saveAdminCoupon=(value:CouponInput,id?:string)=>adminRequest<AdminCoupon>(id?"/api/admin/coupons/"+encodeURIComponent(id):"/api/admin/coupons",{method:id?"PATCH":"POST",body:JSON.stringify(value)});
+export const archiveAdminCoupon=(id:string)=>adminRequest<AdminCoupon>("/api/admin/coupons/"+encodeURIComponent(id),{method:"DELETE"});
+export type StoreContent={heroEyebrow:string;heroTitle:string;heroAccent:string;heroDescription:string;announcement:string|null};
+export const getAdminContent=()=>adminRequest<StoreContent>("/api/admin/content");
+export const saveAdminContent=(value:StoreContent)=>adminRequest<StoreContent>("/api/admin/content",{method:"PUT",body:JSON.stringify(value)});

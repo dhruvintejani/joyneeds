@@ -16,11 +16,11 @@ import {
   BarChart3,
   Boxes,
   ClipboardList,
+  CreditCard,
   ExternalLink,
   FileText,
   CircleHelp,
   ArrowRight,
-  LockKeyhole,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -35,18 +35,24 @@ import {
   X,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useConfirm } from "../components/common/ConfirmDialog";
+import { AdminCouponsWorkspace, AdminContentWorkspace } from "./AdminStoreWorkspace";
+import AdminPaymentsWorkspace from "./AdminPaymentsWorkspace";
+import AdminOrderWorkspace from "./AdminOrderWorkspace";
+import AdminProductEditorWorkspace from "./AdminProductEditorWorkspace";
 import {
   archiveAdminCategory,
   archiveAdminProduct,
   createAdminCategory,
-  createAdminProduct,
   getAdminDashboard,
   listAdminCategories,
-  listAdminProducts,
+  listAdminCustomers,
+  getAdminCustomer,
+  type AdminCustomer,
+  type AdminCustomerDetail,
   listAdminProductsPage,
   logoutAdmin,
   updateAdminCategory,
-  updateAdminProduct,
   type AdminCategory,
   type AdminDashboard,
   type AdminProduct,
@@ -60,6 +66,7 @@ type StatTone = "blue" | "green" | "amber" | "red";
 const nav = [
   { to: "/admin", label: "Dashboard", Icon: LayoutDashboard, exact: true },
   { to: "/admin/orders", label: "Orders", Icon: ClipboardList },
+  { to: "/admin/payments", label: "Payments", Icon: CreditCard },
   { to: "/admin/products", label: "Products", Icon: Package },
   { to: "/admin/categories", label: "Categories", Icon: Boxes },
   { to: "/admin/customers", label: "Customers", Icon: UsersRound },
@@ -81,16 +88,17 @@ export default function AdminPhase5Router() {
         <Route element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
-          <Route path="products/new" element={<ProductEditor />} />
-          <Route path="products/:productId/edit" element={<ProductEditor />} />
+          <Route path="products/new" element={<AdminProductEditorWorkspace key="new" />} />
+          <Route path="products/:productId/edit" element={<AdminProductEditorWorkspace />} />
           <Route path="categories" element={<Categories />} />
-          <Route path="orders" element={<PendingModule title="Orders" text="Order management is served by the dedicated secure order workspace." />} />
-          <Route path="orders/:orderId" element={<PendingModule title="Order Details" text="Order details are served by the dedicated secure order workspace." />} />
-          <Route path="customers" element={<PendingModule title="Customers" text="A standalone customer-management API is not enabled. Customer counts and account/order data come from real synced records only." />} />
-          <Route path="customers/:customerId" element={<PendingModule title="Customer Details" text="Standalone customer administration is not enabled; no sample customer profile is shown." />} />
+          <Route path="orders" element={<AdminOrderWorkspace />} />
+          <Route path="orders/:orderId" element={<AdminOrderWorkspace />} />
+          <Route path="payments" element={<AdminPaymentsWorkspace />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="customers/:customerId" element={<CustomerDetail />} />
           <Route path="analytics" element={<AnalyticsOverview />} />
-          <Route path="coupons" element={<PendingModule title="Coupons" text="Promotion and coupon rules are not enabled, so no fake coupon data is shown." />} />
-          <Route path="content" element={<PendingModule title="Content" text="Store content persistence is not enabled; storefront content remains code-managed." />} />
+          <Route path="coupons" element={<AdminCouponsWorkspace />} />
+          <Route path="content" element={<AdminContentWorkspace />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="help" element={<AdminHelp />} />
           <Route path="*" element={<AdminNotFound />} />
@@ -114,7 +122,7 @@ function AdminLayout() {
         <nav className="admin-nav">{nav.map(({ to, label, Icon, exact }) => <NavLink key={to} to={to} end={exact} className={({ isActive }) => isActive ? "active" : ""}><Icon size={20} /><span>{label}</span></NavLink>)}</nav>
         <div className="admin-sidebar-spacer" />
         <Link className="admin-view-store" to="/"><ExternalLink size={18} /> View Store</Link>
-        <button className="admin-view-store" onClick={async () => { try { await logoutAdmin(); } finally { window.location.assign("/admin"); } }}><LogOut size={18} /> Sign Out</button>
+        <button className="admin-view-store" onClick={async () => { try { await logoutAdmin(); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to sign out. Try again."); return; } window.location.assign("/admin"); }}><LogOut size={18} /> Sign Out</button>
         <div className="admin-sidebar-footer"><img src="/brand/joyneeds-logo.png" alt="JoyNeeds" /><span>Admin Panel</span><small>Secure session</small></div>
       </aside>
       {open && <button className="admin-overlay" onClick={() => setOpen(false)} aria-label="Close navigation" />}
@@ -147,6 +155,7 @@ function Dashboard() {
 }
 
 function Products() {
+  const confirm = useConfirm();
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [query, setQuery] = useState(new URLSearchParams(window.location.search).get("q") || "");
   const [debouncedQuery, setDebouncedQuery] = useState(query.trim());
@@ -231,8 +240,8 @@ function Products() {
                   </span></td>
                   <td><div className="admin-row-actions">
                     <Link className="admin-icon-button" to={`/admin/products/${product.id}/edit`} aria-label={`Edit ${product.name}`} title="Edit product"><Pencil size={17}/></Link>
-                    <button className="admin-danger-button" type="button" onClick={async () => {
-                      if (!window.confirm(`Archive ${product.name}?`)) return;
+                    <button className="admin-danger-button" type="button" disabled={!product.active} onClick={async () => {
+                      if (!await confirm({ title: "Archive product?", message: `${product.name} will be removed from the storefront. Existing orders are retained.`, confirmLabel: "Archive product" })) return;
                       try {
                         await archiveAdminProduct(product.id);
                         await refresh();
@@ -261,22 +270,8 @@ function Products() {
   );
 }
 
-function ProductEditor() {
-  const { productId } = useParams();
-  const navigate = useNavigate();
-  const [products, setProducts] = useState<AdminProduct[]>([]);
-  const [categories, setCategories] = useState<AdminCategory[]>([]);
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ name: "", sku: "", categoryId: "", price: "", stock: "", shortDescription: "", description: "", active: true, featured: false, newArrival: false });
-  const product = productId ? products.find((item) => item.id === productId) : undefined;
-
-  useEffect(() => { Promise.all([listAdminProducts(), listAdminCategories()]).then(([p, c]) => { setProducts(p); setCategories(c.filter((item) => item.active)); }).catch((err) => toast.error(err instanceof Error ? err.message : "Unable to load editor.")); }, []);
-  useEffect(() => { if (!product) return; setForm({ name: product.name, sku: product.sku, categoryId: product.categoryId, price: String(product.pricePaise / 100), stock: product.stockQuantity == null ? "" : String(product.stockQuantity), shortDescription: product.shortDescription, description: product.description, active: product.active, featured: product.featured, newArrival: product.newArrival }); }, [product]);
-
-  return <div><PageHeader title={productId ? "Edit Product" : "Add Product"} subtitle="Changes are validated and saved through the protected admin API." action={<Link className="admin-outline-button" to="/admin/products"><ArrowLeft size={17} /> Back to Products</Link>} /><form className="admin-editor-grid" onSubmit={async (event) => { event.preventDefault(); if (!form.categoryId) return toast.error("Select a category."); const price = Number(form.price); if (!Number.isFinite(price) || price < 0) return toast.error("Enter a valid price."); setSaving(true); try { const input = { name: form.name.trim(), sku: form.sku.trim(), categoryId: form.categoryId, pricePaise: Math.round(price * 100), stockQuantity: form.stock === "" ? null : Number(form.stock), shortDescription: form.shortDescription.trim(), description: form.description.trim(), active: form.active, featured: form.featured, newArrival: form.newArrival }; if (productId) await updateAdminProduct(productId, input); else await createAdminProduct(input); await useCatalogStore.getState().loadCatalog(true); toast.success(productId ? "Product updated." : "Product created."); navigate("/admin/products"); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to save product."); } finally { setSaving(false); } }}><section className="admin-panel admin-form-card"><h2>Product Information</h2><div className="admin-form-grid"><label className="wide">Product Name<input required minLength={2} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label><label>SKU<input required minLength={2} value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} /></label><label>Category<select required value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}><option value="">Choose category</option>{categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label><label>Price (₹)<input required type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></label><label>Stock Quantity<input type="number" min="0" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="Unknown" /></label><label className="wide">Short Description<textarea required minLength={2} rows={3} value={form.shortDescription} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} /></label><label className="wide">Full Description<textarea required minLength={2} rows={7} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></label></div></section><aside className="admin-panel admin-form-card"><h2>Publishing</h2><label className="admin-check-row"><input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} /> Active</label><label className="admin-check-row"><input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} /> Featured</label><label className="admin-check-row"><input type="checkbox" checked={form.newArrival} onChange={(e) => setForm({ ...form, newArrival: e.target.checked })} /> New arrival</label><div className="admin-upload-placeholder"><Package size={32} /><span>Product images are managed through the protected Cloudinary-backed image workspace.</span></div><div className="admin-form-actions"><button className="admin-primary-button" type="submit" disabled={saving}>{saving ? "Saving…" : productId ? "Save Changes" : "Create Product"}</button><Link className="admin-outline-button" to="/admin/products">Cancel</Link></div></aside></form></div>;
-}
-
 function Categories() {
+  const confirm = useConfirm();
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [editing, setEditing] = useState<AdminCategory | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -285,40 +280,7 @@ function Categories() {
   useEffect(() => { void refresh(); }, []);
   const openCreate = () => { setEditing(null); setForm({ name: "", description: "", sortOrder: "0" }); setShowForm(true); };
   const openEdit = (category: AdminCategory) => { setEditing(category); setForm({ name: category.name, description: category.description || "", sortOrder: String(category.sortOrder) }); setShowForm(true); };
-  return <div><PageHeader title="Categories" subtitle="Manage the storefront category structure stored in PostgreSQL." action={<button className="admin-primary-button" onClick={openCreate}><Plus size={18} /> Add Category</button>} />{showForm && <form className="admin-panel admin-form-card admin-category-form" onSubmit={async (event) => { event.preventDefault(); try { const input = { name: form.name.trim(), description: form.description.trim() || null, sortOrder: Number(form.sortOrder) || 0, active: true }; if (editing) await updateAdminCategory(editing.id, input); else await createAdminCategory(input); await refresh(); await useCatalogStore.getState().loadCatalog(true); setShowForm(false); toast.success(editing ? "Category updated." : "Category created."); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to save category."); } }}><h2>{editing ? "Edit Category" : "Add Category"}</h2><div className="admin-form-grid"><label>Name<input required minLength={2} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label><label>Sort Order<input type="number" min="0" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: e.target.value })} /></label><label className="wide">Description<textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></label></div><div className="admin-form-actions"><button className="admin-primary-button" type="submit">Save Category</button><button className="admin-outline-button" type="button" onClick={() => setShowForm(false)}>Cancel</button></div></form>}<section className="admin-panel admin-table-panel"><div className="admin-table-scroll"><table className="admin-table"><thead><tr><th>Category</th><th>Slug</th><th>Products</th><th>Status</th><th>Actions</th></tr></thead><tbody>{categories.map((category) => <tr key={category.id}><td><strong>{category.name}</strong><small className="admin-muted">{category.description || "No description"}</small></td><td>{category.slug}</td><td>{category._count?.products ?? "—"}</td><td><span className={`admin-status-pill ${category.active ? "green" : "red"}`}>{category.active ? "Active" : "Archived"}</span></td><td><div className="admin-row-actions"><button className="admin-icon-button" onClick={() => openEdit(category)}><Pencil size={17} /></button>{category.active && <button className="admin-danger-button" onClick={async () => { if (!window.confirm(`Archive ${category.name}?`)) return; try { await archiveAdminCategory(category.id); await refresh(); await useCatalogStore.getState().loadCatalog(true); toast.success("Category archived."); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to archive category."); } }}>Archive</button>}</div></td></tr>)}</tbody></table></div></section></div>;
-}
-
-function PendingModule({ title, text }: { title: string; text: string }) {
-  const features: Record<string, string[]> = {
-    Customers: ["Customer profiles", "Support history", "Marketing preferences"],
-    "Customer Details": ["Customer profile", "Order history", "Account support"],
-    Coupons: ["Discount codes", "Usage limits", "Start and end dates"],
-    Content: ["Homepage sections", "Store notices", "Editorial banners"],
-  };
-  return (
-    <div className="jn-admin-module">
-      <PageHeader title={title} subtitle="Management workspace" />
-      <section className="admin-panel jn-admin-module-intro">
-        <span className="jn-admin-module-icon"><LockKeyhole size={29}/></span>
-        <p className="admin-eyebrow">NOT ACTIVE YET</p>
-        <h2>{title} management is being prepared.</h2>
-        <p>{text}</p>
-        <div className="jn-admin-module-features">
-          {(features[title] || ["Reporting", "Management", "Activity history"]).map((name) =>
-            <span key={name}><CircleHelp size={15}/>{name}</span>)}
-        </div>
-        <div className="jn-admin-module-actions">
-          <Link className="admin-primary-button" to="/admin">Back to dashboard <ArrowRight size={16}/></Link>
-          <Link className="admin-outline-button" to="/admin/help">Setup guide</Link>
-        </div>
-      </section>
-      <div className="jn-admin-module-links">
-        <Link to="/admin/products"><Package size={20}/><span><strong>Manage products</strong><small>Catalog and inventory</small></span><ArrowRight size={16}/></Link>
-        <Link to="/admin/orders"><ClipboardList size={20}/><span><strong>Review orders</strong><small>Payment and order records</small></span><ArrowRight size={16}/></Link>
-        <Link to="/admin/categories"><Boxes size={20}/><span><strong>Edit categories</strong><small>Storefront organization</small></span><ArrowRight size={16}/></Link>
-      </div>
-    </div>
-  );
+  return <div><PageHeader title="Categories" subtitle="Manage the storefront category structure stored in PostgreSQL." action={<button className="admin-primary-button" onClick={openCreate}><Plus size={18} /> Add Category</button>} />{showForm && <form className="admin-panel admin-form-card admin-category-form" onSubmit={async (event) => { event.preventDefault(); try { const input = { name: form.name.trim(), description: form.description.trim() || null, sortOrder: Number(form.sortOrder) || 0, active: true }; if (editing) await updateAdminCategory(editing.id, input); else await createAdminCategory(input); await refresh(); await useCatalogStore.getState().loadCatalog(true); setShowForm(false); toast.success(editing ? "Category updated." : "Category created."); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to save category."); } }}><h2>{editing ? "Edit Category" : "Add Category"}</h2><div className="admin-form-grid"><label>Name<input required minLength={2} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label><label>Sort Order<input type="number" min="0" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: e.target.value })} /></label><label className="wide">Description<textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></label></div><div className="admin-form-actions"><button className="admin-primary-button" type="submit">Save Category</button><button className="admin-outline-button" type="button" onClick={() => setShowForm(false)}>Cancel</button></div></form>}<section className="admin-panel admin-table-panel"><div className="admin-table-scroll"><table className="admin-table"><thead><tr><th>Category</th><th>Slug</th><th>Products</th><th>Status</th><th>Actions</th></tr></thead><tbody>{categories.map((category) => <tr key={category.id}><td><strong>{category.name}</strong><small className="admin-muted">{category.description || "No description"}</small></td><td>{category.slug}</td><td>{category._count?.products ?? "—"}</td><td><span className={`admin-status-pill ${category.active ? "green" : "red"}`}>{category.active ? "Active" : "Archived"}</span></td><td><div className="admin-row-actions"><button className="admin-icon-button" onClick={() => openEdit(category)}><Pencil size={17} /></button>{category.active && <button className="admin-danger-button" onClick={async () => { if (!await confirm({ title: "Archive category?", message: `${category.name} will no longer be available as an active category.`, confirmLabel: "Archive category" })) return; try { await archiveAdminCategory(category.id); await refresh(); await useCatalogStore.getState().loadCatalog(true); toast.success("Category archived."); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to archive category."); } }}>Archive</button>}</div></td></tr>)}</tbody></table></div></section></div>;
 }
 
 function AnalyticsOverview() {
@@ -401,5 +363,58 @@ function SettingsPage() {
       </div>
       <Link className="admin-outline-button" to="/admin/help"><CircleHelp size={16}/> View setup checklist</Link>
     </section>
+  </div>;
+}
+
+function customerName(customer: AdminCustomer) {
+  return [customer.firstName, customer.lastName].filter(Boolean).join(" ") || "Customer";
+}
+function Customers() {
+  const [q, setQ] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [items, setItems] = useState<AdminCustomer[]>([]);
+  const [pages, setPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    setLoading(true); setError("");
+    void listAdminCustomers(search, page).then(result => {
+      if (!active) return;
+      setItems(result.items); setPages(result.pagination.pages); setTotal(result.pagination.total);
+    }).catch(cause => { if (active) setError(cause instanceof Error ? cause.message : "Unable to load customers."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [search, page]);
+  return <div><PageHeader title="Customers" subtitle="Real registered customer accounts and their order history."/>
+    <section className="admin-panel admin-table-panel">
+      <form className="admin-filter-row" onSubmit={event => { event.preventDefault(); setSearch(q.trim()); setPage(1); }}>
+        <label className="admin-search-field"><Search size={18}/><input aria-label="Search customers" placeholder="Search by name or email" maxLength={100} value={q} onChange={event => setQ(event.target.value)}/></label>
+        <button className="admin-primary-button" type="submit">Search</button>
+      </form>
+      {error && <div role="alert" className="admin-auth-error">{error}</div>}
+      <div className="admin-table-scroll"><table className="admin-table"><thead><tr><th>Customer</th><th>Email</th><th>Orders</th><th>Joined</th><th>Details</th></tr></thead><tbody>
+      {loading ? <tr><td colSpan={5}>Loading customers…</td></tr> : error ? null : items.length ? items.map(customer => <tr key={customer.id}><td><strong>{customerName(customer)}</strong></td><td>{customer.email || "—"}</td><td>{customer._count.orders}</td><td>{new Date(customer.createdAt).toLocaleDateString("en-IN")}</td><td><Link className="admin-outline-button" to={"/admin/customers/" + customer.id}>View</Link></td></tr>) : <tr><td colSpan={5}>No registered customers found.</td></tr>}
+      </tbody></table></div>
+      <div className="admin-table-footer jn-admin-page-controls"><span>{total} accounts</span><div><button type="button" className="admin-outline-button" disabled={loading || page <= 1} onClick={() => setPage(n => n-1)}>Previous</button><span>Page {page} of {pages}</span><button type="button" className="admin-outline-button" disabled={loading || page >= pages} onClick={() => setPage(n => n+1)}>Next</button></div></div>
+    </section></div>;
+}
+function CustomerDetail() {
+  const { customerId } = useParams();
+  const [customer, setCustomer] = useState<AdminCustomerDetail | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    if (!customerId) return;
+    let active = true; setCustomer(null); setError("");
+    void getAdminCustomer(customerId).then(data => { if (active) setCustomer(data); }).catch(cause => { if (active) setError(cause instanceof Error ? cause.message : "Unable to load customer."); });
+    return () => { active = false; };
+  }, [customerId]);
+  return <div><PageHeader title="Customer details" action={<Link className="admin-outline-button" to="/admin/customers"><ArrowLeft size={17}/> All customers</Link>}/>
+    {error ? <p role="alert" className="admin-auth-error">{error}</p> : !customer ? <p>Loading customer…</p> : <>
+      <section className="admin-panel"><h2>{customerName(customer)}</h2><p>{customer.email || "Email unavailable"}</p><p>Joined {new Date(customer.createdAt).toLocaleDateString("en-IN")} · {customer._count.orders} orders</p></section>
+      <section className="admin-panel admin-table-panel"><div className="admin-panel-heading"><h2>Recent orders</h2><span>Up to 50 latest orders</span></div><div className="admin-table-scroll"><table className="admin-table"><thead><tr><th>Order</th><th>Date</th><th>Status</th><th>Total</th></tr></thead><tbody>{customer.orders.map(order => <tr key={order.id}><td><Link to={"/admin/orders/" + order.id}>{order.orderNumber}</Link></td><td>{new Date(order.createdAt).toLocaleDateString("en-IN")}</td><td>{order.status.replace(/_/g, " ")}</td><td>{moneyPaise(order.totalPaise)}</td></tr>)}{!customer.orders.length && <tr><td colSpan={4}>No linked orders yet.</td></tr>}</tbody></table></div></section>
+    </>}
   </div>;
 }

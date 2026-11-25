@@ -1,19 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, NavLink, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
-  Boxes,
   ClipboardList,
-  ExternalLink,
-  LayoutDashboard,
-  Package,
   Search,
   ShoppingBag,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useConfirm } from "../components/common/ConfirmDialog";
 import {
   getAdminOrder,
-  listAdminOrders,
+  listAdminOrdersPage,
   updateAdminOrder,
   type AdminOrder,
   type AdminOrderListItem,
@@ -27,7 +24,7 @@ const money = (paise: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(paise / 100);
 
 const nextStatuses: Record<AdminOrderStatus, AdminOrderStatus[]> = {
@@ -42,38 +39,17 @@ const nextStatuses: Record<AdminOrderStatus, AdminOrderStatus[]> = {
 
 export default function AdminOrderWorkspace() {
   const { orderId } = useParams();
-  return (
-    <div className="admin-app">
-      <aside className="admin-sidebar">
-        <div className="admin-brand-row">
-          <Link to="/admin"><img src="/brand/joyneeds-logo.png" alt="JoyNeeds" /></Link>
-        </div>
-        <nav className="admin-nav" aria-label="Admin navigation">
-          <NavLink to="/admin"><LayoutDashboard size={20} /> Dashboard</NavLink>
-          <NavLink to="/admin/orders" className="active"><ClipboardList size={20} /> Orders</NavLink>
-          <NavLink to="/admin/products"><Package size={20} /> Products</NavLink>
-          <NavLink to="/admin/categories"><Boxes size={20} /> Categories</NavLink>
-        </nav>
-        <div className="admin-sidebar-spacer" />
-        <Link className="admin-view-store" to="/"><ExternalLink size={18} /> View Store</Link>
-      </aside>
-      <div className="admin-shell">
-        <header className="admin-topbar">
-          <div className="admin-global-search"><Search size={18} /><span>Order management</span></div>
-          <div className="admin-user-copy"><strong>Admin</strong><small>Secure session</small></div>
-        </header>
-        <main className="admin-content">
-          {orderId ? <OrderDetails orderId={orderId} /> : <OrdersList />}
-        </main>
-      </div>
-    </div>
-  );
+  return orderId ? <OrderDetails key={orderId} orderId={orderId} /> : <OrdersList />;
 }
 
 function OrdersList() {
   const [orders, setOrders] = useState<AdminOrderListItem[]>([]);
   const [status, setStatus] = useState<AdminOrderStatus | "ALL">("ALL");
   const [query, setQuery] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ total: 0, pages: 1 });
+  useEffect(() => { const timer = window.setTimeout(() => { setSearch(query.trim()); setPage(1); }, 300); return () => window.clearTimeout(timer); }, [query]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,9 +57,9 @@ function OrdersList() {
     let active = true;
     setLoading(true);
     setError(null);
-    void listAdminOrders(status, query)
+    void listAdminOrdersPage(status, search, page)
       .then((data) => {
-        if (active) setOrders(data);
+        if (active) { setOrders(data.items); setPagination(data.pagination); }
       })
       .catch((err: unknown) => {
         if (active) setError(err instanceof Error ? err.message : "Unable to load orders.");
@@ -92,10 +68,9 @@ function OrdersList() {
         if (active) setLoading(false);
       });
     return () => { active = false; };
-  }, [status, query]);
+  }, [status, search, page]);
 
   const counts = useMemo(() => ({
-    total: orders.length,
     pending: orders.filter((order) => order.status === "PENDING").length,
     processing: orders.filter((order) => ["CONFIRMED", "PROCESSING"].includes(order.status)).length,
     shipped: orders.filter((order) => order.status === "SHIPPED").length,
@@ -104,18 +79,18 @@ function OrdersList() {
   return (
     <div>
       <div className="admin-page-header">
-        <div><p className="admin-eyebrow">Orders</p><h1>Orders</h1><p>Real orders and Razorpay payment state. No sample orders are shown.</p></div>
+        <div><p className="admin-eyebrow">Orders</p><h1>Orders</h1><p>Real orders and verified payment state. No sample orders are shown.</p></div>
       </div>
       <div className="admin-stats-grid">
-        <Stat label="Loaded Orders" value={counts.total} />
-        <Stat label="Pending" value={counts.pending} />
-        <Stat label="Confirmed / Processing" value={counts.processing} />
-        <Stat label="Shipped" value={counts.shipped} />
+        <Stat label="Matching Orders" value={pagination.total} />
+        <Stat label="Pending on this page" value={counts.pending} />
+        <Stat label="Confirmed / Processing on page" value={counts.processing} />
+        <Stat label="Shipped on this page" value={counts.shipped} />
       </div>
       <section className="admin-panel admin-table-panel">
         <div className="admin-filter-row">
           <label className="admin-search-field"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search order, customer or email..." /></label>
-          <select value={status} onChange={(event) => setStatus(event.target.value as AdminOrderStatus | "ALL")}>
+          <select value={status} onChange={(event) => { setStatus(event.target.value as AdminOrderStatus | "ALL"); setPage(1); }}>
             <option value="ALL">All Status</option>
             {Object.keys(nextStatuses).map((value) => <option key={value} value={value}>{value}</option>)}
           </select>
@@ -136,12 +111,14 @@ function OrdersList() {
             </tr>)}
           </tbody></table></div>
         )}
+        <div className="admin-table-footer jn-admin-page-controls"><span>{pagination.total} matching orders</span><div><button type="button" className="admin-outline-button" disabled={loading || page <= 1} onClick={() => setPage(n => n-1)}>Previous</button><span>Page {page} of {pagination.pages}</span><button type="button" className="admin-outline-button" disabled={loading || page >= pagination.pages} onClick={() => setPage(n => n+1)}>Next</button></div></div>
       </section>
     </div>
   );
 }
 
 function OrderDetails({ orderId }: { orderId: string }) {
+  const confirm = useConfirm();
   const [order, setOrder] = useState<AdminOrder | null>(null);
   const [targetStatus, setTargetStatus] = useState<AdminOrderStatus | "">("");
   const [courier, setCourier] = useState("");
@@ -203,13 +180,14 @@ function OrderDetails({ orderId }: { orderId: string }) {
           <h2>Order Status</h2>
           <p><span className="status-pill">{order.status}</span></p>
           <p className="admin-muted">Inventory: {order.inventoryCommittedAt ? "Committed" : "Not committed"}</p>
-          {order.status === "PENDING" && <p className="admin-muted">Confirmation is automatic only after Razorpay verifies a captured payment. Admin cannot manually mark a pending order paid.</p>}
+          {order.status === "PENDING" && <p className="admin-muted">Confirmation is automatic only after the payment provider verifies a captured payment. Admin cannot manually mark a pending order paid.</p>}
           <label>Next status<select value={targetStatus} onChange={(event) => setTargetStatus(event.target.value as AdminOrderStatus | "")}><option value="">Choose action</option>{allowed.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
           <label>Courier<input value={courier} onChange={(event) => setCourier(event.target.value)} placeholder="Optional" /></label>
           <label>Tracking number<input value={trackingNumber} onChange={(event) => setTrackingNumber(event.target.value)} placeholder="Optional" /></label>
           <label>Tracking URL<input value={trackingUrl} onChange={(event) => setTrackingUrl(event.target.value)} placeholder="https://..." /></label>
           <button className="admin-primary-button" disabled={!targetStatus || saving} onClick={async () => {
             if (!targetStatus) return;
+            if (targetStatus === "CANCELLED" && !await confirm({ title: "Cancel order?", message: "This changes the order status. It does not automatically refund a captured payment.", confirmLabel: "Cancel order" })) return;
             setSaving(true);
             try {
               const updated = await updateAdminOrder(order.id, {
@@ -228,11 +206,11 @@ function OrderDetails({ orderId }: { orderId: string }) {
             }
           }}>{saving ? "Updating…" : "Update Order"}</button>
           <hr />
-          <h2>Payment</h2>
+          <h2>Order totals</h2><dl><div><dt>Subtotal</dt><dd>{money(order.subtotalPaise)}</dd></div><div><dt>Shipping</dt><dd>{money(order.shippingPaise)}</dd></div>{order.discountPaise>0&&<div><dt>Discount {order.couponCode||""}</dt><dd>− {money(order.discountPaise)}</dd></div>}<div><dt>Total</dt><dd><strong>{money(order.totalPaise)}</strong></dd></div></dl><hr/><h2>Payment</h2>
           {payment ? <>
             <dl>
               <div><dt>Status</dt><dd><strong>{payment.status}</strong></dd></div>
-              <div><dt>Captured</dt><dd>{money(payment.amountPaise)}</dd></div>
+              <div><dt>Provider</dt><dd>{payment.provider}</dd></div><div><dt>Order payment amount</dt><dd>{money(payment.amountPaise)}</dd></div>
               <div><dt>Refunded</dt><dd>{money(payment.refundedAmountPaise)}</dd></div>
               <div><dt>Provider payment</dt><dd>{payment.providerPaymentId ?? "Not captured"}</dd></div>
             </dl>
@@ -247,7 +225,7 @@ function OrderDetails({ orderId }: { orderId: string }) {
                   toast.error("Enter a valid refund amount.");
                   return;
                 }
-                if (!window.confirm(`Request a ${money(requestedPaise)} Razorpay refund?`)) return;
+                if (!await confirm({ title: "Request refund?", message: `Request a ${money(requestedPaise)} Razorpay refund to the original payment method. This is a real financial action.`, confirmLabel: "Request refund" })) return;
                 setRefunding(true);
                 try {
                   const result = await refundAdminOrder(order.id, { amountPaise: requestedPaise, reason: refundReason.trim() || undefined });

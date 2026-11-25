@@ -5,6 +5,7 @@ import { HelmetProvider } from "react-helmet-async";
 import MainLayout from "./layouts/MainLayout";
 import ScrollToTop from "./components/common/ScrollToTop";
 import Toast from "./components/common/Toast";
+import { ConfirmProvider } from "./components/common/ConfirmDialog";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import SEO from "./components/common/SEO";
 import { Skeleton } from "./components/common/UI";
@@ -25,8 +26,6 @@ const FAQ = lazy(() => import("./pages/FAQ"));
 const Policy = lazy(() => import("./pages/Policy"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminRouter = lazy(() => import("./admin/AdminPhase5Router"));
-const AdminOrderWorkspace = lazy(() => import("./admin/AdminOrderWorkspace"));
-const AdminProductEditorWorkspace = lazy(() => import("./admin/AdminProductEditorWorkspace"));
 
 export default function App() {
   return (
@@ -34,16 +33,13 @@ export default function App() {
       <HelmetProvider>
         <MotionConfig reducedMotion="user">
           <BrowserRouter>
+            <ConfirmProvider>
             <ScrollToTop />
             <SEO />
             <Toast />
             <Suspense fallback={<Skeleton />}>
               <Routes>
                 <Route path="/admin/login" element={<Navigate to="/admin" replace />} />
-                <Route path="/admin/orders" element={<AdminAuthGate><AdminOrderWorkspace /></AdminAuthGate>} />
-                <Route path="/admin/orders/:orderId" element={<AdminAuthGate><AdminOrderWorkspace /></AdminAuthGate>} />
-                <Route path="/admin/products/new" element={<AdminAuthGate><AdminProductEditorWorkspace /></AdminAuthGate>} />
-                <Route path="/admin/products/:productId/edit" element={<AdminAuthGate><AdminProductEditorWorkspace /></AdminAuthGate>} />
                 <Route path="/admin/*" element={<AdminAuthGate><AdminRouter /></AdminAuthGate>} />
                 <Route element={<MainLayout />}>
                   <Route path="/" element={<Home />} />
@@ -77,6 +73,7 @@ export default function App() {
                 </Route>
               </Routes>
             </Suspense>
+          </ConfirmProvider>
           </BrowserRouter>
         </MotionConfig>
       </HelmetProvider>

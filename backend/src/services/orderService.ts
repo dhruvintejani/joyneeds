@@ -1,12 +1,15 @@
 import { randomBytes } from "node:crypto";
 import type { Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../config/prisma.js";
+import { env } from "../config/env.js";
+import { getCouponDiscount } from "./couponService.js";
 import { AppError } from "../utils/AppError.js";
 import { syncCustomerAccount } from "./accountService.js";
 import type {
   AdminOrderListQuery,
   AdminOrderUpdateBody,
   CreateOrderBody,
+  OrderQuoteBody,
 } from "../validators/orderValidators.js";
 
 const orderItemSelect = {
@@ -35,6 +38,7 @@ const orderDetailSelect = {
   subtotalPaise: true,
   shippingPaise: true,
   discountPaise: true,
+  couponCode: true,
   totalPaise: true,
   currency: true,
   status: true,
@@ -70,7 +74,7 @@ function orderNumber() {
   return `JN-${stamp}-${randomBytes(4).toString("hex").toUpperCase()}`;
 }
 
-export async function createPendingOrder(body: CreateOrderBody, clerkUserId: string | null) {
+async function priceOrder(body: OrderQuoteBody) {
   const requestedIds = body.items.map((item) => item.productId);
   const products = await prisma.product.findMany({
     where: { id: { in: requestedIds } },
@@ -121,11 +125,23 @@ export async function createPendingOrder(body: CreateOrderBody, clerkUserId: str
     };
   });
 
-  const user = clerkUserId ? await syncCustomerAccount(clerkUserId) : null;
-  const shippingPaise = 0;
-  const discountPaise = 0;
+  const shippingPaise = env.SHIPPING_FEE_PAISE;
+  if (!Number.isSafeInteger(subtotalPaise) || subtotalPaise > 2147483647) throw new AppError(400, "ORDER_TOTAL_TOO_LARGE", "Reduce the quantity in your order.");
+  const discountPaise = await getCouponDiscount(body.couponCode,subtotalPaise);
   const totalPaise = subtotalPaise + shippingPaise - discountPaise;
+  if (!Number.isSafeInteger(totalPaise) || totalPaise > 2147483647) throw new AppError(400, "ORDER_TOTAL_TOO_LARGE", "Reduce the quantity in your order.");
 
+  return { items, subtotalPaise, shippingPaise, discountPaise, totalPaise };
+}
+
+export async function quoteOrder(body: OrderQuoteBody) {
+  const { subtotalPaise, shippingPaise, discountPaise, totalPaise } = await priceOrder(body);
+  return { subtotalPaise, shippingPaise, discountPaise, totalPaise, couponCode: body.couponCode ?? null };
+}
+export async function createPendingOrder(body: CreateOrderBody, clerkUserId: string | null) {
+  const { items, subtotalPaise, shippingPaise, discountPaise, totalPaise } = await priceOrder(body);
+  if (body.expectedTotalPaise !== undefined && body.expectedTotalPaise !== totalPaise) throw new AppError(409, "ORDER_TOTAL_CHANGED", "Your total changed. Please review your cart before paying.");
+  const user = clerkUserId ? await syncCustomerAccount(clerkUserId) : null;
   const order = await prisma.order.create({
     data: {
       orderNumber: orderNumber(),
@@ -141,6 +157,7 @@ export async function createPendingOrder(body: CreateOrderBody, clerkUserId: str
       subtotalPaise,
       shippingPaise,
       discountPaise,
+      couponCode: body.couponCode ?? null,
       totalPaise,
       items: { create: items },
     },

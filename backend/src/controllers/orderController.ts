@@ -1,7 +1,7 @@
 import type { RequestHandler } from "express";
-import { configuredPaymentProvider } from "../config/env.js";
-import { createPendingOrder, getCustomerOrder, listCustomerOrders } from "../services/orderService.js";
-import type { CreateOrderBody, CustomerOrderParams } from "../validators/orderValidators.js";
+import { configuredPaymentProvider, env } from "../config/env.js";
+import { quoteOrder, createPendingOrder, getCustomerOrder, listCustomerOrders } from "../services/orderService.js";
+import type { CreateOrderBody, CustomerOrderParams, OrderQuoteBody } from "../validators/orderValidators.js";
 
 export const createOrderController: RequestHandler = async (_req, res) => {
   const clerkUserId = (res.locals.clerkUserId as string | undefined) ?? null;
@@ -10,6 +10,7 @@ export const createOrderController: RequestHandler = async (_req, res) => {
     data: {
       ...order,
       paymentReady: configuredPaymentProvider,
+      paymentProvider: env.PAYMENT_PROVIDER,
       inventoryReserved: false,
       note: "Payment must be verified server-side before the order is confirmed and inventory is committed.",
     },
@@ -24,3 +25,5 @@ export const getCustomerOrderController: RequestHandler = async (_req, res) => {
   const { orderNumber } = res.locals.validatedParams as CustomerOrderParams;
   res.json({ data: await getCustomerOrder(res.locals.clerkUserId as string, orderNumber) });
 };
+
+export const quoteOrderController: RequestHandler = async (_req,res) => { res.set("Cache-Control","no-store").json({data:await quoteOrder(res.locals.validatedBody as OrderQuoteBody)}); };

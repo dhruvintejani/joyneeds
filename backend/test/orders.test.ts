@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { prisma } from "../src/config/prisma.js";
+import { env } from "../src/config/env.js";
 import { createPendingOrder, updateAdminOrder } from "../src/services/orderService.js";
 
 test("orders use database prices and commit/release known inventory safely", async () => {
@@ -42,7 +43,8 @@ test("orders use database prices and commit/release known inventory safely", asy
     orderId = order.id;
 
     assert.equal(order.subtotalPaise, product.pricePaise * 2);
-    assert.equal(order.totalPaise, product.pricePaise * 2);
+    assert.equal(order.shippingPaise, env.SHIPPING_FEE_PAISE);
+    assert.equal(order.totalPaise, product.pricePaise * 2 + env.SHIPPING_FEE_PAISE);
     assert.equal(order.status, "PENDING");
     assert.equal(order.inventoryCommittedAt, null);
     assert.equal(order.paymentReady, true, "an enabled order must continue to Razorpay preparation");

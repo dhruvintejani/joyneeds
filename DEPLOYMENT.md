@@ -12,6 +12,10 @@ This guide assumes the intended production layout:
 
 Do not enable live order creation until the backend, database, Razorpay webhook and frontend have all been verified together.
 
+## Configuration checklist
+
+Copy the two workspace examples to their respective local .env files. On hosted deployments, enter the values in the Vercel and Render environment-variable dashboards rather than uploading local files. See [PRODUCTION_SETUP.md](./PRODUCTION_SETUP.md) for a single checklist with Paytm, storefront settings and test gates.
+
 ## 1. Prepare Neon
 
 Use the existing Neon project and keep two connection strings:

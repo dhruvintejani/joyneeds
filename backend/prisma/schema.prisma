@@ -241,6 +241,7 @@ model Order {
   subtotalPaise        Int         @map("subtotal_paise")
   shippingPaise        Int         @default(0) @map("shipping_paise")
   discountPaise        Int         @default(0) @map("discount_paise")
+  couponCode String? @map("coupon_code")
   totalPaise           Int         @map("total_paise")
   currency             String      @default("INR")
   status               OrderStatus @default(PENDING)
@@ -360,4 +361,27 @@ model EmailDelivery {
   @@index([orderId, createdAt])
   @@index([status, updatedAt])
   @@map("email_deliveries")
+}
+
+model Coupon {
+  id String @id @default(cuid())
+  code String @unique
+  percentOff Int @map("percent_off")
+  minSubtotalPaise Int @default(0) @map("min_subtotal_paise")
+  active Boolean @default(true)
+  expiresAt DateTime? @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("coupons")
+}
+
+model StoreContent {
+  id String @id
+  heroEyebrow String @map("hero_eyebrow")
+  heroTitle String @map("hero_title")
+  heroAccent String @map("hero_accent")
+  heroDescription String @map("hero_description")
+  announcement String?
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("store_content")
 }
