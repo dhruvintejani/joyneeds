@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { listCoupons, couponListQuery, couponSchema, createCoupon, updateCoupon, archiveCoupon, contentSchema, getStoreContent, updateStoreContent } from "../controllers/adminStoreController.js";
 import { listPayments, paymentListQuery } from "../controllers/adminPaymentsController.js";
 import { customerListQuery, listCustomers, getCustomer } from "../controllers/adminCustomerController.js";
 import rateLimit from "express-rate-limit";
@@ -84,6 +85,12 @@ adminRouter.use(
 adminRouter.use(requireAdmin);
 
 adminRouter.get("/dashboard", adminDashboardController);
+adminRouter.get("/coupons",validateQuery(couponListQuery),listCoupons);
+adminRouter.post("/coupons",requireAdminWriteOrigin,validateBody(couponSchema),createCoupon);
+adminRouter.patch("/coupons/:id",requireAdminWriteOrigin,validateParams(adminIdParamsSchema),validateBody(couponSchema),updateCoupon);
+adminRouter.delete("/coupons/:id",requireAdminWriteOrigin,validateParams(adminIdParamsSchema),archiveCoupon);
+adminRouter.get("/content",getStoreContent);
+adminRouter.put("/content",requireAdminWriteOrigin,validateBody(contentSchema),updateStoreContent);
 adminRouter.get("/payments", validateQuery(paymentListQuery), listPayments);
 adminRouter.get("/customers", validateQuery(customerListQuery), listCustomers);
 adminRouter.get("/customers/:id", validateParams(adminIdParamsSchema), getCustomer);

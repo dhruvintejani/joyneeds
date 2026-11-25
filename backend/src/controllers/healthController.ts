@@ -16,5 +16,6 @@ export const getCheckoutFeatures: RequestHandler = (_req, res) => {
     checkoutEnabled: orderCreationEnabled && configuredPaymentProvider,
     paymentProvider: env.PAYMENT_PROVIDER,
     shippingFeePaise: env.SHIPPING_FEE_PAISE,
+    couponsEnabled: true,
   } });
 };

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { couponCodeSchema } from "../services/couponService.js";
 
 const idSchema = z.string().trim().min(1).max(80);
 const quantitySchema = z.coerce.number().int().min(1).max(99);
@@ -19,6 +20,8 @@ export const createOrderSchema = z
     state: z.string().trim().min(2).max(100),
     postalCode: z.string().trim().regex(/^[1-9]\d{5}$/, "Enter a valid PIN code."),
     items: z.array(orderItemSchema).min(1).max(50),
+    couponCode: couponCodeSchema.optional(),
+    expectedTotalPaise: z.number().int().min(0).max(2147483647).optional(),
   })
   .superRefine((value, ctx) => {
     const seen = new Set<string>();
@@ -87,3 +90,6 @@ export const adminOrderUpdateSchema = z
     message: "Paid confirmation and refund status are managed by Razorpay reconciliation.",
   });
 export type AdminOrderUpdateBody = z.infer<typeof adminOrderUpdateSchema>;
+
+export const orderQuoteSchema = z.object({ items: z.array(orderItemSchema).min(1).max(50), couponCode: couponCodeSchema.optional() }).refine(value=>new Set(value.items.map(item=>item.productId)).size===value.items.length, {path:["items"],message:"Duplicate products are not allowed."});
+export type OrderQuoteBody = z.infer<typeof orderQuoteSchema>;

@@ -1,10 +1,10 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
-import { createOrderController } from "../controllers/orderController.js";
+import { createOrderController, quoteOrderController } from "../controllers/orderController.js";
 import { orderCreationEnabled, configuredPaymentProvider, env } from "../config/env.js";
 import { optionalCustomer } from "../middleware/auth.js";
 import { validateBody } from "../middleware/validateRequest.js";
-import { createOrderSchema } from "../validators/orderValidators.js";
+import { createOrderSchema, orderQuoteSchema } from "../validators/orderValidators.js";
 import { AppError } from "../utils/AppError.js";
 
 export const orderRouter = Router();
@@ -17,6 +17,8 @@ orderRouter.use(
     legacyHeaders: false,
   }),
 );
+
+orderRouter.post("/quote", validateBody(orderQuoteSchema), quoteOrderController);
 
 orderRouter.post(
   "/",
