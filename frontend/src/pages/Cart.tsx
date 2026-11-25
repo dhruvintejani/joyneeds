@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useConfirm } from "../components/common/ConfirmDialog";
 import { useCatalogStore } from "../store/catalogStore";
 import { ArrowLeft, ArrowRight, Heart, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -14,14 +14,13 @@ import {
   EmptyState,
   QuantitySelector,
   Button,
-  Drawer,
 } from "../components/common/UI";
 
 export default function Cart() {
   const { items, setQuantity, removeFromCart, clearCart, getCartTotal } = useCartStore();
   const toggleWishlist = useDiscoveryStore((state) => state.toggleWishlist);
   const wishlist = useDiscoveryStore((state) => state.wishlist);
-  const [confirm, setConfirm] = useState(false);
+  const confirm = useConfirm();
   const total = getCartTotal();
   const blocked = items.some((item) => !maxQuantity(item.product));
   const catalogStatus = useCatalogStore((state) => state.status);
@@ -95,7 +94,8 @@ export default function Cart() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
+                      if (!await confirm({ title: "Remove item?", message: `Remove ${product.name} from your shopping bag?`, confirmLabel: "Remove item" })) return;
                       removeFromCart(product.id);
                       toast.success("Removed from cart");
                     }}
@@ -110,7 +110,7 @@ export default function Cart() {
               <Link to="/shop" className="reference-link">
                 <ArrowLeft size={16} /> Continue Shopping
               </Link>
-              <Button variant="ghost" onClick={() => setConfirm(true)}>Clear cart</Button>
+              <Button variant="ghost" onClick={async () => { if (await confirm({ title: "Clear your cart?", message: "This removes all products from your shopping bag.", confirmLabel: "Clear cart" })) { clearCart(); toast.success("Cart cleared"); } }}>Clear cart</Button>
             </div>
           </section>
 
@@ -165,23 +165,6 @@ export default function Cart() {
           Explore More Products <ArrowRight size={17} />
         </Link>
       </section>
-
-      <Drawer title="Clear your cart?" open={confirm} onClose={() => setConfirm(false)}>
-        <p>This removes all products from your shopping cart.</p>
-        <div className="form-actions">
-          <Button variant="secondary" onClick={() => setConfirm(false)}>Keep items</Button>
-          <Button
-            variant="danger"
-            onClick={() => {
-              clearCart();
-              setConfirm(false);
-              toast.success("Cart cleared");
-            }}
-          >
-            Clear cart
-          </Button>
-        </div>
-      </Drawer>
     </div>
   );
 }

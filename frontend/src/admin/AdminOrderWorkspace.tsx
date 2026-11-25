@@ -11,6 +11,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useConfirm } from "../components/common/ConfirmDialog";
 import {
   getAdminOrder,
   listAdminOrders,
@@ -42,32 +43,7 @@ const nextStatuses: Record<AdminOrderStatus, AdminOrderStatus[]> = {
 
 export default function AdminOrderWorkspace() {
   const { orderId } = useParams();
-  return (
-    <div className="admin-app">
-      <aside className="admin-sidebar">
-        <div className="admin-brand-row">
-          <Link to="/admin"><img src="/brand/joyneeds-logo.png" alt="JoyNeeds" /></Link>
-        </div>
-        <nav className="admin-nav" aria-label="Admin navigation">
-          <NavLink to="/admin"><LayoutDashboard size={20} /> Dashboard</NavLink>
-          <NavLink to="/admin/orders" className="active"><ClipboardList size={20} /> Orders</NavLink>
-          <NavLink to="/admin/products"><Package size={20} /> Products</NavLink>
-          <NavLink to="/admin/categories"><Boxes size={20} /> Categories</NavLink>
-        </nav>
-        <div className="admin-sidebar-spacer" />
-        <Link className="admin-view-store" to="/"><ExternalLink size={18} /> View Store</Link>
-      </aside>
-      <div className="admin-shell">
-        <header className="admin-topbar">
-          <div className="admin-global-search"><Search size={18} /><span>Order management</span></div>
-          <div className="admin-user-copy"><strong>Admin</strong><small>Secure session</small></div>
-        </header>
-        <main className="admin-content">
-          {orderId ? <OrderDetails orderId={orderId} /> : <OrdersList />}
-        </main>
-      </div>
-    </div>
-  );
+  return orderId ? <OrderDetails key={orderId} orderId={orderId} /> : <OrdersList />;
 }
 
 function OrdersList() {
@@ -104,7 +80,7 @@ function OrdersList() {
   return (
     <div>
       <div className="admin-page-header">
-        <div><p className="admin-eyebrow">Orders</p><h1>Orders</h1><p>Real orders and Razorpay payment state. No sample orders are shown.</p></div>
+        <div><p className="admin-eyebrow">Orders</p><h1>Orders</h1><p>Real orders and verified payment state. No sample orders are shown.</p></div>
       </div>
       <div className="admin-stats-grid">
         <Stat label="Loaded Orders" value={counts.total} />
@@ -142,6 +118,7 @@ function OrdersList() {
 }
 
 function OrderDetails({ orderId }: { orderId: string }) {
+  const confirm = useConfirm();
   const [order, setOrder] = useState<AdminOrder | null>(null);
   const [targetStatus, setTargetStatus] = useState<AdminOrderStatus | "">("");
   const [courier, setCourier] = useState("");
@@ -203,13 +180,14 @@ function OrderDetails({ orderId }: { orderId: string }) {
           <h2>Order Status</h2>
           <p><span className="status-pill">{order.status}</span></p>
           <p className="admin-muted">Inventory: {order.inventoryCommittedAt ? "Committed" : "Not committed"}</p>
-          {order.status === "PENDING" && <p className="admin-muted">Confirmation is automatic only after Razorpay verifies a captured payment. Admin cannot manually mark a pending order paid.</p>}
+          {order.status === "PENDING" && <p className="admin-muted">Confirmation is automatic only after the payment provider verifies a captured payment. Admin cannot manually mark a pending order paid.</p>}
           <label>Next status<select value={targetStatus} onChange={(event) => setTargetStatus(event.target.value as AdminOrderStatus | "")}><option value="">Choose action</option>{allowed.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
           <label>Courier<input value={courier} onChange={(event) => setCourier(event.target.value)} placeholder="Optional" /></label>
           <label>Tracking number<input value={trackingNumber} onChange={(event) => setTrackingNumber(event.target.value)} placeholder="Optional" /></label>
           <label>Tracking URL<input value={trackingUrl} onChange={(event) => setTrackingUrl(event.target.value)} placeholder="https://..." /></label>
           <button className="admin-primary-button" disabled={!targetStatus || saving} onClick={async () => {
             if (!targetStatus) return;
+            if (targetStatus === "CANCELLED" && !await confirm({ title: "Cancel order?", message: "This changes the order status. It does not automatically refund a captured payment.", confirmLabel: "Cancel order" })) return;
             setSaving(true);
             try {
               const updated = await updateAdminOrder(order.id, {
@@ -232,7 +210,7 @@ function OrderDetails({ orderId }: { orderId: string }) {
           {payment ? <>
             <dl>
               <div><dt>Status</dt><dd><strong>{payment.status}</strong></dd></div>
-              <div><dt>Captured</dt><dd>{money(payment.amountPaise)}</dd></div>
+              <div><dt>Provider</dt><dd>{payment.provider}</dd></div><div><dt>Order payment amount</dt><dd>{money(payment.amountPaise)}</dd></div>
               <div><dt>Refunded</dt><dd>{money(payment.refundedAmountPaise)}</dd></div>
               <div><dt>Provider payment</dt><dd>{payment.providerPaymentId ?? "Not captured"}</dd></div>
             </dl>
@@ -247,7 +225,7 @@ function OrderDetails({ orderId }: { orderId: string }) {
                   toast.error("Enter a valid refund amount.");
                   return;
                 }
-                if (!window.confirm(`Request a ${money(requestedPaise)} Razorpay refund?`)) return;
+                if (!await confirm({ title: "Request refund?", message: `Request a ${money(requestedPaise)} Razorpay refund to the original payment method. This is a real financial action.`, confirmLabel: "Request refund" })) return;
                 setRefunding(true);
                 try {
                   const result = await refundAdminOrder(order.id, { amountPaise: requestedPaise, reason: refundReason.trim() || undefined });

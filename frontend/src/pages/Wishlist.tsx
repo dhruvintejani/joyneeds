@@ -1,5 +1,6 @@
 import { Heart, ShoppingCart } from "lucide-react";
 import toast from "react-hot-toast";
+import { useConfirm } from "../components/common/ConfirmDialog";
 import { Link } from "react-router-dom";
 import { useDiscoveryStore } from "../store/discoveryStore";
 import { useCatalogStore } from "../store/catalogStore";
@@ -9,6 +10,7 @@ import { Breadcrumb, EmptyState, Button, Skeleton } from "../components/common/U
 import { PageBanner } from "../components/common/ReferenceUI";
 
 export default function Wishlist() {
+  const confirm = useConfirm();
   const ids = useDiscoveryStore((state) => state.wishlist);
   const toggle = useDiscoveryStore((state) => state.toggleWishlist);
   const add = useCartStore((state) => state.addToCart);
@@ -53,7 +55,7 @@ export default function Wishlist() {
                 </Button>
                 <button
                   className="reference-link"
-                  onClick={() => items.forEach((product) => toggle(product.id))}
+                  onClick={async () => { if (await confirm({ title: "Clear wishlist?", message: "Remove all displayed saved products from your wishlist?", confirmLabel: "Clear wishlist" })) { items.forEach(product => toggle(product.id)); toast.success("Wishlist cleared"); } }}
                 >
                   Clear all
                 </button>

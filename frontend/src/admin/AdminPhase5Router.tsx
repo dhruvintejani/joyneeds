@@ -35,6 +35,9 @@ import {
   X,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useConfirm } from "../components/common/ConfirmDialog";
+import AdminOrderWorkspace from "./AdminOrderWorkspace";
+import AdminProductEditorWorkspace from "./AdminProductEditorWorkspace";
 import {
   archiveAdminCategory,
   archiveAdminProduct,
@@ -85,11 +88,11 @@ export default function AdminPhase5Router() {
         <Route element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
-          <Route path="products/new" element={<ProductEditor />} />
-          <Route path="products/:productId/edit" element={<ProductEditor />} />
+          <Route path="products/new" element={<AdminProductEditorWorkspace key="new" />} />
+          <Route path="products/:productId/edit" element={<AdminProductEditorWorkspace />} />
           <Route path="categories" element={<Categories />} />
-          <Route path="orders" element={<PendingModule title="Orders" text="Order management is served by the dedicated secure order workspace." />} />
-          <Route path="orders/:orderId" element={<PendingModule title="Order Details" text="Order details are served by the dedicated secure order workspace." />} />
+          <Route path="orders" element={<AdminOrderWorkspace />} />
+          <Route path="orders/:orderId" element={<AdminOrderWorkspace />} />
           <Route path="customers" element={<Customers />} />
           <Route path="customers/:customerId" element={<CustomerDetail />} />
           <Route path="analytics" element={<AnalyticsOverview />} />
@@ -151,6 +154,7 @@ function Dashboard() {
 }
 
 function Products() {
+  const confirm = useConfirm();
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [query, setQuery] = useState(new URLSearchParams(window.location.search).get("q") || "");
   const [debouncedQuery, setDebouncedQuery] = useState(query.trim());
@@ -235,8 +239,8 @@ function Products() {
                   </span></td>
                   <td><div className="admin-row-actions">
                     <Link className="admin-icon-button" to={`/admin/products/${product.id}/edit`} aria-label={`Edit ${product.name}`} title="Edit product"><Pencil size={17}/></Link>
-                    <button className="admin-danger-button" type="button" onClick={async () => {
-                      if (!window.confirm(`Archive ${product.name}?`)) return;
+                    <button className="admin-danger-button" type="button" disabled={!product.active} onClick={async () => {
+                      if (!await confirm({ title: "Archive product?", message: `${product.name} will be removed from the storefront. Existing orders are retained.`, confirmLabel: "Archive product" })) return;
                       try {
                         await archiveAdminProduct(product.id);
                         await refresh();
@@ -281,6 +285,7 @@ function ProductEditor() {
 }
 
 function Categories() {
+  const confirm = useConfirm();
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [editing, setEditing] = useState<AdminCategory | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -289,7 +294,7 @@ function Categories() {
   useEffect(() => { void refresh(); }, []);
   const openCreate = () => { setEditing(null); setForm({ name: "", description: "", sortOrder: "0" }); setShowForm(true); };
   const openEdit = (category: AdminCategory) => { setEditing(category); setForm({ name: category.name, description: category.description || "", sortOrder: String(category.sortOrder) }); setShowForm(true); };
-  return <div><PageHeader title="Categories" subtitle="Manage the storefront category structure stored in PostgreSQL." action={<button className="admin-primary-button" onClick={openCreate}><Plus size={18} /> Add Category</button>} />{showForm && <form className="admin-panel admin-form-card admin-category-form" onSubmit={async (event) => { event.preventDefault(); try { const input = { name: form.name.trim(), description: form.description.trim() || null, sortOrder: Number(form.sortOrder) || 0, active: true }; if (editing) await updateAdminCategory(editing.id, input); else await createAdminCategory(input); await refresh(); await useCatalogStore.getState().loadCatalog(true); setShowForm(false); toast.success(editing ? "Category updated." : "Category created."); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to save category."); } }}><h2>{editing ? "Edit Category" : "Add Category"}</h2><div className="admin-form-grid"><label>Name<input required minLength={2} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label><label>Sort Order<input type="number" min="0" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: e.target.value })} /></label><label className="wide">Description<textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></label></div><div className="admin-form-actions"><button className="admin-primary-button" type="submit">Save Category</button><button className="admin-outline-button" type="button" onClick={() => setShowForm(false)}>Cancel</button></div></form>}<section className="admin-panel admin-table-panel"><div className="admin-table-scroll"><table className="admin-table"><thead><tr><th>Category</th><th>Slug</th><th>Products</th><th>Status</th><th>Actions</th></tr></thead><tbody>{categories.map((category) => <tr key={category.id}><td><strong>{category.name}</strong><small className="admin-muted">{category.description || "No description"}</small></td><td>{category.slug}</td><td>{category._count?.products ?? "—"}</td><td><span className={`admin-status-pill ${category.active ? "green" : "red"}`}>{category.active ? "Active" : "Archived"}</span></td><td><div className="admin-row-actions"><button className="admin-icon-button" onClick={() => openEdit(category)}><Pencil size={17} /></button>{category.active && <button className="admin-danger-button" onClick={async () => { if (!window.confirm(`Archive ${category.name}?`)) return; try { await archiveAdminCategory(category.id); await refresh(); await useCatalogStore.getState().loadCatalog(true); toast.success("Category archived."); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to archive category."); } }}>Archive</button>}</div></td></tr>)}</tbody></table></div></section></div>;
+  return <div><PageHeader title="Categories" subtitle="Manage the storefront category structure stored in PostgreSQL." action={<button className="admin-primary-button" onClick={openCreate}><Plus size={18} /> Add Category</button>} />{showForm && <form className="admin-panel admin-form-card admin-category-form" onSubmit={async (event) => { event.preventDefault(); try { const input = { name: form.name.trim(), description: form.description.trim() || null, sortOrder: Number(form.sortOrder) || 0, active: true }; if (editing) await updateAdminCategory(editing.id, input); else await createAdminCategory(input); await refresh(); await useCatalogStore.getState().loadCatalog(true); setShowForm(false); toast.success(editing ? "Category updated." : "Category created."); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to save category."); } }}><h2>{editing ? "Edit Category" : "Add Category"}</h2><div className="admin-form-grid"><label>Name<input required minLength={2} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label><label>Sort Order<input type="number" min="0" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: e.target.value })} /></label><label className="wide">Description<textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></label></div><div className="admin-form-actions"><button className="admin-primary-button" type="submit">Save Category</button><button className="admin-outline-button" type="button" onClick={() => setShowForm(false)}>Cancel</button></div></form>}<section className="admin-panel admin-table-panel"><div className="admin-table-scroll"><table className="admin-table"><thead><tr><th>Category</th><th>Slug</th><th>Products</th><th>Status</th><th>Actions</th></tr></thead><tbody>{categories.map((category) => <tr key={category.id}><td><strong>{category.name}</strong><small className="admin-muted">{category.description || "No description"}</small></td><td>{category.slug}</td><td>{category._count?.products ?? "—"}</td><td><span className={`admin-status-pill ${category.active ? "green" : "red"}`}>{category.active ? "Active" : "Archived"}</span></td><td><div className="admin-row-actions"><button className="admin-icon-button" onClick={() => openEdit(category)}><Pencil size={17} /></button>{category.active && <button className="admin-danger-button" onClick={async () => { if (!await confirm({ title: "Archive category?", message: `${category.name} will no longer be available as an active category.`, confirmLabel: "Archive category" })) return; try { await archiveAdminCategory(category.id); await refresh(); await useCatalogStore.getState().loadCatalog(true); toast.success("Category archived."); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to archive category."); } }}>Archive</button>}</div></td></tr>)}</tbody></table></div></section></div>;
 }
 
 function PendingModule({ title, text }: { title: string; text: string }) {

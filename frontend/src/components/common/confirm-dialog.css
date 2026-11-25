@@ -1,0 +1,18 @@
+.jn-confirm-dialog{position:fixed;inset:0;margin:auto;padding:0;width:min(440px,calc(100% - 32px));max-height:calc(100% - 32px);border:1px solid #dce9df;border-radius:20px;background:#fff;color:#183d2d;box-shadow:0 28px 90px #142b2040;overflow:auto}
+.jn-confirm-dialog::backdrop{background:#10281f75;backdrop-filter:blur(4px)}
+.jn-confirm-dialog[open]{animation:jn-confirm-enter .22s cubic-bezier(.2,.8,.2,1)}
+.jn-confirm-content{position:relative;padding:30px;display:grid;gap:14px}
+.jn-confirm-symbol{display:grid;place-items:center;width:52px;height:52px;background:#eaf5ed;border:1px solid #d8ebdc;border-radius:15px;color:#28694b}
+.jn-confirm-content h2{margin:0;font-size:25px;line-height:1.2;color:#183d2d}
+.jn-confirm-content p{margin:0;color:#52675a;font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+.jn-confirm-close{position:absolute;top:18px;right:18px;border:0;background:transparent;color:#52675a;cursor:pointer;display:grid;place-items:center;width:36px;height:36px;border-radius:10px}
+.jn-confirm-close:hover{background:#edf5ef}
+.jn-confirm-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:12px;flex-wrap:wrap}
+.jn-confirm-actions button{border:1px solid #d6e5da;background:#fff;color:#28694b;font:inherit;font-size:14px;font-weight:600;padding:12px 18px;border-radius:10px;cursor:pointer;transition:background .2s,transform .2s}
+.jn-confirm-actions button:hover{background:#eff7f1}
+.jn-confirm-actions .jn-confirm-primary{background:#28694b;color:white;border-color:#28694b}
+.jn-confirm-actions .jn-confirm-primary:hover{background:#194d35}
+.jn-confirm-dialog button:focus-visible{outline:3px solid #83ba92;outline-offset:3px}
+@keyframes jn-confirm-enter{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:480px){.jn-confirm-content{padding:23px}.jn-confirm-actions button{flex:1}}
+@media(prefers-reduced-motion:reduce){.jn-confirm-dialog[open]{animation:none}.jn-confirm-actions button{transition:none}}
