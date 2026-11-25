@@ -23,6 +23,9 @@ backend/src/generated/prisma/
 frontend/.env
 backend/.env
 
+.env.*
+!.env.example
+
 # Keep example env files
 !.env.example
 !frontend/.env.example

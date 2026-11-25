@@ -7,8 +7,8 @@ const envSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     PORT: z.coerce.number().int().min(1).max(65535).default(4000),
-    FRONTEND_URL: z.string().url().default("http://localhost:5173"),
-    DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+    FRONTEND_URL: z.string().trim().url().transform((value) => value.replace(/\/+$/, "")).default("http://localhost:5173"),
+    DATABASE_URL: z.string().trim().min(1, "DATABASE_URL is required").refine((value) => /^postgres(?:ql)?:\/\//i.test(value), "Use a PostgreSQL connection URL."),
     CLERK_PUBLISHABLE_KEY: optionalSecret,
     CLERK_SECRET_KEY: optionalSecret,
     ADMIN_EMAIL: z.string().trim().toLowerCase().email().optional(),
@@ -34,6 +34,13 @@ const envSchema = z
     BREVO_REPLY_TO_EMAIL: z.string().trim().toLowerCase().email().optional(),
   })
   .superRefine((value, ctx) => {
+    const frontend = new URL(value.FRONTEND_URL);
+    if (frontend.origin !== value.FRONTEND_URL || (value.NODE_ENV === "production" && frontend.protocol !== "https:")) {
+      ctx.addIssue({ code: "custom", path: ["FRONTEND_URL"], message: "Use the exact frontend origin (HTTPS in production), without a path, query, or fragment." });
+    }
+    if (value.ADMIN_PASSWORD_HASH && !/^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(value.ADMIN_PASSWORD_HASH)) {
+      ctx.addIssue({ code: "custom", path: ["ADMIN_PASSWORD_HASH"], message: "Use a bcrypt password hash, never a plaintext password." });
+    }
     const hasPublishable = Boolean(value.CLERK_PUBLISHABLE_KEY);
     const hasSecret = Boolean(value.CLERK_SECRET_KEY);
     if (hasPublishable !== hasSecret) {
@@ -102,7 +109,15 @@ const envSchema = z
     }
   });
 
-const parsed = envSchema.safeParse(process.env);
+/** Empty example-file fields mean "not configured", not invalid credentials. */
+export function parseBackendEnv(input: Record<string, string | undefined>) {
+  const normalized = Object.fromEntries(
+    Object.entries(input).filter(([, value]) => value !== undefined && value.trim() !== ""),
+  );
+  return envSchema.safeParse(normalized);
+}
+
+const parsed = parseBackendEnv(process.env);
 
 if (!parsed.success) {
   console.error("Invalid backend environment configuration", parsed.error.flatten().fieldErrors);

@@ -83,7 +83,7 @@ DIRECT_URL=<Neon direct PostgreSQL URL>
 
 `DATABASE_URL` is used by the running API. `DIRECT_URL` is used by Prisma CLI/migrations when present.
 
-Optional integrations are documented in `backend/.env.example`. Do not paste secrets into source files or commit `.env` files.
+Optional integrations are documented in `backend/.env.example`. Empty optional values are treated as unconfigured. Prisma client generation and the backend compilation can run without a database URL; migrations, seeding and the running API require a real PostgreSQL connection. Do not paste secrets into source files or commit `.env` files.
 
 Frontend production (Vercel) requires:
 
