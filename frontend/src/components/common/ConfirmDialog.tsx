@@ -24,12 +24,12 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => {
     if (!request || !dialog.current) return;
-    dialog.current.showModal();
+    if (!dialog.current.open) dialog.current.showModal();
     dialog.current.querySelector<HTMLButtonElement>("[data-cancel]")?.focus();
   }, [request]);
   useEffect(() => () => { current.current?.resolve(false); current.current = null; }, []);
   return <Context.Provider value={ask}>{children}
-    <dialog ref={dialog} className="jn-confirm-dialog" aria-labelledby="jn-confirm-title" aria-describedby="jn-confirm-description" onCancel={event => { event.preventDefault(); finish(false); }} onClose={() => finish(false)} onClick={event => { if (event.target === event.currentTarget) finish(false); }}>
+    <dialog ref={dialog} className="jn-confirm-dialog" aria-labelledby="jn-confirm-title" aria-describedby="jn-confirm-description" onCancel={event => { event.preventDefault(); finish(false); }} onClick={event => { if (event.target === event.currentTarget) finish(false); }}>
       {request && <section className="jn-confirm-content">
         <button type="button" className="jn-confirm-close" aria-label="Close confirmation" onClick={() => finish(false)}><X size={20}/></button>
         <span className="jn-confirm-symbol"><AlertTriangle size={25} aria-hidden="true"/></span>

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { listPayments, paymentListQuery } from "../controllers/adminPaymentsController.js";
 import { customerListQuery, listCustomers, getCustomer } from "../controllers/adminCustomerController.js";
 import rateLimit from "express-rate-limit";
 import {
@@ -83,6 +84,7 @@ adminRouter.use(
 adminRouter.use(requireAdmin);
 
 adminRouter.get("/dashboard", adminDashboardController);
+adminRouter.get("/payments", validateQuery(paymentListQuery), listPayments);
 adminRouter.get("/customers", validateQuery(customerListQuery), listCustomers);
 adminRouter.get("/customers/:id", validateParams(adminIdParamsSchema), getCustomer);
 

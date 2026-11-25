@@ -284,15 +284,16 @@ export const archiveAdminCategory = (id: string) =>
     method: "DELETE",
   });
 
-export async function listAdminOrders(status: AdminOrderStatus | "ALL" = "ALL", q = "") {
-  const params = new URLSearchParams({ status, limit: "100" });
-  if (q.trim()) params.set("q", q.trim());
+export async function listAdminOrdersPage(status: AdminOrderStatus | "ALL" = "ALL", q = "", page = 1) {
+  const params = new URLSearchParams({ status, limit: "25", page: String(page) });
+  if (q.trim()) params.set("q", q.trim().slice(0,120));
   const data = await adminRequest<{
     items: AdminOrderListItem[];
     pagination: { page: number; limit: number; total: number; pages: number };
   }>(`/api/admin/orders?${params.toString()}`);
-  return data.items;
+  return data;
 }
+export async function listAdminOrders(status: AdminOrderStatus | "ALL" = "ALL", q = "") { return (await listAdminOrdersPage(status,q)).items; }
 
 export const getAdminOrder = (id: string) =>
   adminRequest<AdminOrder>(`/api/admin/orders/${encodeURIComponent(id)}`);
@@ -315,3 +316,7 @@ export type AdminCustomer = { id: string; firstName: string | null; lastName: st
 export type AdminCustomerDetail = AdminCustomer & { orders: Array<{ id: string; orderNumber: string; status: AdminOrderStatus; totalPaise: number; createdAt: string }> };
 export const listAdminCustomers = (q: string, page: number) => adminRequest<{ items: AdminCustomer[]; pagination: { page: number; limit: number; total: number; pages: number } }>("/api/admin/customers?" + new URLSearchParams({ q, page: String(page), limit: "20" }));
 export const getAdminCustomer = (id: string) => adminRequest<AdminCustomerDetail>("/api/admin/customers/" + encodeURIComponent(id));
+
+export type AdminPaymentRecord = { id: string; provider: string; status: string; amountPaise: number; refundedAmountPaise: number; currency: string; providerPaymentId: string | null; createdAt: string; order: { id: string; orderNumber: string } };
+export type AdminPaymentsPage = { items: AdminPaymentRecord[]; pagination: { page: number; pages: number; total: number; limit: number }; summary: { paidPaise: number; refundedPaise: number; pendingCount: number }; configuration: { provider: string; checkoutEnabled: boolean; paytmConfigured: boolean; razorpayConfigured: boolean } };
+export const listAdminPayments = (filters: { q: string; provider: string; status: string; page: number }) => adminRequest<AdminPaymentsPage>("/api/admin/payments?" + new URLSearchParams({ q: filters.q, provider: filters.provider, status: filters.status, page: String(filters.page) }));

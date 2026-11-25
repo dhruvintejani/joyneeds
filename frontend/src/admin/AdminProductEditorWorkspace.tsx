@@ -1,13 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
-  Boxes,
-  ClipboardList,
-  ExternalLink,
   ImagePlus,
-  LayoutDashboard,
-  Package,
   RefreshCw,
   Save,
   Trash2,

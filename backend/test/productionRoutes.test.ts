@@ -14,7 +14,7 @@ test("checkout capability reflects server settings and customer records require 
     const response = await fetch(base + "/api/health/features");
     assert.equal(response.status, 200);
     assert.deepEqual((await response.json() as { data: unknown }).data, { checkoutEnabled: orderCreationEnabled && configuredPaymentProvider, paymentProvider: env.PAYMENT_PROVIDER, shippingFeePaise: env.SHIPPING_FEE_PAISE });
-    for (const path of ["/api/admin/customers", "/api/admin/customers/example"]) {
+    for (const path of ["/api/admin/customers", "/api/admin/customers/example", "/api/admin/payments"]) {
       const denied = await fetch(base + path);
       assert.equal(denied.status, adminAuthConfigured ? 401 : 503);
     }

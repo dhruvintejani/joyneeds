@@ -1,12 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, NavLink, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
-  Boxes,
-  ClipboardList,
-  ExternalLink,
-  LayoutDashboard,
-  Package,
   Search,
   ShoppingBag,
 } from "lucide-react";
@@ -14,7 +9,7 @@ import toast from "react-hot-toast";
 import { useConfirm } from "../components/common/ConfirmDialog";
 import {
   getAdminOrder,
-  listAdminOrders,
+  listAdminOrdersPage,
   updateAdminOrder,
   type AdminOrder,
   type AdminOrderListItem,
@@ -28,7 +23,7 @@ const money = (paise: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(paise / 100);
 
 const nextStatuses: Record<AdminOrderStatus, AdminOrderStatus[]> = {
@@ -50,6 +45,10 @@ function OrdersList() {
   const [orders, setOrders] = useState<AdminOrderListItem[]>([]);
   const [status, setStatus] = useState<AdminOrderStatus | "ALL">("ALL");
   const [query, setQuery] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ total: 0, pages: 1 });
+  useEffect(() => { const timer = window.setTimeout(() => { setSearch(query.trim()); setPage(1); }, 300); return () => window.clearTimeout(timer); }, [query]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,9 +56,9 @@ function OrdersList() {
     let active = true;
     setLoading(true);
     setError(null);
-    void listAdminOrders(status, query)
+    void listAdminOrdersPage(status, search, page)
       .then((data) => {
-        if (active) setOrders(data);
+        if (active) { setOrders(data.items); setPagination(data.pagination); }
       })
       .catch((err: unknown) => {
         if (active) setError(err instanceof Error ? err.message : "Unable to load orders.");
@@ -68,10 +67,9 @@ function OrdersList() {
         if (active) setLoading(false);
       });
     return () => { active = false; };
-  }, [status, query]);
+  }, [status, search, page]);
 
   const counts = useMemo(() => ({
-    total: orders.length,
     pending: orders.filter((order) => order.status === "PENDING").length,
     processing: orders.filter((order) => ["CONFIRMED", "PROCESSING"].includes(order.status)).length,
     shipped: orders.filter((order) => order.status === "SHIPPED").length,
@@ -83,15 +81,15 @@ function OrdersList() {
         <div><p className="admin-eyebrow">Orders</p><h1>Orders</h1><p>Real orders and verified payment state. No sample orders are shown.</p></div>
       </div>
       <div className="admin-stats-grid">
-        <Stat label="Loaded Orders" value={counts.total} />
-        <Stat label="Pending" value={counts.pending} />
-        <Stat label="Confirmed / Processing" value={counts.processing} />
-        <Stat label="Shipped" value={counts.shipped} />
+        <Stat label="Matching Orders" value={pagination.total} />
+        <Stat label="Pending on this page" value={counts.pending} />
+        <Stat label="Confirmed / Processing on page" value={counts.processing} />
+        <Stat label="Shipped on this page" value={counts.shipped} />
       </div>
       <section className="admin-panel admin-table-panel">
         <div className="admin-filter-row">
           <label className="admin-search-field"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search order, customer or email..." /></label>
-          <select value={status} onChange={(event) => setStatus(event.target.value as AdminOrderStatus | "ALL")}>
+          <select value={status} onChange={(event) => { setStatus(event.target.value as AdminOrderStatus | "ALL"); setPage(1); }}>
             <option value="ALL">All Status</option>
             {Object.keys(nextStatuses).map((value) => <option key={value} value={value}>{value}</option>)}
           </select>
@@ -112,6 +110,7 @@ function OrdersList() {
             </tr>)}
           </tbody></table></div>
         )}
+        <div className="admin-table-footer jn-admin-page-controls"><span>{pagination.total} matching orders</span><div><button type="button" className="admin-outline-button" disabled={loading || page <= 1} onClick={() => setPage(n => n-1)}>Previous</button><span>Page {page} of {pagination.pages}</span><button type="button" className="admin-outline-button" disabled={loading || page >= pagination.pages} onClick={() => setPage(n => n+1)}>Next</button></div></div>
       </section>
     </div>
   );
