@@ -63,3 +63,5 @@ services:
         sync: false
       - key: PAYTM_CALLBACK_URL
         sync: false
+      - key: CONTACT_RECIPIENT_EMAIL
+        sync: false

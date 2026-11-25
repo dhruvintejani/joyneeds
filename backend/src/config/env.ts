@@ -28,6 +28,7 @@ const envSchema = z
     RAZORPAY_KEY_ID: optionalSecret,
     RAZORPAY_KEY_SECRET: optionalSecret,
     RAZORPAY_WEBHOOK_SECRET: optionalSecret,
+    CONTACT_RECIPIENT_EMAIL: z.string().trim().toLowerCase().email().optional(),
     BREVO_API_KEY: optionalSecret,
     BREVO_SENDER_EMAIL: z.string().trim().toLowerCase().email().optional(),
     BREVO_SENDER_NAME: z.string().trim().min(1).max(100).default("JoyNeeds"),

@@ -3,7 +3,7 @@
  * Deployment env: BACKEND_ORIGIN=https://<your-render-api-host>
  * Vercel rewrite: /api/:path* -> /api/proxy?path=:path*
  */
-const namespaces = new Set(["health","products","categories","orders","payments","account","admin"]);
+const namespaces = new Set(["health","products","categories","orders","payments","account","admin","contact"]);
 const methods = new Set(["GET","HEAD","POST","PUT","PATCH","DELETE","OPTIONS"]);
 const passHeaders = ["accept","authorization","content-type","cookie","origin","referer","idempotency-key"];
 const blockedResponseHeaders = new Set(["content-encoding","content-length","transfer-encoding","connection","access-control-allow-origin","access-control-allow-credentials","access-control-allow-headers","access-control-allow-methods"]);
