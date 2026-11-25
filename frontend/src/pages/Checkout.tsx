@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { Link } from "react-router-dom";
@@ -10,7 +10,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useCustomerAuth } from "../auth/CustomerAuthProvider";
-import { createOrder } from "../api/orders";
+import { createOrder, getCheckoutFeatures, type CheckoutFeatures } from "../api/orders";
 import {
   loadRazorpayCheckout,
   openRazorpayCheckout,
@@ -43,8 +43,17 @@ export default function Checkout() {
   const clearCart = useCartStore((state) => state.clearCart);
   const auth = useCustomerAuth();
   const catalogStatus = useCatalogStore((state) => state.status);
-  const canCheckout = site.checkoutEnabled && catalogStatus === "ready";
-  const paytmMode = import.meta.env.VITE_PAYMENT_PROVIDER !== "RAZORPAY";
+  const [features, setFeatures] = useState<CheckoutFeatures | null>(null);
+  const [featureError, setFeatureError] = useState("");
+  useEffect(() => {
+    if (!site.checkoutEnabled) return;
+    let active = true;
+    void getCheckoutFeatures().then(value => { if (active) { setFeatures(value); setFeatureError(""); } })
+      .catch(() => { if (active) setFeatureError("Secure checkout is temporarily unavailable. Please reload to try again."); });
+    return () => { active = false; };
+  }, []);
+  const canCheckout = site.checkoutEnabled && catalogStatus === "ready" && features?.checkoutEnabled === true;
+  const paytmMode = (features?.paymentProvider ?? import.meta.env.VITE_PAYMENT_PROVIDER) !== "RAZORPAY";
   const [paytmOrderNumber, setPaytmOrderNumber] = useState<string | null>(null);
   const [completed, setCompleted] = useState<{ orderNumber: string; fulfillmentReady: boolean } | null>(null);
 
@@ -110,6 +119,7 @@ export default function Checkout() {
         Payment is enabled only after the merchant has configured secure payment verification and activated order creation. Client-side prices never determine the amount charged.
       </p>
 
+      {featureError && <p role="alert" className="notice">{featureError}</p>}
       <div className="reference-checkout-layout">
         <Formik
           initialValues={{ fullName: "", email: auth.user?.email ?? "", phone: "", address: "", city: "", state: "", pin: "" }}
@@ -134,7 +144,8 @@ export default function Checkout() {
                 token,
               );
               if (!order.paymentReady) throw new Error("The payment provider is not ready for this order.");
-              if (paytmMode) {
+              if (order.paymentProvider !== features?.paymentProvider) throw new Error("Payment settings changed. Reload checkout before trying again.");
+              if (order.paymentProvider === "PAYTM") {
                 const paytm = await preparePaytmOrder(order.id, token);
                 setPaytmOrderNumber(paytm.orderNumber);
                 await openPaytmCheckout(paytm);

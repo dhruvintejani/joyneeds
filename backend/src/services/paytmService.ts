@@ -28,6 +28,8 @@ export async function createPaytmCheckout(orderId: string, clerkUserId: string |
     select: { id: true },
   });
   if (paid) throw new AppError(409, "ORDER_ALREADY_PAID", "This order is already paid.");
+  const otherPayment = await prisma.payment.findFirst({ where: { orderId, provider: { not: "PAYTM" }, status: { not: "FAILED" } }, select: { id: true } });
+  if (otherPayment) throw new AppError(409, "PAYMENT_PROVIDER_CONFLICT", "An existing payment must be resolved before using a different provider.");
   const existing = await prisma.payment.findUnique({ where: { providerOrderId: order.orderNumber } });
   if (existing && (existing.provider !== "PAYTM" || existing.orderId !== order.id || existing.amountPaise !== order.totalPaise)) {
     throw new AppError(409, "PAYMENT_ORDER_MISMATCH", "Payment record does not match the order.");

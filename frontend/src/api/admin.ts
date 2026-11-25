@@ -310,3 +310,8 @@ export const updateAdminOrder = (
     method: "PATCH",
     body: JSON.stringify(input),
   });
+
+export type AdminCustomer = { id: string; firstName: string | null; lastName: string | null; email: string | null; createdAt: string; _count: { orders: number } };
+export type AdminCustomerDetail = AdminCustomer & { orders: Array<{ id: string; orderNumber: string; status: AdminOrderStatus; totalPaise: number; createdAt: string }> };
+export const listAdminCustomers = (q: string, page: number) => adminRequest<{ items: AdminCustomer[]; pagination: { page: number; limit: number; total: number; pages: number } }>("/api/admin/customers?" + new URLSearchParams({ q, page: String(page), limit: "20" }));
+export const getAdminCustomer = (id: string) => adminRequest<AdminCustomerDetail>("/api/admin/customers/" + encodeURIComponent(id));

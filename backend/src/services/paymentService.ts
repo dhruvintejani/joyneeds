@@ -1,6 +1,6 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import type { Prisma } from "../generated/prisma/client.js";
-import { env, razorpayConfigured } from "../config/env.js";
+import { env, orderCreationEnabled, razorpayConfigured } from "../config/env.js";
 import { prisma } from "../config/prisma.js";
 import { AppError } from "../utils/AppError.js";
 import { logger } from "../utils/logger.js";
@@ -58,6 +58,9 @@ async function assertOrderAccess(orderId: string, clerkUserId: string | null) {
 
 export async function createRazorpayOrder(body: CreateRazorpayOrderBody, clerkUserId: string | null) {
   ensureRazorpay();
+  if (!orderCreationEnabled || env.PAYMENT_PROVIDER !== "RAZORPAY") {
+    throw new AppError(503, "RAZORPAY_DISABLED", "New Razorpay payments are not enabled.");
+  }
   const order = await assertOrderAccess(body.orderId, clerkUserId);
   if (order.status !== "PENDING") {
     throw new AppError(409, "ORDER_NOT_PAYABLE", "Only pending orders can start payment.");
@@ -66,6 +69,8 @@ export async function createRazorpayOrder(body: CreateRazorpayOrderBody, clerkUs
     throw new AppError(409, "ORDER_PAYMENT_INVALID", "This order cannot be paid through Razorpay.");
   }
 
+  const otherPayment = await prisma.payment.findFirst({ where: { orderId: order.id, provider: { not: "RAZORPAY" }, status: { not: "FAILED" } }, select: { id: true } });
+  if (otherPayment) throw new AppError(409, "PAYMENT_PROVIDER_CONFLICT", "An existing payment must be resolved before using a different provider.");
   const existing = await prisma.payment.findFirst({
     where: { orderId: order.id, provider: "RAZORPAY", providerOrderId: { not: null } },
     orderBy: { createdAt: "desc" },

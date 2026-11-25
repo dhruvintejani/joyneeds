@@ -52,6 +52,7 @@ export type CreatedOrder = CustomerOrder & {
   shippingPaise: number;
   discountPaise: number;
   paymentReady: boolean;
+  paymentProvider: "PAYTM" | "RAZORPAY";
   inventoryReserved: boolean;
   note: string;
 };
@@ -105,3 +106,6 @@ export const syncCustomerCart = (
     { method: "PUT", body: JSON.stringify({ items }) },
     token,
   );
+
+export type CheckoutFeatures = { checkoutEnabled: boolean; paymentProvider: "PAYTM" | "RAZORPAY" };
+export const getCheckoutFeatures = () => request<CheckoutFeatures>("/api/health/features");

@@ -42,6 +42,10 @@ import {
   createAdminProduct,
   getAdminDashboard,
   listAdminCategories,
+  listAdminCustomers,
+  getAdminCustomer,
+  type AdminCustomer,
+  type AdminCustomerDetail,
   listAdminProducts,
   listAdminProductsPage,
   logoutAdmin,
@@ -86,8 +90,8 @@ export default function AdminPhase5Router() {
           <Route path="categories" element={<Categories />} />
           <Route path="orders" element={<PendingModule title="Orders" text="Order management is served by the dedicated secure order workspace." />} />
           <Route path="orders/:orderId" element={<PendingModule title="Order Details" text="Order details are served by the dedicated secure order workspace." />} />
-          <Route path="customers" element={<PendingModule title="Customers" text="A standalone customer-management API is not enabled. Customer counts and account/order data come from real synced records only." />} />
-          <Route path="customers/:customerId" element={<PendingModule title="Customer Details" text="Standalone customer administration is not enabled; no sample customer profile is shown." />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="customers/:customerId" element={<CustomerDetail />} />
           <Route path="analytics" element={<AnalyticsOverview />} />
           <Route path="coupons" element={<PendingModule title="Coupons" text="Promotion and coupon rules are not enabled, so no fake coupon data is shown." />} />
           <Route path="content" element={<PendingModule title="Content" text="Store content persistence is not enabled; storefront content remains code-managed." />} />
@@ -401,5 +405,58 @@ function SettingsPage() {
       </div>
       <Link className="admin-outline-button" to="/admin/help"><CircleHelp size={16}/> View setup checklist</Link>
     </section>
+  </div>;
+}
+
+function customerName(customer: AdminCustomer) {
+  return [customer.firstName, customer.lastName].filter(Boolean).join(" ") || "Customer";
+}
+function Customers() {
+  const [q, setQ] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [items, setItems] = useState<AdminCustomer[]>([]);
+  const [pages, setPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    setLoading(true); setError("");
+    void listAdminCustomers(search, page).then(result => {
+      if (!active) return;
+      setItems(result.items); setPages(result.pagination.pages); setTotal(result.pagination.total);
+    }).catch(cause => { if (active) setError(cause instanceof Error ? cause.message : "Unable to load customers."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [search, page]);
+  return <div><PageHeader title="Customers" subtitle="Real registered customer accounts and their order history."/>
+    <section className="admin-panel admin-table-panel">
+      <form className="admin-filter-row" onSubmit={event => { event.preventDefault(); setSearch(q.trim()); setPage(1); }}>
+        <label className="admin-search-field"><Search size={18}/><input aria-label="Search customers" placeholder="Search by name or email" maxLength={100} value={q} onChange={event => setQ(event.target.value)}/></label>
+        <button className="admin-primary-button" type="submit">Search</button>
+      </form>
+      {error && <div role="alert" className="admin-auth-error">{error}</div>}
+      <div className="admin-table-scroll"><table className="admin-table"><thead><tr><th>Customer</th><th>Email</th><th>Orders</th><th>Joined</th><th>Details</th></tr></thead><tbody>
+      {loading ? <tr><td colSpan={5}>Loading customers…</td></tr> : error ? null : items.length ? items.map(customer => <tr key={customer.id}><td><strong>{customerName(customer)}</strong></td><td>{customer.email || "—"}</td><td>{customer._count.orders}</td><td>{new Date(customer.createdAt).toLocaleDateString("en-IN")}</td><td><Link className="admin-outline-button" to={"/admin/customers/" + customer.id}>View</Link></td></tr>) : <tr><td colSpan={5}>No registered customers found.</td></tr>}
+      </tbody></table></div>
+      <div className="admin-table-footer jn-admin-page-controls"><span>{total} accounts</span><div><button type="button" className="admin-outline-button" disabled={loading || page <= 1} onClick={() => setPage(n => n-1)}>Previous</button><span>Page {page} of {pages}</span><button type="button" className="admin-outline-button" disabled={loading || page >= pages} onClick={() => setPage(n => n+1)}>Next</button></div></div>
+    </section></div>;
+}
+function CustomerDetail() {
+  const { customerId } = useParams();
+  const [customer, setCustomer] = useState<AdminCustomerDetail | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    if (!customerId) return;
+    let active = true; setCustomer(null); setError("");
+    void getAdminCustomer(customerId).then(data => { if (active) setCustomer(data); }).catch(cause => { if (active) setError(cause instanceof Error ? cause.message : "Unable to load customer."); });
+    return () => { active = false; };
+  }, [customerId]);
+  return <div><PageHeader title="Customer details" action={<Link className="admin-outline-button" to="/admin/customers"><ArrowLeft size={17}/> All customers</Link>}/>
+    {error ? <p role="alert" className="admin-auth-error">{error}</p> : !customer ? <p>Loading customer…</p> : <>
+      <section className="admin-panel"><h2>{customerName(customer)}</h2><p>{customer.email || "Email unavailable"}</p><p>Joined {new Date(customer.createdAt).toLocaleDateString("en-IN")} · {customer._count.orders} orders</p></section>
+      <section className="admin-panel admin-table-panel"><div className="admin-panel-heading"><h2>Recent orders</h2><span>Up to 50 latest orders</span></div><div className="admin-table-scroll"><table className="admin-table"><thead><tr><th>Order</th><th>Date</th><th>Status</th><th>Total</th></tr></thead><tbody>{customer.orders.map(order => <tr key={order.id}><td><Link to={"/admin/orders/" + order.id}>{order.orderNumber}</Link></td><td>{new Date(order.createdAt).toLocaleDateString("en-IN")}</td><td>{order.status.replaceAll("_", " ")}</td><td>{moneyPaise(order.totalPaise)}</td></tr>)}{!customer.orders.length && <tr><td colSpan={4}>No linked orders yet.</td></tr>}</tbody></table></div></section>
+    </>}
   </div>;
 }

@@ -22,5 +22,6 @@ test("frontend origin is normalized and production rejects insecure origins", ()
   assert.equal(result.success && result.data.FRONTEND_URL, "https://example.com");
   assert.equal(parseBackendEnv({ ...minimal, NODE_ENV: "production", FRONTEND_URL: "http://example.com" }).success, false);
   assert.equal(parseBackendEnv({ ...minimal, FRONTEND_URL: "https://example.com/path" }).success, false);
+  assert.equal(parseBackendEnv({ ...minimal, FRONTEND_URL: "not-a-url" }).success, false);
   assert.equal(parseBackendEnv({ DATABASE_URL: "" }).success, false);
 });

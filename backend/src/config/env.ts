@@ -34,8 +34,8 @@ const envSchema = z
     BREVO_REPLY_TO_EMAIL: z.string().trim().toLowerCase().email().optional(),
   })
   .superRefine((value, ctx) => {
-    const frontend = new URL(value.FRONTEND_URL);
-    if (frontend.origin !== value.FRONTEND_URL || (value.NODE_ENV === "production" && frontend.protocol !== "https:")) {
+    const frontend = URL.canParse(value.FRONTEND_URL) ? new URL(value.FRONTEND_URL) : null;
+    if (!frontend || !["http:", "https:"].includes(frontend.protocol) || frontend.origin !== value.FRONTEND_URL || (value.NODE_ENV === "production" && frontend.protocol !== "https:")) {
       ctx.addIssue({ code: "custom", path: ["FRONTEND_URL"], message: "Use the exact frontend origin (HTTPS in production), without a path, query, or fragment." });
     }
     if (value.ADMIN_PASSWORD_HASH && !/^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(value.ADMIN_PASSWORD_HASH)) {

@@ -30,4 +30,4 @@ Leave both checkout flags false while deploying. Use a **separate staging databa
 
 ## Known scope limits
 
-Existing customer administration, coupons and content admin pages are placeholders, not finished integrations. The contact form opens an email draft. Paytm refunds are not implemented as a provider API workflow. These require additional application development, not just credentials. Do not label them production-ready until implemented and tested. See DEPLOYMENT.md and AUTH_SETUP.md for provider-specific details.
+Customer administration now lists real synced accounts and their recent orders. Coupons and content admin pages remain placeholders, not finished integrations. The contact form opens an email draft. Paytm refunds are not implemented as a provider API workflow. These require additional application development, not just credentials. Do not label them production-ready until implemented and tested. See DEPLOYMENT.md and AUTH_SETUP.md for provider-specific details.

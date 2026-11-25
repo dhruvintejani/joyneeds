@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { customerListQuery, listCustomers, getCustomer } from "../controllers/adminCustomerController.js";
 import rateLimit from "express-rate-limit";
 import {
   adminArchiveCategoryController,
@@ -82,6 +83,8 @@ adminRouter.use(
 adminRouter.use(requireAdmin);
 
 adminRouter.get("/dashboard", adminDashboardController);
+adminRouter.get("/customers", validateQuery(customerListQuery), listCustomers);
+adminRouter.get("/customers/:id", validateParams(adminIdParamsSchema), getCustomer);
 
 adminRouter.get("/orders", validateQuery(adminOrderListQuerySchema), adminListOrdersController);
 adminRouter.get(
