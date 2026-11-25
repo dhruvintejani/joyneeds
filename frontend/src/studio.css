@@ -1322,14 +1322,21 @@ input,textarea,select{color:var(--jn-ink)}
   .jn-auth-inline-note{font-size:10px;line-height:1.7;padding:0 2px}
 }
 
-/* Category photo motion: preserve the original reference card lift, ring and arrow. */
+/* Category photographs: transform a dedicated image layer, not the copy or overlay. */
 .jn-category-tile{background-image:none}
-.jn-category-tile:before{background-image:linear-gradient(180deg,#14283a33 0%,#13283a88 59%,#102536ea 100%),var(--jn-category-photo,none);background-size:cover;background-position:center;transition:transform .7s var(--jn-ease);transform:scale(1.001)}
+.jn-category-photo{position:absolute;inset:0;z-index:0;pointer-events:none;background-image:var(--jn-category-photo,none),url("/reference/reference-home.webp");background-size:cover;background-position:center;background-repeat:no-repeat;transform:scale(1.01);transition:transform .65s cubic-bezier(.22,1,.36,1),filter .45s ease;filter:brightness(.96) saturate(.97)}
+.jn-category-tile:before{z-index:1;pointer-events:none;background:linear-gradient(180deg,#14283a33 0%,#13283a88 59%,#102536ea 100%);transition:opacity .45s ease}
+.jn-category-tile:after{z-index:2}
+.jn-category-index,.jn-category-bottom,.jn-category-art{z-index:3}
 .jn-category-tile:focus-visible{outline:3px solid #4c8b62;outline-offset:4px}
 .jn-category-bottom strong{white-space:normal;overflow-wrap:normal}
 .jn-category-art{transition:transform .5s var(--jn-ease),color .5s var(--jn-ease)}
-@media(hover:hover) and (pointer:fine){.jn-category-tile:hover:before{transform:scale(1.09)}.jn-category-tile:hover .jn-category-art{transform:translateY(-4px) scale(1.06);color:#fff}}
-.jn-category-tile:focus-visible:before{transform:scale(1.06)}
-@media(prefers-reduced-motion:reduce){.jn-category-tile,.jn-category-tile:before,.jn-category-tile:after,.jn-category-art,.jn-category-bottom>svg{transition:none!important;transform:none!important}}
+.jn-category-art svg{transform:rotate(-7deg);transition:transform .55s var(--jn-ease)}
+.jn-category-tile:hover .jn-category-photo,.jn-category-tile:focus-visible .jn-category-photo{transform:scale(1.16);filter:brightness(1.10) saturate(1.08)}
+.jn-category-tile:hover:before,.jn-category-tile:focus-visible:before{opacity:.83}
+.jn-category-tile:hover .jn-category-art,.jn-category-tile:focus-visible .jn-category-art{color:#fff}
+.jn-category-tile:hover .jn-category-art svg,.jn-category-tile:focus-visible .jn-category-art svg{transform:rotate(0) scale(1.13)}
+.jn-category-tile:active .jn-category-photo{transform:scale(1.10)}
+@media(prefers-reduced-motion:reduce){.jn-category-tile,.jn-category-photo,.jn-category-tile:before,.jn-category-tile:after,.jn-category-art,.jn-category-art svg,.jn-category-bottom>svg{transition:none!important;transform:none!important}.jn-category-photo{filter:none!important}}
 
 .jn-store-announcement{padding:11px 24px;background:#e7f0e8;color:#214d37;text-align:center;font-size:13px;font-weight:600;overflow-wrap:anywhere}.jn-coupon-box{display:grid;gap:9px;margin:18px 0;font-size:13px}.jn-coupon-box label{font-weight:700}.jn-coupon-row{display:flex;gap:8px;align-items:center}.jn-coupon-row input{min-width:0;flex:1;border:1px solid #d6e5da;padding:12px;border-radius:9px;background:#fff;font:inherit}.jn-coupon-row .button{flex-shrink:0}.jn-coupon-applied{color:#28694b;font-weight:600}.jn-coupon-applied button{background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit}

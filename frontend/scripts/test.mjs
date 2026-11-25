@@ -129,7 +129,10 @@ try {
     const source = readFileSync(new URL('../src/' + file, import.meta.url), 'utf8');
     assert.ok(source.includes('useConfirm') && !source.includes('window.confirm('), 'Missing shared confirmation in ' + file);
   }
-  assert.ok(style.includes('--jn-category-photo') && style.includes('.jn-category-tile:hover:before{transform:scale(1.09)}'), 'Category photo hover effect must be preserved.');
+  const home = readFileSync(new URL('../src/pages/Home.tsx', import.meta.url), 'utf8');
+  assert.ok(home.includes('className="jn-category-photo"') && style.includes('--jn-category-photo'), 'Category cards must have an independent photo layer.');
+  assert.match(style, /\.jn-category-tile:hover \.jn-category-photo[^{}]*\{transform:scale\(1\.16\)/);
+  assert.match(style, /\.jn-category-tile:focus-visible \.jn-category-photo/);
   assert.match(appRoutes, /<Route path="\*" element={<NotFound \/>} \/>/);
   assert.match(adminRoutes, /<Route path="\*" element={<AdminNotFound \/>} \/>/);
   assert.ok(authPage.includes('SignIn') && authPage.includes('SignUp'));
