@@ -10,7 +10,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useCustomerAuth } from "../auth/CustomerAuthProvider";
-import { createOrder, getCheckoutFeatures, type CheckoutFeatures } from "../api/orders";
+import { createOrder, getCheckoutFeatures, quoteOrder, type OrderQuote, type CheckoutFeatures } from "../api/orders";
 import {
   loadRazorpayCheckout,
   openRazorpayCheckout,
@@ -45,6 +45,13 @@ export default function Checkout() {
   const catalogStatus = useCatalogStore((state) => state.status);
   const [features, setFeatures] = useState<CheckoutFeatures | null>(null);
   const [featureError, setFeatureError] = useState("");
+  const [couponDraft,setCouponDraft]=useState("");
+  const [couponBusy,setCouponBusy]=useState(false);
+  const [couponError,setCouponError]=useState("");
+  const [applied,setApplied]=useState<{quote:OrderQuote;cartKey:string}|null>(null);
+  const cartKey=JSON.stringify(items.map(({product,quantity})=>[product.id,quantity,product.price]));
+  const activeQuote=applied?.cartKey===cartKey?applied.quote:null;
+  const applyCoupon=async()=>{const code=couponDraft.trim().toUpperCase();if(!/^[A-Z0-9][A-Z0-9_-]{2,29}$/.test(code)){setCouponError("Enter a valid coupon code.");return;}setCouponBusy(true);setCouponError("");setApplied(null);try{const quote=await quoteOrder(items.map(({product,quantity})=>({productId:product.id,quantity})),code);setApplied({quote,cartKey});}catch(error){setCouponError(error instanceof Error?error.message:"Unable to apply coupon.");}finally{setCouponBusy(false);}};
   useEffect(() => {
     if (!site.checkoutEnabled) return;
     let active = true;
@@ -53,7 +60,9 @@ export default function Checkout() {
     return () => { active = false; };
   }, []);
   const canCheckout = site.checkoutEnabled && catalogStatus === "ready" && features?.checkoutEnabled === true;
-  const shippingFee = features ? features.shippingFeePaise / 100 : site.shippingFee;
+  const shippingFee = activeQuote ? activeQuote.shippingPaise / 100 : features ? features.shippingFeePaise / 100 : site.shippingFee;
+  const shownSubtotal=activeQuote?activeQuote.subtotalPaise/100:total;
+  const shownTotal=activeQuote?activeQuote.totalPaise/100:total+(shippingFee??0);
   const paytmMode = (features?.paymentProvider ?? import.meta.env.VITE_PAYMENT_PROVIDER) !== "RAZORPAY";
   const [paytmOrderNumber, setPaytmOrderNumber] = useState<string | null>(null);
   const [completed, setCompleted] = useState<{ orderNumber: string; fulfillmentReady: boolean } | null>(null);
@@ -128,6 +137,7 @@ export default function Checkout() {
           enableReinitialize={false}
           onSubmit={async (values, { setStatus, setSubmitting }) => {
             setStatus(undefined);
+            if (couponBusy) { setStatus("Please wait for coupon validation."); setSubmitting(false); return; }
             if (!canCheckout) { setStatus("Online payments are not available yet."); setSubmitting(false); return; }
             try {
               const token = auth.isSignedIn ? await auth.getToken() : null;
@@ -140,12 +150,14 @@ export default function Checkout() {
                   city: values.city.trim(),
                   state: values.state.trim(),
                   postalCode: values.pin,
+                  ...(activeQuote?.couponCode?{couponCode:activeQuote.couponCode}:{}),
+                  expectedTotalPaise:Math.round(shownTotal*100),
                   items: items.map(({ product, quantity }) => ({ productId: product.id, quantity })),
                 },
                 token,
               );
               if (!order.paymentReady) throw new Error("The payment provider is not ready for this order.");
-              if (order.totalPaise !== Math.round(total * 100) + (features?.shippingFeePaise ?? 0)) throw new Error("Your total changed. Reload your cart and review the current prices before paying.");
+              if (order.totalPaise !== Math.round(shownTotal * 100)) throw new Error("Your total changed. Reload your cart and review the current prices before paying.");
               if (order.paymentProvider !== features?.paymentProvider) throw new Error("Payment settings changed. Reload checkout before trying again.");
               if (order.paymentProvider === "PAYTM") {
                 const paytm = await preparePaytmOrder(order.id, token);
@@ -234,7 +246,7 @@ export default function Checkout() {
                     <p>The backend calculates the payment amount and verifies the provider transaction before confirming your order.</p>
                   </div>
                 </div>
-                <Button className="full-width" type="submit" disabled={isSubmitting || !canCheckout}>
+                <Button className="full-width" type="submit" disabled={isSubmitting || couponBusy || !canCheckout}>
                   {!canCheckout ? "Online payments not available" : isSubmitting ? "Preparing secure payment…" : "Pay securely"}
                   <CreditCard size={17} />
                 </Button>
@@ -258,11 +270,13 @@ export default function Checkout() {
               ))}
             </div>
             <dl>
-              <div><dt>Subtotal</dt><dd>{money(total)}</dd></div>
+              <div><dt>Subtotal</dt><dd>{money(shownSubtotal)}</dd></div>
               <div><dt>Shipping</dt><dd>{shippingFee === null ? "Calculated by server" : money(shippingFee)}</dd></div>
-              <div className="reference-summary-total"><dt>Estimated Total</dt><dd>{money(total + (shippingFee ?? 0))}</dd></div>
+              {activeQuote && <div><dt>Coupon discount</dt><dd>− {money(activeQuote.discountPaise/100)}</dd></div>}
+              <div className="reference-summary-total"><dt>Estimated Total</dt><dd>{money(shownTotal)}</dd></div>
             </dl>
-            <p className="muted small">The Razorpay amount comes from the backend order record, not this displayed estimate.</p>
+            {features?.couponsEnabled && <div className="jn-coupon-box"><label htmlFor="checkout-coupon">Have a coupon?</label><div className="jn-coupon-row"><input id="checkout-coupon" maxLength={30} value={couponDraft} onChange={event=>setCouponDraft(event.target.value.toUpperCase())} placeholder="Coupon code" disabled={couponBusy}/><button type="button" className="button secondary" disabled={couponBusy} onClick={()=>void applyCoupon()}>{couponBusy?"Checking…":"Apply"}</button></div>{activeQuote && <p className="jn-coupon-applied" role="status">{activeQuote.couponCode} applied. <button type="button" onClick={()=>{setApplied(null);setCouponDraft("");setCouponError("");}}>Remove</button></p>}{couponError && <p className="field-error" role="alert">{couponError}</p>}{applied&&!activeQuote&&<p role="status">Your cart changed. Apply the coupon again.</p>}</div>}
+            <p className="muted small">The payment amount comes from the validated backend order record.</p>
           </section>
 
           <section className="reference-checkout-side-note">

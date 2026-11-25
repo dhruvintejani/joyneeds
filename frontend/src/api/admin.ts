@@ -133,6 +133,7 @@ export type AdminOrder = AdminOrderListItem & {
   subtotalPaise: number;
   shippingPaise: number;
   discountPaise: number;
+  couponCode?: string | null;
   courier: string | null;
   trackingNumber: string | null;
   trackingUrl: string | null;
@@ -320,3 +321,12 @@ export const getAdminCustomer = (id: string) => adminRequest<AdminCustomerDetail
 export type AdminPaymentRecord = { id: string; provider: string; status: string; amountPaise: number; refundedAmountPaise: number; currency: string; providerPaymentId: string | null; createdAt: string; order: { id: string; orderNumber: string } };
 export type AdminPaymentsPage = { items: AdminPaymentRecord[]; pagination: { page: number; pages: number; total: number; limit: number }; summary: { paidPaise: number; refundedPaise: number; pendingCount: number }; configuration: { provider: string; checkoutEnabled: boolean; paytmConfigured: boolean; razorpayConfigured: boolean } };
 export const listAdminPayments = (filters: { q: string; provider: string; status: string; page: number }) => adminRequest<AdminPaymentsPage>("/api/admin/payments?" + new URLSearchParams({ q: filters.q, provider: filters.provider, status: filters.status, page: String(filters.page) }));
+
+export type AdminCoupon={id:string;code:string;percentOff:number;minSubtotalPaise:number;active:boolean;expiresAt:string|null;createdAt:string;updatedAt:string};
+export type CouponInput=Pick<AdminCoupon,"code"|"percentOff"|"minSubtotalPaise"|"active"|"expiresAt">;
+export const listAdminCoupons=(q:string,page:number)=>adminRequest<{items:AdminCoupon[];total:number;pages:number;page:number}>("/api/admin/coupons?"+new URLSearchParams({q,page:String(page)}));
+export const saveAdminCoupon=(value:CouponInput,id?:string)=>adminRequest<AdminCoupon>(id?"/api/admin/coupons/"+encodeURIComponent(id):"/api/admin/coupons",{method:id?"PATCH":"POST",body:JSON.stringify(value)});
+export const archiveAdminCoupon=(id:string)=>adminRequest<AdminCoupon>("/api/admin/coupons/"+encodeURIComponent(id),{method:"DELETE"});
+export type StoreContent={heroEyebrow:string;heroTitle:string;heroAccent:string;heroDescription:string;announcement:string|null};
+export const getAdminContent=()=>adminRequest<StoreContent>("/api/admin/content");
+export const saveAdminContent=(value:StoreContent)=>adminRequest<StoreContent>("/api/admin/content",{method:"PUT",body:JSON.stringify(value)});

@@ -1331,3 +1331,5 @@ input,textarea,select{color:var(--jn-ink)}
 @media(hover:hover) and (pointer:fine){.jn-category-tile:hover:before{transform:scale(1.09)}.jn-category-tile:hover .jn-category-art{transform:translateY(-4px) scale(1.06);color:#fff}}
 .jn-category-tile:focus-visible:before{transform:scale(1.06)}
 @media(prefers-reduced-motion:reduce){.jn-category-tile,.jn-category-tile:before,.jn-category-tile:after,.jn-category-art,.jn-category-bottom>svg{transition:none!important;transform:none!important}}
+
+.jn-store-announcement{padding:11px 24px;background:#e7f0e8;color:#214d37;text-align:center;font-size:13px;font-weight:600;overflow-wrap:anywhere}.jn-coupon-box{display:grid;gap:9px;margin:18px 0;font-size:13px}.jn-coupon-box label{font-weight:700}.jn-coupon-row{display:flex;gap:8px;align-items:center}.jn-coupon-row input{min-width:0;flex:1;border:1px solid #d6e5da;padding:12px;border-radius:9px;background:#fff;font:inherit}.jn-coupon-row .button{flex-shrink:0}.jn-coupon-applied{color:#28694b;font-weight:600}.jn-coupon-applied button{background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit}

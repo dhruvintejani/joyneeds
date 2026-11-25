@@ -30,7 +30,7 @@ Leave both checkout flags false while deploying. Use a **separate staging databa
 
 ## Known scope limits
 
-Customer administration now lists real synced accounts and their recent orders. Coupons and content admin pages remain placeholders, not finished integrations. The contact form sends directly to a fixed support inbox when Brevo and CONTACT_RECIPIENT_EMAIL are configured; otherwise it opens an email draft. Paytm refunds are not implemented as a provider API workflow. These require additional application development, not just credentials. Do not label them production-ready until implemented and tested. See DEPLOYMENT.md and AUTH_SETUP.md for provider-specific details.
+Customer administration now lists real synced accounts and their recent orders. Coupons support reusable percentage discounts (no stacking or usage limits), optional expiration, minimum order value and archival. Content management supports editable homepage copy and an optional announcement. Apply the new database migration before deploying this backend. The contact form sends directly to a fixed support inbox when Brevo and CONTACT_RECIPIENT_EMAIL are configured; otherwise it opens an email draft. Paytm refunds are not implemented as a provider API workflow. These require additional application development, not just credentials. Do not label them production-ready until implemented and tested. See DEPLOYMENT.md and AUTH_SETUP.md for provider-specific details.
 
 For direct contact submissions, set CONTACT_RECIPIENT_EMAIL on Render to the approved support inbox and configure Brevo. Test receipt using a real message. The form has bounded input, a fixed server-side recipient, origin checks and rate limiting.
 

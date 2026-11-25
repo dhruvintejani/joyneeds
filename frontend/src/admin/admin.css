@@ -373,3 +373,5 @@
  .admin-topbar{padding:0 14px}
  .admin-content{width:calc(100% - 28px)}
 }
+
+.jn-content-preview{align-self:start;display:grid;gap:16px}.jn-content-preview>div{padding:24px;background:#f7f5ef;border-radius:16px;overflow-wrap:anywhere}.jn-content-preview h3{font-size:32px;line-height:1.1;margin:12px 0}.jn-content-preview h3 em{color:#28694b}.jn-content-announcement{padding:10px;border-radius:9px;color:#28694b;background:#eaf5ed;text-align:center}

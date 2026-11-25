@@ -44,6 +44,8 @@ export type CreateOrderInput = {
   city: string;
   state: string;
   postalCode: string;
+  couponCode?: string;
+  expectedTotalPaise?: number;
   items: Array<{ productId: string; quantity: number }>;
 };
 
@@ -107,5 +109,8 @@ export const syncCustomerCart = (
     token,
   );
 
-export type CheckoutFeatures = { checkoutEnabled: boolean; paymentProvider: "PAYTM" | "RAZORPAY"; shippingFeePaise: number };
+export type CheckoutFeatures = { checkoutEnabled: boolean; paymentProvider: "PAYTM" | "RAZORPAY"; shippingFeePaise: number; couponsEnabled?: boolean };
 export const getCheckoutFeatures = () => request<CheckoutFeatures>("/api/health/features");
+
+export type OrderQuote = {subtotalPaise:number;shippingPaise:number;discountPaise:number;totalPaise:number;couponCode:string|null};
+export const quoteOrder = (items:CreateOrderInput["items"],couponCode:string) => request<OrderQuote>("/api/orders/quote",{method:"POST",body:JSON.stringify({items,couponCode})});

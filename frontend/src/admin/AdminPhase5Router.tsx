@@ -21,7 +21,6 @@ import {
   FileText,
   CircleHelp,
   ArrowRight,
-  LockKeyhole,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -37,6 +36,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useConfirm } from "../components/common/ConfirmDialog";
+import { AdminCouponsWorkspace, AdminContentWorkspace } from "./AdminStoreWorkspace";
 import AdminPaymentsWorkspace from "./AdminPaymentsWorkspace";
 import AdminOrderWorkspace from "./AdminOrderWorkspace";
 import AdminProductEditorWorkspace from "./AdminProductEditorWorkspace";
@@ -97,8 +97,8 @@ export default function AdminPhase5Router() {
           <Route path="customers" element={<Customers />} />
           <Route path="customers/:customerId" element={<CustomerDetail />} />
           <Route path="analytics" element={<AnalyticsOverview />} />
-          <Route path="coupons" element={<PendingModule title="Coupons" text="Promotion and coupon rules are not enabled, so no fake coupon data is shown." />} />
-          <Route path="content" element={<PendingModule title="Content" text="Store content persistence is not enabled; storefront content remains code-managed." />} />
+          <Route path="coupons" element={<AdminCouponsWorkspace />} />
+          <Route path="content" element={<AdminContentWorkspace />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="help" element={<AdminHelp />} />
           <Route path="*" element={<AdminNotFound />} />
@@ -281,39 +281,6 @@ function Categories() {
   const openCreate = () => { setEditing(null); setForm({ name: "", description: "", sortOrder: "0" }); setShowForm(true); };
   const openEdit = (category: AdminCategory) => { setEditing(category); setForm({ name: category.name, description: category.description || "", sortOrder: String(category.sortOrder) }); setShowForm(true); };
   return <div><PageHeader title="Categories" subtitle="Manage the storefront category structure stored in PostgreSQL." action={<button className="admin-primary-button" onClick={openCreate}><Plus size={18} /> Add Category</button>} />{showForm && <form className="admin-panel admin-form-card admin-category-form" onSubmit={async (event) => { event.preventDefault(); try { const input = { name: form.name.trim(), description: form.description.trim() || null, sortOrder: Number(form.sortOrder) || 0, active: true }; if (editing) await updateAdminCategory(editing.id, input); else await createAdminCategory(input); await refresh(); await useCatalogStore.getState().loadCatalog(true); setShowForm(false); toast.success(editing ? "Category updated." : "Category created."); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to save category."); } }}><h2>{editing ? "Edit Category" : "Add Category"}</h2><div className="admin-form-grid"><label>Name<input required minLength={2} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label><label>Sort Order<input type="number" min="0" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: e.target.value })} /></label><label className="wide">Description<textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></label></div><div className="admin-form-actions"><button className="admin-primary-button" type="submit">Save Category</button><button className="admin-outline-button" type="button" onClick={() => setShowForm(false)}>Cancel</button></div></form>}<section className="admin-panel admin-table-panel"><div className="admin-table-scroll"><table className="admin-table"><thead><tr><th>Category</th><th>Slug</th><th>Products</th><th>Status</th><th>Actions</th></tr></thead><tbody>{categories.map((category) => <tr key={category.id}><td><strong>{category.name}</strong><small className="admin-muted">{category.description || "No description"}</small></td><td>{category.slug}</td><td>{category._count?.products ?? "—"}</td><td><span className={`admin-status-pill ${category.active ? "green" : "red"}`}>{category.active ? "Active" : "Archived"}</span></td><td><div className="admin-row-actions"><button className="admin-icon-button" onClick={() => openEdit(category)}><Pencil size={17} /></button>{category.active && <button className="admin-danger-button" onClick={async () => { if (!await confirm({ title: "Archive category?", message: `${category.name} will no longer be available as an active category.`, confirmLabel: "Archive category" })) return; try { await archiveAdminCategory(category.id); await refresh(); await useCatalogStore.getState().loadCatalog(true); toast.success("Category archived."); } catch (err) { toast.error(err instanceof Error ? err.message : "Unable to archive category."); } }}>Archive</button>}</div></td></tr>)}</tbody></table></div></section></div>;
-}
-
-function PendingModule({ title, text }: { title: string; text: string }) {
-  const features: Record<string, string[]> = {
-    Customers: ["Customer profiles", "Support history", "Marketing preferences"],
-    "Customer Details": ["Customer profile", "Order history", "Account support"],
-    Coupons: ["Discount codes", "Usage limits", "Start and end dates"],
-    Content: ["Homepage sections", "Store notices", "Editorial banners"],
-  };
-  return (
-    <div className="jn-admin-module">
-      <PageHeader title={title} subtitle="Management workspace" />
-      <section className="admin-panel jn-admin-module-intro">
-        <span className="jn-admin-module-icon"><LockKeyhole size={29}/></span>
-        <p className="admin-eyebrow">NOT ACTIVE YET</p>
-        <h2>{title} management is being prepared.</h2>
-        <p>{text}</p>
-        <div className="jn-admin-module-features">
-          {(features[title] || ["Reporting", "Management", "Activity history"]).map((name) =>
-            <span key={name}><CircleHelp size={15}/>{name}</span>)}
-        </div>
-        <div className="jn-admin-module-actions">
-          <Link className="admin-primary-button" to="/admin">Back to dashboard <ArrowRight size={16}/></Link>
-          <Link className="admin-outline-button" to="/admin/help">Setup guide</Link>
-        </div>
-      </section>
-      <div className="jn-admin-module-links">
-        <Link to="/admin/products"><Package size={20}/><span><strong>Manage products</strong><small>Catalog and inventory</small></span><ArrowRight size={16}/></Link>
-        <Link to="/admin/orders"><ClipboardList size={20}/><span><strong>Review orders</strong><small>Payment and order records</small></span><ArrowRight size={16}/></Link>
-        <Link to="/admin/categories"><Boxes size={20}/><span><strong>Edit categories</strong><small>Storefront organization</small></span><ArrowRight size={16}/></Link>
-      </div>
-    </div>
-  );
 }
 
 function AnalyticsOverview() {

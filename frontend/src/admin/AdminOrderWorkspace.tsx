@@ -206,7 +206,7 @@ function OrderDetails({ orderId }: { orderId: string }) {
             }
           }}>{saving ? "Updating…" : "Update Order"}</button>
           <hr />
-          <h2>Payment</h2>
+          <h2>Order totals</h2><dl><div><dt>Subtotal</dt><dd>{money(order.subtotalPaise)}</dd></div><div><dt>Shipping</dt><dd>{money(order.shippingPaise)}</dd></div>{order.discountPaise>0&&<div><dt>Discount {order.couponCode||""}</dt><dd>− {money(order.discountPaise)}</dd></div>}<div><dt>Total</dt><dd><strong>{money(order.totalPaise)}</strong></dd></div></dl><hr/><h2>Payment</h2>
           {payment ? <>
             <dl>
               <div><dt>Status</dt><dd><strong>{payment.status}</strong></dd></div>
