@@ -71,6 +71,7 @@ export default function Home() {
                 return (
                   <Link className={"jn-category-tile jn-tint-" + (visual?.tint ?? "oat")} key={category.id} to={"/category/" + category.slug}>
                     <span className="jn-category-photo" aria-hidden="true" />
+                    <span className="jn-category-curve" aria-hidden="true" />
                     <span className="jn-category-index">{visual?.number ?? "—"} / COLLECTION</span>
                     <div className="jn-category-art" aria-hidden="true"><span className="jn-category-art-glow" /><Icon size={64} strokeWidth={1.15}/></div>
                     <div className="jn-category-bottom"><span><strong>{category.name}</strong><small>{visual?.caption ?? "Explore the collection"}</small></span><ArrowUpRight size={20}/></div>
