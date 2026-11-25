@@ -33,3 +33,7 @@ Leave both checkout flags false while deploying. Use a **separate staging databa
 Customer administration now lists real synced accounts and their recent orders. Coupons and content admin pages remain placeholders, not finished integrations. The contact form sends directly to a fixed support inbox when Brevo and CONTACT_RECIPIENT_EMAIL are configured; otherwise it opens an email draft. Paytm refunds are not implemented as a provider API workflow. These require additional application development, not just credentials. Do not label them production-ready until implemented and tested. See DEPLOYMENT.md and AUTH_SETUP.md for provider-specific details.
 
 For direct contact submissions, set CONTACT_RECIPIENT_EMAIL on Render to the approved support inbox and configure Brevo. Test receipt using a real message. The form has bounded input, a fixed server-side recipient, origin checks and rate limiting.
+
+## Shipping and policies
+
+Set SHIPPING_FEE_PAISE on Render to the approved flat fee (0 for free). VITE_SHIPPING_FEE_PAISE on Vercel is an optional cart estimate; checkout reads the actual amount from the API and checks the returned order total before opening payment. Policy copy must be reviewed by the actual merchant before VITE_POLICIES_VERIFIED is set to true. No legal or operational assurances have been invented.

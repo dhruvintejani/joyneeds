@@ -131,7 +131,7 @@ export default function Cart() {
             <p className="muted small">
               {site.shippingFee === null
                 ? "Shipping and final charges must be confirmed before payments are enabled."
-                : "No payment is taken in this preview."}
+                : "Final totals are confirmed by the server at checkout."}
             </p>
             {blocked ? (
               <p role="status" className="notice">Remove unavailable items to continue.</p>

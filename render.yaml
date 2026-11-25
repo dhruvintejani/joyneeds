@@ -65,3 +65,5 @@ services:
         sync: false
       - key: CONTACT_RECIPIENT_EMAIL
         sync: false
+      - key: SHIPPING_FEE_PAISE
+        value: "0"

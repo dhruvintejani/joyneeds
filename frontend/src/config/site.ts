@@ -5,6 +5,8 @@ const publicValue = (key: string, fallback = "") => {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 };
 
+const shippingValue = publicValue("VITE_SHIPPING_FEE_PAISE");
+const shippingPaise = shippingValue && /^\d+$/.test(shippingValue) ? Number(shippingValue) : NaN;
 export const site = {
   brandName: "JoyNeeds",
   domain: publicValue("VITE_SITE_URL", "https://joyneeds.vercel.app").replace(/\/+$/, ""),
@@ -19,7 +21,7 @@ export const site = {
   returnWindow: publicValue("VITE_RETURN_WINDOW"),
   refundTimeline: publicValue("VITE_REFUND_TIMELINE"),
   cancellationWindow: publicValue("VITE_CANCELLATION_WINDOW"),
-  shippingFee: null as number | null,
+  shippingFee: Number.isSafeInteger(shippingPaise) && shippingPaise <= 1000000 ? shippingPaise / 100 : null,
   catalogVerified: import.meta.env.VITE_CATALOG_VERIFIED === "true",
   policiesVerified: import.meta.env.VITE_POLICIES_VERIFIED === "true",
   // The backend enforces its own independent payment and order gates.

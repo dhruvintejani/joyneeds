@@ -15,5 +15,6 @@ export const getCheckoutFeatures: RequestHandler = (_req, res) => {
   res.set("Cache-Control", "no-store").json({ data: {
     checkoutEnabled: orderCreationEnabled && configuredPaymentProvider,
     paymentProvider: env.PAYMENT_PROVIDER,
+    shippingFeePaise: env.SHIPPING_FEE_PAISE,
   } });
 };

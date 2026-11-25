@@ -14,6 +14,7 @@ const envSchema = z
     ADMIN_EMAIL: z.string().trim().toLowerCase().email().optional(),
     ADMIN_PASSWORD_HASH: optionalSecret,
     ADMIN_SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(168).default(12),
+    SHIPPING_FEE_PAISE: z.coerce.number().int().min(0).max(1000000).default(0),
     ORDER_CREATION_ENABLED: z.enum(["true", "false"]).default("false"),
     CLOUDINARY_CLOUD_NAME: optionalSecret,
     CLOUDINARY_API_KEY: optionalSecret,

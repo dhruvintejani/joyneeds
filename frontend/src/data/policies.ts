@@ -12,11 +12,11 @@ export const policies: Record<string, Policy> = {
     sections: [
       {
         title: "Information you enter",
-        text: "Checkout fields are used only for validation in this browser. This preview does not submit them to an order service or retain them in local storage. A contact message is passed to your email application only when you choose to open an email draft.",
+        text: "Checkout fields are validated in your browser and, when ordering is enabled, submitted to our order service to process your purchase. Contact enquiries are sent to our support inbox or passed to your email application, depending on service availability.",
       },
       {
         title: "How information is used",
-        text: "If you send an email, the information you include is used to respond to your enquiry. Do not send passwords, payment credentials, or unnecessary sensitive information.",
+        text: "We use contact details to respond to enquiries and, when ordering is enabled, to manage orders, fulfillment and service messages. Do not send passwords, payment credentials, or unnecessary sensitive information.",
       },
       {
         title: "Local storage and cookies",
@@ -24,7 +24,7 @@ export const policies: Record<string, Policy> = {
       },
       {
         title: "Payments and third parties",
-        text: "No payment provider is integrated in this version. Hosting and email providers may process technical connection data or messages under their own policies. Payment and other service-provider disclosures must be updated before those services are enabled.",
+        text: "JoyNeeds uses hosted services for store infrastructure, customer authentication, image storage, transactional email and payment processing when configured. Payment details are handled through the selected payment provider; JoyNeeds verifies payment status server-side.",
       },
       {
         title: "Security and retention",
@@ -55,7 +55,7 @@ export const policies: Record<string, Policy> = {
       },
       {
         title: "Orders and payments",
-        text: "Adding an item to the bag or validating checkout details does not create an order or a contract of sale. This version cannot collect payments. Order acceptance terms will be published before purchasing becomes available.",
+        text: "Adding an item to the bag does not place an order. When checkout is enabled, submitting your order creates a pending record; payment must be verified before confirmation. Final order acceptance terms require business review.",
       },
       {
         title: "Shipping, returns and refunds",
@@ -78,7 +78,7 @@ export const policies: Record<string, Policy> = {
   "shipping-policy": {
     title: "Shipping policy",
     intro:
-      "Orders are not open. Shipping arrangements must be confirmed before checkout is enabled.",
+      "Shipping arrangements, delivery coverage and charges must be reviewed before checkout is enabled.",
     sections: [
       {
         title: "Processing and delivery",
@@ -134,7 +134,7 @@ export const policies: Record<string, Policy> = {
   "refund-cancellation": {
     title: "Refund & cancellation policy",
     intro:
-      "No orders or payments are processed by this preview. The operational values below are awaiting confirmation.",
+      "Cancellation and refund terms depend on the operational policies and applicable consumer rights. Review the details below.",
     sections: [
       {
         title: "Cancellation eligibility",
@@ -151,7 +151,7 @@ export const policies: Record<string, Policy> = {
       },
       {
         title: "Failed or duplicate payments",
-        text: "This site currently requests no payment. If you see a debit that you believe relates to JoyNeeds, contact support and your payment provider. Never share your PIN, OTP or full card details.",
+        text: "If a payment fails, stays pending or appears duplicated, contact support and your payment provider before attempting another payment. Never share your PIN, OTP or full card details.",
       },
       {
         title: "Request process",
@@ -163,11 +163,11 @@ export const policies: Record<string, Policy> = {
 export const faqs = [
   [
     "Can I order right now?",
-    "Not yet. You can browse, save products and review checkout, but no order is created or payment taken.",
+    "You can browse and save products. Checkout is available only when the store and payment service are enabled; check the checkout page for current availability.",
   ],
   [
     "Do I need an account?",
-    "No. The planned flow is guest checkout. Your bag and wishlist are saved only in this browser.",
+    "No. Guest checkout is supported when ordering is enabled. Customer accounts can sync order history and cart when configured. Your wishlist remains on this browser.",
   ],
   ["Where do you deliver?", pending(site.shippingCoverage)],
   ["How long does delivery take?", pending(site.shippingTimelines)],
@@ -184,7 +184,7 @@ export const faqs = [
   ],
   [
     "Which payment methods are available?",
-    "Payments are not connected yet. Available payment methods will be shown when checkout opens.",
+    "Available payment methods are shown at checkout according to the active payment provider and merchant settings.",
   ],
   [
     "Are all catalog details confirmed?",

@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import type { Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../config/prisma.js";
+import { env } from "../config/env.js";
 import { AppError } from "../utils/AppError.js";
 import { syncCustomerAccount } from "./accountService.js";
 import type {
@@ -122,9 +123,10 @@ export async function createPendingOrder(body: CreateOrderBody, clerkUserId: str
   });
 
   const user = clerkUserId ? await syncCustomerAccount(clerkUserId) : null;
-  const shippingPaise = 0;
+  const shippingPaise = env.SHIPPING_FEE_PAISE;
   const discountPaise = 0;
   const totalPaise = subtotalPaise + shippingPaise - discountPaise;
+  if (!Number.isSafeInteger(totalPaise) || totalPaise > 2147483647) throw new AppError(400, "ORDER_TOTAL_TOO_LARGE", "Reduce the quantity in your order.");
 
   const order = await prisma.order.create({
     data: {

@@ -53,6 +53,7 @@ export default function Checkout() {
     return () => { active = false; };
   }, []);
   const canCheckout = site.checkoutEnabled && catalogStatus === "ready" && features?.checkoutEnabled === true;
+  const shippingFee = features ? features.shippingFeePaise / 100 : site.shippingFee;
   const paytmMode = (features?.paymentProvider ?? import.meta.env.VITE_PAYMENT_PROVIDER) !== "RAZORPAY";
   const [paytmOrderNumber, setPaytmOrderNumber] = useState<string | null>(null);
   const [completed, setCompleted] = useState<{ orderNumber: string; fulfillmentReady: boolean } | null>(null);
@@ -144,6 +145,7 @@ export default function Checkout() {
                 token,
               );
               if (!order.paymentReady) throw new Error("The payment provider is not ready for this order.");
+              if (order.totalPaise !== Math.round(total * 100) + (features?.shippingFeePaise ?? 0)) throw new Error("Your total changed. Reload your cart and review the current prices before paying.");
               if (order.paymentProvider !== features?.paymentProvider) throw new Error("Payment settings changed. Reload checkout before trying again.");
               if (order.paymentProvider === "PAYTM") {
                 const paytm = await preparePaytmOrder(order.id, token);
@@ -257,8 +259,8 @@ export default function Checkout() {
             </div>
             <dl>
               <div><dt>Subtotal</dt><dd>{money(total)}</dd></div>
-              <div><dt>Shipping</dt><dd>{site.shippingFee === null ? "Calculated by server" : money(site.shippingFee)}</dd></div>
-              <div className="reference-summary-total"><dt>Estimated Total</dt><dd>{money(total + (site.shippingFee ?? 0))}</dd></div>
+              <div><dt>Shipping</dt><dd>{shippingFee === null ? "Calculated by server" : money(shippingFee)}</dd></div>
+              <div className="reference-summary-total"><dt>Estimated Total</dt><dd>{money(total + (shippingFee ?? 0))}</dd></div>
             </dl>
             <p className="muted small">The Razorpay amount comes from the backend order record, not this displayed estimate.</p>
           </section>

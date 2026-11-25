@@ -107,5 +107,5 @@ export const syncCustomerCart = (
     token,
   );
 
-export type CheckoutFeatures = { checkoutEnabled: boolean; paymentProvider: "PAYTM" | "RAZORPAY" };
+export type CheckoutFeatures = { checkoutEnabled: boolean; paymentProvider: "PAYTM" | "RAZORPAY"; shippingFeePaise: number };
 export const getCheckoutFeatures = () => request<CheckoutFeatures>("/api/health/features");
