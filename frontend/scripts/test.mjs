@@ -111,17 +111,25 @@ try {
     '/', '/shop', '/search', '/category/:category', '/product/:slug',
     '/cart', '/wishlist', '/checkout', '/payment-status', '/account',
     '/sign-in/*', '/sign-up/*', '/about', '/contact', '/faq', '/404',
-    '/admin/*', '/admin/orders', '/admin/products/new',
-    '/admin/products/:productId/edit',
+    '/admin/*',
   ]) {
     assert.ok(appRoutes.includes('path="' + path + '"'), 'Missing storefront or protected route: ' + path);
   }
   for (const path of [
-    'products', 'categories', 'customers', 'analytics', 'coupons',
+    'products', 'products/new', 'products/:productId/edit', 'orders', 'orders/:orderId', 'payments', 'categories', 'customers', 'customers/:customerId', 'analytics', 'coupons',
     'content', 'settings', 'help',
   ]) {
     assert.ok(adminRoutes.includes('path="' + path + '"'), 'Missing admin workspace: ' + path);
   }
+  assert.ok(appRoutes.includes('path="/admin/*" element={<AdminAuthGate><AdminRouter /></AdminAuthGate>}'), 'Every nested admin workspace must be protected by the shared authentication gate.');
+  assert.ok(adminRoutes.includes('<Route element={<AdminLayout />}>'), 'All admin workspaces must share responsive navigation.');
+  const confirmDialog = readFileSync(new URL('../src/components/common/ConfirmDialog.tsx', import.meta.url), 'utf8');
+  assert.ok(appRoutes.includes('<ConfirmProvider>') && confirmDialog.includes('.showModal()') && confirmDialog.includes('onCancel='), 'Confirmation modal must be mounted globally and support keyboard cancellation.');
+  for (const file of ['admin/AdminPhase5Router.tsx','admin/AdminOrderWorkspace.tsx','admin/AdminProductEditorWorkspace.tsx','pages/Cart.tsx','pages/Wishlist.tsx']) {
+    const source = readFileSync(new URL('../src/' + file, import.meta.url), 'utf8');
+    assert.ok(source.includes('useConfirm') && !source.includes('window.confirm('), 'Missing shared confirmation in ' + file);
+  }
+  assert.ok(style.includes('--jn-category-photo') && style.includes('.jn-category-tile:hover:before{transform:scale(1.09)}'), 'Category photo hover effect must be preserved.');
   assert.match(appRoutes, /<Route path="\*" element={<NotFound \/>} \/>/);
   assert.match(adminRoutes, /<Route path="\*" element={<AdminNotFound \/>} \/>/);
   assert.ok(authPage.includes('SignIn') && authPage.includes('SignUp'));
